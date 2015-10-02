@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
-~ Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
-~
-~ Licensed under the Apache License, Version 2.0 (the "License");
-~ you may not use this file except in compliance with the License.
-~ You may obtain a copy of the License at
-~
-~     http://www.apache.org/licenses/LICENSE-2.0
-~
-~ Unless required by applicable law or agreed to in writing, software
-~ distributed under the License is distributed on an "AS IS" BASIS,
-~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-~ See the License for the specific language governing permissions and
-~ limitations under the License.
--->
+  ~ Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
@@ -25,9 +26,8 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>bundle</packaging>
 
-    <artifactId>siddhi-extension-timeseries</artifactId>
-    <name>Siddhi Extension - Time Series</name>
-
+    <artifactId>siddhi-extension-ooh</artifactId>
+    <name>Siddhi Extension - Out of Order Handler</name>
 
     <dependencies>
         <dependency>
@@ -39,24 +39,8 @@
             <artifactId>siddhi-query-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.siddhi</groupId>
-            <artifactId>siddhi-extension-math</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.siddhi</groupId>
-            <artifactId>siddhi-extension-time</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.apache.log4j.wso2</groupId>
             <artifactId>log4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-math3</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>gov.nist.math</groupId>
-            <artifactId>jama</artifactId>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -75,12 +59,9 @@
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Name>${project.artifactId}</Bundle-Name>
-                        <Private-Package>
-                            Jama
-                        </Private-Package>
                         <Export-Package>
-                            org.wso2.siddhi.extension.timeseries,
-                            org.wso2.siddhi.extension.timeseries.*
+                            org.wso2.siddhi.extension.ooh,
+                            org.wso2.siddhi.extension.ooh.*
                         </Export-Package>
                         <Import-Package>
                             *;resolution:=optional
@@ -91,5 +72,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
