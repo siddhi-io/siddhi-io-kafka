@@ -16,45 +16,46 @@
  * under the License.
  */
 
-package org.wso2.siddhi.extension.output.mapper.map;
+package org.wso2.siddhi.extension.output.mapper.keyvalue;
 
 import org.wso2.siddhi.annotation.Extension;
 import org.wso2.siddhi.core.event.Event;
-import org.wso2.siddhi.core.stream.input.source.OutputMapper;
+import org.wso2.siddhi.core.stream.output.sink.OutputMapper;
+import org.wso2.siddhi.core.util.transport.TemplateBuilder;
+import org.wso2.siddhi.core.util.transport.OptionHolder;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
 
 import java.util.Map;
 import java.util.TreeMap;
 
 @Extension(
-        name = "map",
-        namespace = "outputmapper",
-        description = ""
+        name = "keyvalue",
+        namespace = "",
+        description = "Event to key-value (HashMap) output mapper."
 )
 public class MapOutputMapper extends OutputMapper {
     private StreamDefinition streamDefinition;
 
     /**
      * Initialize the mapper and the mapping configurations.
-     *
-     * @param streamDefinition       The stream definition
-     * @param options                Custom mapping options
-     * @param unmappedDynamicOptions Unmapped dynamic options
+     *  @param streamDefinition The stream definition
+     * @param optionHolder     Unmapped dynamic options
+     * @param payloadTemplateBuilder
      */
     @Override
-    public void init(StreamDefinition streamDefinition, Map<String, String> options, Map<String, String> unmappedDynamicOptions) {
+    public void init(StreamDefinition streamDefinition, OptionHolder optionHolder, TemplateBuilder payloadTemplateBuilder) {
         this.streamDefinition = streamDefinition;
     }
 
     /**
-     * Convert the given {@link Event} to Map Object
+     * Convert the given option mapping to a HashMap object
      *
-     * @param event          Event object
-     * @param dynamicOptions Dynamic options
-     * @return the constructed Map Object
+     * @param event         Event object
+     * @param mappedPayload mapped payload if any
+     * @return the mapped object
      */
     @Override
-    public Object convertToTypedInputEvent(Event event, Map<String, String> dynamicOptions) {
+    public Object mapEvent(Event event, String mappedPayload) {
         Map<Object, Object> eventMapObject = new TreeMap<Object, Object>();
         Object[] eventData = event.getData();
         for (int i = 0; i < eventData.length; i++) {
@@ -67,25 +68,10 @@ public class MapOutputMapper extends OutputMapper {
         Map<String, Object> arbitraryDataMap = event.getArbitraryDataMap();
         if (arbitraryDataMap != null) {
             for (Map.Entry<String, Object> entry : arbitraryDataMap.entrySet()) {
-                // Add arbitrary data map to the default template
+                // Add arbitrary data keyvalue to the default template
                 eventMapObject.put(entry.getKey(), entry.getValue());
             }
         }
         return eventMapObject;
-    }
-
-    /**
-     * Convert the given option mapping to a Map object
-     *
-     * @param event            Event object
-     * @param mappedPayload Event mapping string array
-     * @param dynamicOptions   Dynamic options
-     * @return the mapped string
-     */
-    // Note: Currently, we do not support custom mapping for "map" type since the expected usecases such as renaming and
-    // extracting desired attributes can be handled by writing siddhi queries
-    @Override
-    public Object convertToMappedInputEvent(Event event, String mappedPayload, Map<String, String> dynamicOptions) {
-        return mappedPayload;
     }
 }
