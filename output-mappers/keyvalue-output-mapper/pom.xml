@@ -68,7 +68,7 @@
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Name>${project.artifactId}</Bundle-Name>
                         <Export-Package>
-                            org.wso2.siddhi.extension.output.mapper.map.*
+                            org.wso2.siddhi.extension.output.mapper.keyvalue.*
                         </Export-Package>
                         <Import-Package>
                             *;resolution:=optional
