@@ -56,9 +56,9 @@
     </properties>
 
     <scm>
-        <connection>scm:git:https://github.com/wso2-extensions/siddhi-eventtable-rdbms.git</connection>
-        <url>https://github.com/wso2-extensions/siddhi-eventtable-rdbms.git</url>
-        <developerConnection>scm:git:https://github.com/wso2-extensions/siddhi-eventtable-rdbms.git
+        <connection>scm:git:https://github.com/wso2-extensions/siddhi-io-kafka.git</connection>
+        <url>https://github.com/wso2-extensions/siddhi-io-kafka.git</url>
+        <developerConnection>scm:git:https://github.com/wso2-extensions/siddhi-io-kafka.git
         </developerConnection>
         <tag>HEAD</tag>
     </scm>
