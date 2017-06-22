@@ -72,6 +72,7 @@ public class KafkaSinkTestCase {
         LOG.info("Creating test for publishing events for static topic without a partition");
         String topics[] = new String[]{"single_topic"};
         KafkaTestUtil.createTopic(topics, 1);
+        Thread.sleep(4000);
         receivedEventNameList = new ArrayList<>(3);
         receivedValueList = new ArrayList<>(3);
         try {
@@ -128,6 +129,7 @@ public class KafkaSinkTestCase {
             AssertJUnit.assertEquals("Kafka Sink didnt publish the expected events", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(3, count);
             KafkaTestUtil.deleteTopic(topics);
+            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
             siddhiAppRuntimeSource.shutdown();
         } catch (ZkTimeoutException ex) {
@@ -140,6 +142,7 @@ public class KafkaSinkTestCase {
         LOG.info("Creating test for publishing events for static topic with a partition");
         String topics[] = new String[]{"topic_with_two_partitions_sub0"};
         KafkaTestUtil.createTopic(topics, 2);
+        Thread.sleep(4000);
         receivedEventNameList = new ArrayList<>(3);
         receivedValueList = new ArrayList<>(3);
         try {
@@ -197,6 +200,7 @@ public class KafkaSinkTestCase {
             AssertJUnit.assertEquals("Kafka Sink didnt publish the expected events", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(3, count);
             KafkaTestUtil.deleteTopic(topics);
+            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
             siddhiAppRuntimeSource.shutdown();
         } catch (ZkTimeoutException ex) {
@@ -269,6 +273,7 @@ public class KafkaSinkTestCase {
             AssertJUnit.assertEquals("Kafka Sink didnt publish the expected events", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(3, count);
             KafkaTestUtil.deleteTopic(topics);
+            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
             siddhiAppRuntimeSource.shutdown();
         } catch (ZkTimeoutException ex) {
@@ -342,6 +347,7 @@ public class KafkaSinkTestCase {
             AssertJUnit.assertEquals("Kafka Sink didnt publish the expected events", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(3, count);
             KafkaTestUtil.deleteTopic(topics);
+            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
             siddhiAppRuntimeSource.shutdown();
         } catch (ZkTimeoutException ex) {
@@ -415,6 +421,7 @@ public class KafkaSinkTestCase {
             AssertJUnit.assertEquals("Kafka Sink didnt publish the expected events", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(3, count);
             KafkaTestUtil.deleteTopic(topics);
+            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
             siddhiAppRuntimeSource.shutdown();
         } catch (ZkTimeoutException ex) {
@@ -430,7 +437,7 @@ public class KafkaSinkTestCase {
             receivedEventNameList = new ArrayList<>(4);
             receivedValueList = new ArrayList<>(4);
             KafkaTestUtil.createTopic(topics, 1);
-
+            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             siddhiManager.setExtension("xml-output-mapper", XMLSinkMapper.class);
             SiddhiAppRuntime executionPlanRuntime = siddhiManager.createSiddhiAppRuntime(
@@ -485,6 +492,7 @@ public class KafkaSinkTestCase {
                                      receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             KafkaTestUtil.deleteTopic(topics);
+            Thread.sleep(4000);
             executionPlanRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
             LOG.warn("No zookeeper may not be available.", ex);
