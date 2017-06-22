@@ -48,6 +48,7 @@ import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static org.junit.Assert.assertEquals;
@@ -63,10 +64,10 @@ public class KafkaSourceHATestCase {
     @BeforeClass
     public static void init() throws Exception {
         try {
-//            executorService = Executors.newFixedThreadPool(5);
-//            KafkaTestUtil.cleanLogDir();
-//            KafkaTestUtil.setupKafkaBroker();
-//            Thread.sleep(10000);
+            executorService = Executors.newFixedThreadPool(5);
+            KafkaTestUtil.cleanLogDir();
+            KafkaTestUtil.setupKafkaBroker();
+            Thread.sleep(10000);
         } catch (Exception e) {
             throw new RemoteException("Exception caught when starting server", e);
         }
@@ -377,7 +378,7 @@ public class KafkaSourceHATestCase {
 
     @AfterClass
     public static void stopKafkaBroker() {
-//        KafkaTestUtil.stopKafkaBroker();
+        KafkaTestUtil.stopKafkaBroker();
     }
 
     private class KafkaFlow implements Runnable {

@@ -58,7 +58,7 @@ public class KafkaSourceTestCase {
 
     @AfterClass
     public static void stopKafkaBroker() {
-//        KafkaTestUtil.stopKafkaBroker();
+        KafkaTestUtil.stopKafkaBroker();
     }
 
     @BeforeMethod
