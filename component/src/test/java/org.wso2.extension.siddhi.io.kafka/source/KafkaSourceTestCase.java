@@ -75,6 +75,7 @@ public class KafkaSourceTestCase {
             receivedEventNameList = new ArrayList<>(2);
             receivedValueList = new ArrayList<>(2);
             KafkaTestUtil.createTopic(topics, 1);
+            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
@@ -155,6 +156,7 @@ public class KafkaSourceTestCase {
             receivedEventNameList = new ArrayList<>(4);
             receivedValueList = new ArrayList<>(4);
             KafkaTestUtil.createTopic(topics, 1);
+            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
@@ -215,6 +217,7 @@ public class KafkaSourceTestCase {
             receivedEventNameList = new ArrayList<>(4);
             receivedValueList = new ArrayList<>(4);
             KafkaTestUtil.createTopic(topics, 1);
+            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
@@ -271,6 +274,7 @@ public class KafkaSourceTestCase {
             log.info("-------------------------------------------------------------------------------------------");
             String topics[] = new String[]{"topic_without_some_partition"};
             KafkaTestUtil.createTopic(topics, 2);
+            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
@@ -305,6 +309,7 @@ public class KafkaSourceTestCase {
             receivedEventNameList = new ArrayList<>(4);
             receivedValueList = new ArrayList<>(4);
             KafkaTestUtil.createTopic(topics, 2);
+            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
@@ -366,6 +371,7 @@ public class KafkaSourceTestCase {
             receivedEventNameList = new ArrayList<>(4);
             receivedValueList = new ArrayList<>(4);
             KafkaTestUtil.createTopic(topics, 2);
+            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
@@ -428,6 +434,7 @@ public class KafkaSourceTestCase {
             log.info("-------------------------------------------------------------------------------------------");
             String topics[] = new String[]{"no_bootstrap_server_topic"};
             KafkaTestUtil.createTopic(topics, 2);
+            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
@@ -459,6 +466,7 @@ public class KafkaSourceTestCase {
             receivedEventNameList = new ArrayList<>(2);
             receivedValueList = new ArrayList<>(2);
             KafkaTestUtil.createTopic(topics, 1);
+            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
@@ -521,6 +529,7 @@ public class KafkaSourceTestCase {
             receivedEventNameList = new ArrayList<>(2);
             receivedValueList = new ArrayList<>(2);
             KafkaTestUtil.createTopic(topics, 2);
+            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
@@ -583,6 +592,7 @@ public class KafkaSourceTestCase {
             log.info("-------------------------------------------------------------------------------------------");
             String topics[] = new String[]{"no_threading_option_topic"};
             KafkaTestUtil.createTopic(topics, 2);
+            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
@@ -613,6 +623,7 @@ public class KafkaSourceTestCase {
             log.info("-------------------------------------------------------------------------------------------");
             String topics[] = new String[]{"single_topic_without_groupid"};
             KafkaTestUtil.createTopic(topics, 1);
+            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
@@ -724,6 +735,7 @@ public class KafkaSourceTestCase {
             receivedEventNameList = new ArrayList<>(2);
             receivedValueList = new ArrayList<>(2);
             KafkaTestUtil.createTopic(topics, 1);
+            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
@@ -851,6 +863,7 @@ public class KafkaSourceTestCase {
         receivedValueList = new ArrayList<>(4);
         String topics[] = new String[]{"kafka_topic", "kafka_topic2"};
         KafkaTestUtil.createTopic(topics, 2);
+        Thread.sleep(4000);
         SiddhiManager siddhiManager = new SiddhiManager();
         siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
         SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
@@ -909,6 +922,7 @@ public class KafkaSourceTestCase {
             receivedEventNameList = new ArrayList<>(4);
             receivedValueList = new ArrayList<>(4);
             KafkaTestUtil.createTopic(topics, 2);
+            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
