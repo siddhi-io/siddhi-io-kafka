@@ -263,7 +263,7 @@ public class KafkaSourceHATestCase {
             siddhiManager2.setExtension("inputmapper:text", XmlSourceMapper.class);
 
             String query1 = "@App:name('TestExecutionPlan') " +
-                    "@sink(type='kafka', topic.list='kafka_topic6', bootstrap.servers='localhost:9092', partition" +
+                    "@sink(type='kafka', topic='kafka_topic6', bootstrap.servers='localhost:9092', partition" +
                     ".no='0', " +
                     "@map(type='xml'))" +
                     "define stream BarStream (count long); " +
