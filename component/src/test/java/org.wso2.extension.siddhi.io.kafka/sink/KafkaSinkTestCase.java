@@ -48,9 +48,9 @@ public class KafkaSinkTestCase {
     @BeforeClass
     public static void init() throws Exception {
         try {
-//            KafkaTestUtil.cleanLogDir();
-//            KafkaTestUtil.setupKafkaBroker();
-//            Thread.sleep(1000);
+            KafkaTestUtil.cleanLogDir();
+            KafkaTestUtil.setupKafkaBroker();
+            Thread.sleep(1000);
         } catch (Exception e) {
             throw new RemoteException("Exception caught when starting server", e);
         }
