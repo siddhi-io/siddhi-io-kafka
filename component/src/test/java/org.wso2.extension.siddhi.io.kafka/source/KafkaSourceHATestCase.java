@@ -64,10 +64,10 @@ public class KafkaSourceHATestCase {
     @BeforeClass
     public static void init() throws Exception {
         try {
-            executorService = Executors.newFixedThreadPool(5);
-            KafkaTestUtil.cleanLogDir();
-            KafkaTestUtil.setupKafkaBroker();
-            Thread.sleep(10000);
+//            executorService = Executors.newFixedThreadPool(5);
+//            KafkaTestUtil.cleanLogDir();
+//            KafkaTestUtil.setupKafkaBroker();
+//            Thread.sleep(10000);
         } catch (Exception e) {
             throw new RemoteException("Exception caught when starting server", e);
         }
@@ -151,7 +151,7 @@ public class KafkaSourceHATestCase {
         }
     }
 
-    @Test //(dependsOnMethods = "testAKafkaPauseAndResume")
+    @Test (dependsOnMethods = "testAKafkaPauseAndResume")
     public void testRecoveryOnFailureOfSingleNodeWithKafka() throws InterruptedException {
         try {
             log.info("Test to verify recovering process of a Siddhi node on a failure when Kafka is the event source");
@@ -378,7 +378,7 @@ public class KafkaSourceHATestCase {
 
     @AfterClass
     public static void stopKafkaBroker() {
-        KafkaTestUtil.stopKafkaBroker();
+//        KafkaTestUtil.stopKafkaBroker();
     }
 
     private class KafkaFlow implements Runnable {
