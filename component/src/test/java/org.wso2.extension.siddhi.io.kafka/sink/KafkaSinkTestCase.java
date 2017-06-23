@@ -82,7 +82,7 @@ public class KafkaSinkTestCase {
                     "@App:name('TestExecutionPlan2') " +
                             "define stream BarStream2 (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
-                            "@source(type='kafka', topic.list='single_topic', group.id='test', " +
+                            "@source(type='kafka', topic.list='single_topic', group.id='single_topic_test', " +
                             "threading.option='single.thread', bootstrap.servers='localhost:9092'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream2 (symbol string, price float, volume long);" +
@@ -153,7 +153,8 @@ public class KafkaSinkTestCase {
                             "define stream BarStream2 (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
                             "@source(type='kafka', topic.list='topic_with_two_partitions_sub0', partition.no.list='0',"
-                            + "group.id='test', threading.option='single.thread', bootstrap.servers='localhost:9092'," +
+                            + "group.id='topic_with_two_partitions_sub0_test', threading.option='single.thread', "
+                            + "bootstrap.servers='localhost:9092'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream2 (symbol string, price float, volume long);" +
                             "from FooStream2 select symbol, price, volume insert into BarStream2;");
@@ -238,7 +239,8 @@ public class KafkaSinkTestCase {
                     "@App:name('TestExecutionPlan2') " +
                             "define stream BarStream2 (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
-                            "@source(type='kafka', topic.list='invalid_topic_without_partition2', group.id='test', " +
+                            "@source(type='kafka', topic.list='invalid_topic_without_partition2', "
+                            + "group.id='invalid_topic_without_partition2_test', " +
                             "threading.option='single.thread', bootstrap.servers='localhost:9092'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream2 (symbol string, price float, volume long);" +
@@ -311,7 +313,8 @@ public class KafkaSinkTestCase {
                     "@App:name('TestExecutionPlan2') " +
                             "define stream BarStream2 (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
-                            "@source(type='kafka', topic.list='invalid_topic_with_partition', group.id='test', " +
+                            "@source(type='kafka', topic.list='invalid_topic_with_partition', "
+                            + "group.id='invalid_topic_with_partition_test', " +
                             "threading.option='single.thread', bootstrap.servers='localhost:9092', "
                             + "partition.no.list='0', " +
                             "@map(type='xml'))" +
@@ -386,7 +389,8 @@ public class KafkaSinkTestCase {
                     "@App:name('TestExecutionPlan2') " +
                             "define stream BarStream2 (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
-                            "@source(type='kafka', topic.list='invalid_topic_with_partition_2', group.id='test', " +
+                            "@source(type='kafka', topic.list='invalid_topic_with_partition_2', "
+                            + "group.id='invalid_topic_with_partition_2_test', " +
                             "threading.option='single.thread', bootstrap.servers='localhost:9092', " +
                             "@map(type='xml'))" +
                             "Define stream FooStream2 (symbol string, price float, volume long);" +
@@ -456,7 +460,8 @@ public class KafkaSinkTestCase {
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
-                            "@source(type='kafka', topic.list='multiple_topic1,multiple_topic2', group.id='test', " +
+                            "@source(type='kafka', topic.list='multiple_topic1,multiple_topic2', "
+                            + "group.id='multiple_topic1_multiple_topic2_test', " +
                             "threading.option='single.thread', bootstrap.servers='localhost:9092'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
@@ -529,7 +534,8 @@ public class KafkaSinkTestCase {
                             "@info(name = 'query1') " +
                             "@source(type='kafka', "
                             + "topic.list='multiple_topic1_two_par_all_sub1,multiple_topic2_two_par_all_sub1', "
-                            + "group.id='test', threading.option='single.thread', bootstrap.servers='localhost:9092', "
+                            + "group.id='multiple_topic1_two_par_all_sub1_test', threading.option='single.thread', "
+                            + "bootstrap.servers='localhost:9092', "
                             + "partition.no.list='0,1'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
