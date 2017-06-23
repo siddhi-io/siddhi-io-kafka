@@ -122,37 +122,39 @@ public class KafkaConsumerThread implements Runnable {
             while (!paused) {
                 // The time, in milliseconds, spent waiting in poll if data is not available. If 0, returns
                 // immediately with any records that are available now. Must not be negative
-                ConsumerRecords<byte[], byte[]> records;
+                ConsumerRecords<byte[], byte[]> records = null;
                 try {
                     consumerLock.lock();
-                    //added a huge value because, when there are so many equal group ids, the group balancing
+                    // TODO add a huge value because, when there are so many equal group ids, the group balancing
                     // takes time and if this value is small, there will be an CommitFailedException while
                     // trying to retrieve data
-                    records = consumer.poll(120000);
-                } catch (CommitFailedException ex){
-                    LOG.warn("Consumer poll() failed." + ex.getMessage() , ex);
+                    records = consumer.poll(100);
+                } catch (CommitFailedException ex) {
+                    LOG.warn("Consumer poll() failed." + ex.getMessage(), ex);
                 } finally {
                     consumerLock.unlock();
                 }
-                for (ConsumerRecord record : records) {
-                    String event = record.value().toString();
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Event received in Kafka Event Adaptor: " + event + ", offSet: " + record.offset()
-                                + ", key: " + record.key() + ", topic: " + record.topic() + ", partition: " + record
-                                .partition());
+                if (null != records) {
+                    for (ConsumerRecord record : records) {
+                        String event = record.value().toString();
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Event received in Kafka Event Adaptor: " + event + ", offSet: " + record.offset()
+                                              + ", key: " + record.key() + ", topic: " + record.topic()
+                                              + ", partition: " + record.partition());
+                        }
+                        topicOffsetMap.get(record.topic()).put(record.partition(), record.offset());
+                        sourceEventListener.onEvent(event);
                     }
-                    topicOffsetMap.get(record.topic()).put(record.partition(), record.offset());
-                    sourceEventListener.onEvent(event);
-                }
-                try {
-                    consumerLock.lock();
-                    if (!records.isEmpty()) {
-                        consumer.commitAsync();
+                    try {
+                        consumerLock.lock();
+                        if (!records.isEmpty()) {
+                            consumer.commitAsync();
+                        }
+                    } catch (CommitFailedException e) {
+                        LOG.error("Kafka commit failed for topic kafka_result_topic", e);
+                    } finally {
+                        consumerLock.unlock();
                     }
-                } catch (CommitFailedException e) {
-                    LOG.error("Kafka commit failed for topic kafka_result_topic", e);
-                } finally {
-                    consumerLock.unlock();
                 }
             }
         }
