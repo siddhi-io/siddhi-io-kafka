@@ -125,7 +125,12 @@ public class KafkaConsumerThread implements Runnable {
                 ConsumerRecords<byte[], byte[]> records;
                 try {
                     consumerLock.lock();
-                    records = consumer.poll(1000);
+                    //added a huge value because, when there are so many equal group ids, the group balancing
+                    // takes time and if this value is small, there will be an CommitFailedException while
+                    // trying to retrieve data
+                    records = consumer.poll(120000);
+                } catch (CommitFailedException ex){
+                    LOG.warn("Consumer poll() failed." + ex.getMessage() , ex);
                 } finally {
                     consumerLock.unlock();
                 }
