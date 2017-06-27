@@ -76,7 +76,6 @@ public class KafkaSourceTestCase {
             KafkaTestUtil.createTopic(topics, 1);
             Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -128,7 +127,6 @@ public class KafkaSourceTestCase {
             log.info("Creating test for without topic");
             log.info("-------------------------------------------------------------------------------------------");
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -157,7 +155,6 @@ public class KafkaSourceTestCase {
             KafkaTestUtil.createTopic(topics, 1);
             Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -219,7 +216,6 @@ public class KafkaSourceTestCase {
             KafkaTestUtil.createTopic(topics, 1);
             Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -276,7 +272,6 @@ public class KafkaSourceTestCase {
             KafkaTestUtil.createTopic(topics, 2);
             Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -312,7 +307,6 @@ public class KafkaSourceTestCase {
             KafkaTestUtil.createTopic(topics, 2);
             Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -374,7 +368,6 @@ public class KafkaSourceTestCase {
             KafkaTestUtil.createTopic(topics, 2);
             Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -437,7 +430,6 @@ public class KafkaSourceTestCase {
             KafkaTestUtil.createTopic(topics, 2);
             Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -469,7 +461,7 @@ public class KafkaSourceTestCase {
             KafkaTestUtil.createTopic(topics, 1);
             Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
+
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -532,7 +524,6 @@ public class KafkaSourceTestCase {
             KafkaTestUtil.createTopic(topics, 2);
             Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -595,7 +586,6 @@ public class KafkaSourceTestCase {
             KafkaTestUtil.createTopic(topics, 2);
             Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -626,7 +616,7 @@ public class KafkaSourceTestCase {
             KafkaTestUtil.createTopic(topics, 1);
             Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
+
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -659,7 +649,6 @@ public class KafkaSourceTestCase {
             receivedValueList = new ArrayList<>(2);
             KafkaTestUtil.createTopic(topics, 1);
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -740,7 +729,6 @@ public class KafkaSourceTestCase {
             KafkaTestUtil.createTopic(topics, 1);
             Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -817,7 +805,6 @@ public class KafkaSourceTestCase {
             receivedValueList = new ArrayList<>(2);
             String topics[] = new String[]{"non_existing_topic1"};
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -871,7 +858,6 @@ public class KafkaSourceTestCase {
         KafkaTestUtil.createTopic(topics, 2);
         Thread.sleep(4000);
         SiddhiManager siddhiManager = new SiddhiManager();
-//        siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
         SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                 "@App:name('TestExecutionPlan') " +
                         "define stream BarStream (symbol string, price float, volume long); " +
@@ -930,7 +916,6 @@ public class KafkaSourceTestCase {
             KafkaTestUtil.createTopic(topics, 2);
             Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -994,7 +979,6 @@ public class KafkaSourceTestCase {
             KafkaTestUtil.createTopic(topics, 2);
             Thread.sleep(5000);
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +

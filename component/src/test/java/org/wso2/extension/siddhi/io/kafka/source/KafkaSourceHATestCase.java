@@ -84,7 +84,6 @@ public class KafkaSourceHATestCase {
             String topics[] = new String[]{"kafka_topic3"};
             KafkaTestUtil.createTopic(topics, 2);
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -158,8 +157,6 @@ public class KafkaSourceHATestCase {
             PersistenceStore persistenceStore = new InMemoryPersistenceStore();
             SiddhiManager siddhiManager = new SiddhiManager();
             siddhiManager.setPersistenceStore(persistenceStore);
-//            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
-
             String query = "@App:name('TestExecutionPlan') " +
                     "define stream BarStream (count long); " +
                     "@info(name = 'query1') " +
