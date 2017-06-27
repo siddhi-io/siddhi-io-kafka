@@ -167,13 +167,13 @@ public class KafkaTestUtil {
     }
 
     public static void kafkaPublisher(String topics[], int numOfPartitions, int numberOfEventsPerTopic, boolean
-            publishWithPartition, String bootstrapServers) {
+            publishWithPartition, String bootstrapServers, boolean isXML) {
         kafkaPublisher(topics, numOfPartitions, numberOfEventsPerTopic, 1000, publishWithPartition,
-                       bootstrapServers);
+                       bootstrapServers, isXML);
     }
 
     public static void kafkaPublisher(String topics[], int numOfPartitions, int numberOfEventsPerTopic, long sleep,
-                                      boolean publishWithPartition, String bootstrapServers) {
+                                      boolean publishWithPartition, String bootstrapServers, boolean isXML) {
         Properties props = new Properties();
         if (null == bootstrapServers) {
             props.put("bootstrap.servers", "localhost:9092");
@@ -190,13 +190,19 @@ public class KafkaTestUtil {
         Producer<String, String> producer = new KafkaProducer<String, String>(props);
         for (String topic : topics) {
             for (int i = 0; i < numberOfEventsPerTopic; i++) {
-                String msg = "<events>"
-                                + "<event>"
-                                    + "<symbol>" + topic + "</symbol>"
-                                    + "<price>12.5</price>"
-                                    + "<volume>" + i + "</volume>"
-                                + "</event>"
+                String msg;
+                if (isXML) {
+                    msg = "<events>"
+                            + "<event>"
+                            + "<symbol>" + topic + "</symbol>"
+                            + "<price>12.5</price>"
+                            + "<volume>" + i + "</volume>"
+                            + "</event>"
                             + "</events>";
+                } else {
+                    msg = topic + ",12.5," + i;
+                }
+
                 try {
                     Thread.sleep(sleep);
                 } catch (InterruptedException e) {

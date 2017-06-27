@@ -73,12 +73,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.wso2.siddhi</groupId>
-            <artifactId>siddhi-extension-xml-input-mapper</artifactId>
+            <groupId>org.wso2.extension.siddhi.map.xml</groupId>
+            <artifactId>siddhi-map-xml</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.siddhi</groupId>
-            <artifactId>siddhi-extension-xml-output-mapper</artifactId>
+            <groupId>org.wso2.extension.siddhi.map.text</groupId>
+            <artifactId>siddhi-map-text</artifactId>
         </dependency>
     </dependencies>
 
@@ -101,7 +101,6 @@
                         <Include-Resource>
                             META-INF=target/classes/META-INF
                         </Include-Resource>
-                        <DynamicImport-Package>*</DynamicImport-Package>
                     </instructions>
                 </configuration>
             </plugin>
