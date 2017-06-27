@@ -361,7 +361,6 @@ public class KafkaSinkTestCase {
         receivedValueList = new ArrayList<>(3);
         try {
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-output-mapper", XMLSinkMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream FooStream (symbol string, price float, volume long); " +
@@ -437,7 +436,6 @@ public class KafkaSinkTestCase {
             KafkaTestUtil.createTopic(topics, 1);
             Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-output-mapper", XMLSinkMapper.class);
             SiddhiAppRuntime executionPlanRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream FooStream (symbol string, price float, volume long); " +
@@ -508,7 +506,6 @@ public class KafkaSinkTestCase {
             KafkaTestUtil.createTopic(topics, 2);
             Thread.sleep(10000);
             SiddhiManager siddhiManager = new SiddhiManager();
-//            siddhiManager.setExtension("xml-output-mapper", XMLSinkMapper.class);
             SiddhiAppRuntime executionPlanRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream FooStream (symbol string, price float, volume long); " +
