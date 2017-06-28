@@ -33,8 +33,6 @@ import org.wso2.siddhi.core.stream.output.StreamCallback;
 import org.wso2.siddhi.core.util.EventPrinter;
 import org.wso2.siddhi.core.util.persistence.InMemoryPersistenceStore;
 import org.wso2.siddhi.core.util.persistence.PersistenceStore;
-import org.wso2.siddhi.extension.input.mapper.xml.XmlSourceMapper;
-import org.wso2.siddhi.extension.output.mapper.xml.XMLSinkMapper;
 import org.wso2.siddhi.query.api.SiddhiApp;
 import org.wso2.siddhi.query.api.annotation.Annotation;
 import org.wso2.siddhi.query.api.definition.Attribute;
@@ -86,7 +84,6 @@ public class KafkaSourceHATestCase {
             String topics[] = new String[]{"kafka_topic3"};
             KafkaTestUtil.createTopic(topics, 2);
             SiddhiManager siddhiManager = new SiddhiManager();
-            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -94,7 +91,7 @@ public class KafkaSourceHATestCase {
                             "@source(type='kafka', topic.list='kafka_topic3', group.id='test1', threading" +
                             ".option='partition.wise', " +
                             "bootstrap.servers='localhost:9092', partition.no.list='0,1', " +
-                            "@map(type='xml'))" +
+                            "@map(type='text'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
             siddhiAppRuntime.addCallback("BarStream", new StreamCallback() {
@@ -112,7 +109,7 @@ public class KafkaSourceHATestCase {
             Future eventSender = executorService.submit(new Runnable() {
                 @Override
                 public void run() {
-                    KafkaTestUtil.kafkaPublisher(topics, 2, 4, false, null);
+                    KafkaTestUtil.kafkaPublisher(topics, 2, 4, false, null, false);
                 }
             });
             while (!eventSender.isDone()) {
@@ -130,7 +127,7 @@ public class KafkaSourceHATestCase {
             eventSender = executorService.submit(new Runnable() {
                 @Override
                 public void run() {
-                    KafkaTestUtil.kafkaPublisher(topics, 2, 4, false, null);
+                    KafkaTestUtil.kafkaPublisher(topics, 2, 4, false, null, false);
                 }
             });
             while (!eventSender.isDone()) {
@@ -160,14 +157,12 @@ public class KafkaSourceHATestCase {
             PersistenceStore persistenceStore = new InMemoryPersistenceStore();
             SiddhiManager siddhiManager = new SiddhiManager();
             siddhiManager.setPersistenceStore(persistenceStore);
-            siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
-
             String query = "@App:name('TestExecutionPlan') " +
                     "define stream BarStream (count long); " +
                     "@info(name = 'query1') " +
                     "@source(type='kafka', topic.list='kafka_topic4', group.id='test', " +
                     "threading.option='topic.wise', bootstrap.servers='localhost:9092', partition.no.list='0', " +
-                    "@map(type='xml'))" +
+                    "@map(type='text'))" +
                     "Define stream FooStream (symbol string, price float, volume long);" +
                     "from FooStream select count(symbol) as count insert into BarStream;";
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(query);
@@ -187,7 +182,7 @@ public class KafkaSourceHATestCase {
             Future eventSender = executorService.submit(new Runnable() {
                 @Override
                 public void run() {
-                    KafkaTestUtil.kafkaPublisher(topics, 1, 5, 1000, false, null);
+                    KafkaTestUtil.kafkaPublisher(topics, 1, 5, 1000, false, null, false);
                 }
             });
             Thread.sleep(2000);
@@ -254,34 +249,34 @@ public class KafkaSourceHATestCase {
             PersistenceStore persistenceStore = new InMemoryPersistenceStore();
             SiddhiManager siddhiManager1 = new SiddhiManager();
             siddhiManager1.setPersistenceStore(persistenceStore);
-            siddhiManager1.setExtension("inputmapper:text", XmlSourceMapper.class);
+//            siddhiManager1.setExtension("inputmapper:text", XmlSourceMapper.class);
 
             // 2nd node
             PersistenceStore persistenceStore1 = new InMemoryPersistenceStore();
             SiddhiManager siddhiManager2 = new SiddhiManager();
             siddhiManager2.setPersistenceStore(persistenceStore1);
-            siddhiManager2.setExtension("inputmapper:text", XmlSourceMapper.class);
+//            siddhiManager2.setExtension("inputmapper:text", XmlSourceMapper.class);
 
             String query1 = "@App:name('TestExecutionPlan') " +
                     "@sink(type='kafka', topic='kafka_topic6', bootstrap.servers='localhost:9092', partition" +
                     ".no='0', " +
-                    "@map(type='xml'))" +
+                    "@map(type='text'))" +
                     "define stream BarStream (count long); " +
                     "@source(type='kafka', topic.list='kafka_topic5', group.id='test', " +
                     "threading.option='topic.wise', bootstrap.servers='localhost:9092', partition.no.list='0', " +
-                    "@map(type='xml'))" +
+                    "@map(type='text'))" +
                     "Define stream FooStream (symbol string, price float, volume long);" +
                     "@info(name = 'query1') " +
-                    "from FooStream select count(symbol) as count insert into BarStream;";
+                    "from FooStream select count() as count insert into BarStream;";
 
             String query2 = "@App:name('TestExecutionPlan') " +
                     "define stream BarStream (count long); " +
                     "@source(type='kafka', topic.list='kafka_topic6', group.id='test', " +
                     "threading.option='topic.wise', bootstrap.servers='localhost:9092', partition.no.list='0', " +
-                    "@map(type='xml'))" +
-                    "Define stream FooStream (number long);" +
+                    "@map(type='text'))" +
+                    "Define stream FooStream (count long);" +
                     "@info(name = 'query1') " +
-                    "from FooStream select count(number) as count insert into BarStream;";
+                    "from FooStream select count() as count insert into BarStream;";
 
             SiddhiAppRuntime siddhiAppRuntime1 = siddhiManager1.createSiddhiAppRuntime(query1);
             SiddhiAppRuntime siddhiAppRuntime2 = siddhiManager2.createSiddhiAppRuntime(query2);
@@ -309,7 +304,7 @@ public class KafkaSourceHATestCase {
                 @Override
                 public void run() {
                     KafkaTestUtil.kafkaPublisher(
-                            new String[]{"kafka_topic5"}, 1, 50, 1000, false, null);
+                            new String[]{"kafka_topic5"}, 1, 50, 1000, false, null, false);
                 }
             });
 
@@ -422,8 +417,8 @@ public class KafkaSourceHATestCase {
                 query.insertInto("BarStream");
 
                 SiddhiManager siddhiManager = new SiddhiManager();
-                siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
-                siddhiManager.setExtension("sink.mapper:text", XMLSinkMapper.class);
+//                siddhiManager.setExtension("xml-input-mapper", XmlSourceMapper.class);
+//                siddhiManager.setExtension("sink.mapper:text", XMLSinkMapper.class);
 
                 SiddhiApp siddhiApp = new SiddhiApp("ep1");
                 siddhiApp.defineStream(inputDefinition);

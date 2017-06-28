@@ -40,7 +40,7 @@ import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
- * his class implements a Kafka sink to publish Siddhi events to a kafka cluster.
+ * This class implements a Kafka sink to publish Siddhi events to a kafka cluster.
  */
 @Extension(
         name = "kafka",

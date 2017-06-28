@@ -23,7 +23,7 @@
     <test name="siddhi-execution-kafka-unit-tests" preserve-order="true">
         <classes>
             <class name="org.wso2.extension.siddhi.io.kafka.source.KafkaSourceTestCase" />
-            <!--<class name="org.wso2.extension.siddhi.io.kafka.source.KafkaSourceHATestCase" />-->
+            <class name="org.wso2.extension.siddhi.io.kafka.source.KafkaSourceHATestCase" />
             <class name="org.wso2.extension.siddhi.io.kafka.sink.KafkaSinkTestCase" />
         </classes>
     </test>
