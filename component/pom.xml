@@ -72,14 +72,14 @@
             <artifactId>commons-io</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.wso2.extension.siddhi.map.xml</groupId>
-            <artifactId>siddhi-map-xml</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.extension.siddhi.map.text</groupId>
-            <artifactId>siddhi-map-text</artifactId>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.wso2.extension.siddhi.map.xml</groupId>-->
+            <!--<artifactId>siddhi-map-xml</artifactId>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>org.wso2.extension.siddhi.map.text</groupId>-->
+            <!--<artifactId>siddhi-map-text</artifactId>-->
+        <!--</dependency>-->
     </dependencies>
 
     <build>

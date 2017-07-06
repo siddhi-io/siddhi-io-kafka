@@ -54,7 +54,7 @@
         <commons-io.version>2.5</commons-io.version>
         <kafka.client.version>0.9.0.0</kafka.client.version>
         <xml.mapper.version>4.0.0-M6</xml.mapper.version>
-        <text.mapper.version>1.0.0-SNAPSHOT</text.mapper.version>
+        <!--<text.mapper.version>1.0.0-SNAPSHOT</text.mapper.version>-->
 
         <mavan.findbugsplugin.exclude.file>findbugs-exclude.xml</mavan.findbugsplugin.exclude.file>
         <mavan.checkstyle.suppression.file>checkstyle-suppressions.xml</mavan.checkstyle.suppression.file>
@@ -143,18 +143,18 @@
                 <version>${commons-io.version}</version>
                 <scope>test</scope>
             </dependency>
-            <dependency>
-                <groupId>org.wso2.extension.siddhi.map.xml</groupId>
-                <artifactId>siddhi-map-xml</artifactId>
-                <version>${xml.mapper.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.extension.siddhi.map.text</groupId>
-                <artifactId>siddhi-map-text</artifactId>
-                <version>${text.mapper.version}</version>
-                <scope>test</scope>
-            </dependency>
+            <!--<dependency>-->
+                <!--<groupId>org.wso2.extension.siddhi.map.xml</groupId>-->
+                <!--<artifactId>siddhi-map-xml</artifactId>-->
+                <!--<version>${xml.mapper.version}</version>-->
+                <!--<scope>test</scope>-->
+            <!--</dependency>-->
+            <!--<dependency>-->
+                <!--<groupId>org.wso2.extension.siddhi.map.text</groupId>-->
+                <!--<artifactId>siddhi-map-text</artifactId>-->
+                <!--<version>${text.mapper.version}</version>-->
+                <!--<scope>test</scope>-->
+            <!--</dependency>-->
         </dependencies>
     </dependencyManagement>
 
