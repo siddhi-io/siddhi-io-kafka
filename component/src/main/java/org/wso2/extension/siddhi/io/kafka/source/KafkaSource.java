@@ -141,38 +141,9 @@ public class KafkaSource extends Source {
     private String topics[];
     private String optionalConfigs;
 
-    private static Properties createConsumerConfig(String zkServerList, String groupId, String optionalConfigs) {
-        Properties props = new Properties();
-        props.put(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS, zkServerList);
-        props.put(ADAPTOR_SUBSCRIBER_GROUP_ID, groupId);
-
-        //If it stops heart-beating for a period of time longer than session.timeout.ms then it will be considered dead
-        // and its partitions will be assigned to another process
-        props.put("session.timeout.ms", "30000");
-        props.put("enable.auto.commit", "false");
-        props.put("auto.offset.reset", "earliest");
-        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-
-        if (optionalConfigs != null) {
-            String[] optionalProperties = optionalConfigs.split(HEADER_SEPARATOR);
-            if (optionalProperties.length > 0) {
-                for (String header : optionalProperties) {
-                    try {
-                        String[] configPropertyWithValue = header.split(ENTRY_SEPARATOR, 2);
-                        props.put(configPropertyWithValue[0], configPropertyWithValue[1]);
-                    } catch (Exception e) {
-                        LOG.warn("Optional property '" + header + "' is not defined in the correct format.", e);
-                    }
-                }
-            }
-        }
-        return props;
-    }
-
     @Override
-    public void init(SourceEventListener sourceEventListener, OptionHolder optionHolder, ConfigReader configReader,
-                     SiddhiAppContext siddhiAppContext) {
+    public void init(SourceEventListener sourceEventListener, OptionHolder optionHolder, String[] strings,
+                               ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
         this.sourceEventListener = sourceEventListener;
         this.optionHolder = optionHolder;
         this.executorService = siddhiAppContext.getScheduledExecutorService();
@@ -194,7 +165,12 @@ public class KafkaSource extends Source {
     }
 
     @Override
-    public void connect() throws ConnectionUnavailableException {
+    public Class[] getOutputEventClasses() {
+        return new Class[]{String.class};
+    }
+
+    @Override
+    public void connect(ConnectionCallback connectionCallback) throws ConnectionUnavailableException {
         consumerKafkaGroup = new ConsumerKafkaGroup(topics, partitions,
                                                     KafkaSource.createConsumerConfig(bootstrapServers, groupID,
                                                                                      optionalConfigs),
@@ -332,5 +308,34 @@ public class KafkaSource extends Source {
                 }
             }
         }
+    }
+
+    private static Properties createConsumerConfig(String zkServerList, String groupId, String optionalConfigs) {
+        Properties props = new Properties();
+        props.put(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS, zkServerList);
+        props.put(ADAPTOR_SUBSCRIBER_GROUP_ID, groupId);
+
+        //If it stops heart-beating for a period of time longer than session.timeout.ms then it will be considered dead
+        // and its partitions will be assigned to another process
+        props.put("session.timeout.ms", "30000");
+        props.put("enable.auto.commit", "false");
+        props.put("auto.offset.reset", "earliest");
+        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+
+        if (optionalConfigs != null) {
+            String[] optionalProperties = optionalConfigs.split(HEADER_SEPARATOR);
+            if (optionalProperties.length > 0) {
+                for (String header : optionalProperties) {
+                    try {
+                        String[] configPropertyWithValue = header.split(ENTRY_SEPARATOR, 2);
+                        props.put(configPropertyWithValue[0], configPropertyWithValue[1]);
+                    } catch (Exception e) {
+                        LOG.warn("Optional property '" + header + "' is not defined in the correct format.", e);
+                    }
+                }
+            }
+        }
+        return props;
     }
 }

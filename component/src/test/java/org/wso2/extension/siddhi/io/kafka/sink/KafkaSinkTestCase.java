@@ -66,7 +66,7 @@ public class KafkaSinkTestCase {
     }
 
     @Test
-    public void testPublisherWithTopicWithoutPartitionKafkaTransport_56() throws InterruptedException {
+    public void testPublisherWithTopicWithoutPartitionKafkaTransport() throws InterruptedException {
         LOG.info("Creating test for publishing events for static topic without a partition");
         String topics[] = new String[]{"single_topic"};
         KafkaTestUtil.createTopic(topics, 1);
@@ -134,8 +134,8 @@ public class KafkaSinkTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testPublisherWithTopicWithoutPartitionKafkaTransport_56")
-    public void testPublisherWithTopicWithPartitionKafkaTransport_56() throws InterruptedException {
+    @Test (dependsOnMethods = "testPublisherWithTopicWithoutPartitionKafkaTransport")
+    public void testPublisherWithTopicWithPartitionKafkaTransport() throws InterruptedException {
         LOG.info("Creating test for publishing events for static topic with a partition");
         String topics[] = new String[]{"topic_with_two_partitions_sub0"};
         KafkaTestUtil.createTopic(topics, 2);
@@ -205,8 +205,8 @@ public class KafkaSinkTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testPublisherWithTopicWithPartitionKafkaTransport_56")
-    public void testPublisherWithInvalidTopicKafkaTransport_58() throws InterruptedException {
+    @Test (dependsOnMethods = "testPublisherWithTopicWithPartitionKafkaTransport")
+    public void testPublisherWithInvalidTopicKafkaTransport() throws InterruptedException {
         LOG.info("Creating test for publishing events for invalid topic without a partition");
         String topics[] = new String[]{"invalid_topic_without_partition2"};
         receivedEventNameList = new ArrayList<>(3);
@@ -278,8 +278,8 @@ public class KafkaSinkTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testPublisherWithInvalidTopicKafkaTransport_58")
-    public void testPublisherWithInvalidTopicWithPartitionKafkaTransport_58() throws InterruptedException {
+    @Test (dependsOnMethods = "testPublisherWithInvalidTopicKafkaTransport")
+    public void testPublisherWithInvalidTopicWithPartitionKafkaTransport() throws InterruptedException {
         LOG.info("Creating test for publishing events for invalid topic with a partition");
         String topics[] = new String[]{"invalid_topic_with_partition"};
         receivedEventNameList = new ArrayList<>(3);
@@ -352,8 +352,8 @@ public class KafkaSinkTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testPublisherWithInvalidTopicWithPartitionKafkaTransport_58")
-    public void testPublisherWithInvalidTopicWithPartitionOtherThan0KafkaTransport_58() throws InterruptedException {
+    @Test (dependsOnMethods = "testPublisherWithInvalidTopicWithPartitionKafkaTransport")
+    public void testPublisherWithInvalidTopicWithPartitionOtherThan0KafkaTransport() throws InterruptedException {
         LOG.info("Creating test for publishing events for invalid topic with a partition other than 0 but the source "
                          + "will be getting events from the default partition");
         String topics[] = new String[]{"invalid_topic_with_partition_2"};
@@ -426,7 +426,7 @@ public class KafkaSinkTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testPublisherWithInvalidTopicWithPartitionOtherThan0KafkaTransport_58")
+    @Test (dependsOnMethods = "testPublisherWithInvalidTopicWithPartitionOtherThan0KafkaTransport")
     public void testPublisherWithKafkaTransportWithDynamicTopic() throws InterruptedException {
         LOG.info("Creating test for publishing events for dynamic topic without partition");
         try {

@@ -67,7 +67,7 @@ public class KafkaSourceTestCase {
     }
 
     @Test
-    public void testKafkaSingleTopicSource_53_103() throws InterruptedException {
+    public void testKafkaSingleTopicSource() throws InterruptedException {
         try {
             log.info("Creating test for single topic");
             String topics[] = new String[]{"single_topic"};
@@ -120,8 +120,8 @@ public class KafkaSourceTestCase {
     }
 
     @Test(expectedExceptions = SiddhiAppValidationException.class,
-          dependsOnMethods = "testKafkaSingleTopicSource_53_103")
-    public void testKafkaWithoutTopicSource_54() {
+          dependsOnMethods = "testKafkaSingleTopicSource")
+    public void testKafkaWithoutTopicSource() {
         try {
             log.info("-------------------------------------------------------------------------------------------");
             log.info("Creating test for without topic");
@@ -143,8 +143,8 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaWithoutTopicSource_54")
-    public void testKafkaMultipleTopicSource_85_98() throws InterruptedException {
+    @Test (dependsOnMethods = "testKafkaWithoutTopicSource")
+    public void testKafkaMultipleTopicSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
             log.info("Creating test for multiple topic");
@@ -203,8 +203,8 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaMultipleTopicSource_85_98")
-    public void testKafkaSingleTopicWithSpecificSubscribeSource_92() throws InterruptedException {
+    @Test (dependsOnMethods = "testKafkaMultipleTopicSource")
+    public void testKafkaSingleTopicWithSpecificSubscribeSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
             log.info("Creating test for single topic with one partition which subscribes for the partition "
@@ -262,8 +262,8 @@ public class KafkaSourceTestCase {
     }
 
     @Test(expectedExceptions = SiddhiAppValidationException.class,
-          dependsOnMethods = "testKafkaSingleTopicWithSpecificSubscribeSource_92")
-    public void testKafkaSpecificSubscribeForUnavailablePartitionSource_105_120() throws InterruptedException {
+          dependsOnMethods = "testKafkaSingleTopicWithSpecificSubscribeSource")
+    public void testKafkaSpecificSubscribeForUnavailablePartitionSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
             log.info("Creating test for single topic with partitions which subscribes for an unavailable partition.");
@@ -293,8 +293,8 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaSpecificSubscribeForUnavailablePartitionSource_105_120")
-    public void testKafkaMultipleTopic_MultiplePartition_OnePartitionSubscribe_Source_100() throws
+    @Test (dependsOnMethods = "testKafkaSpecificSubscribeForUnavailablePartitionSource")
+    public void testKafkaMultipleTopic_MultiplePartition_OnePartitionSubscribe_Source() throws
                                                                                             InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
@@ -354,8 +354,8 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaMultipleTopic_MultiplePartition_OnePartitionSubscribe_Source_100")
-    public void testKafkaMultipleTopic_MultiplePartition_AllPartitionSubscribe_Source_101() throws
+    @Test (dependsOnMethods = "testKafkaMultipleTopic_MultiplePartition_OnePartitionSubscribe_Source")
+    public void testKafkaMultipleTopic_MultiplePartition_AllPartitionSubscribe_Source() throws
                                                                                             InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
@@ -420,8 +420,8 @@ public class KafkaSourceTestCase {
     }
 
     @Test(expectedExceptions = SiddhiAppValidationException.class,
-          dependsOnMethods = "testKafkaMultipleTopic_MultiplePartition_AllPartitionSubscribe_Source_101")
-    public void testKafkaWithoutBootstrapServerSource_108() throws InterruptedException {
+          dependsOnMethods = "testKafkaMultipleTopic_MultiplePartition_AllPartitionSubscribe_Source")
+    public void testKafkaWithoutBootstrapServerSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
             log.info("Creating test for without any bootstrap servers defined.");
@@ -449,8 +449,8 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaWithoutBootstrapServerSource_108")
-    public void testKafkaMultipleTopicWithThreadingPerTopicSource_111() throws InterruptedException {
+    @Test (dependsOnMethods = "testKafkaWithoutBootstrapServerSource")
+    public void testKafkaMultipleTopicWithThreadingPerTopicSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
             log.info("Creating test for multiple topic with thread per topic");
@@ -512,8 +512,8 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaMultipleTopicWithThreadingPerTopicSource_111")
-    public void testKafkaMultipleTopicWithThreadingPerPartitionSource_112() throws InterruptedException {
+    @Test (dependsOnMethods = "testKafkaMultipleTopicWithThreadingPerTopicSource")
+    public void testKafkaMultipleTopicWithThreadingPerPartitionSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
             log.info("Creating test for multiple topic with thread per partition");
@@ -576,8 +576,8 @@ public class KafkaSourceTestCase {
     }
 
     @Test(expectedExceptions = SiddhiAppValidationException.class,
-          dependsOnMethods = "testKafkaMultipleTopicWithThreadingPerPartitionSource_112")
-    public void testKafkaWithoutThreadingOptionSource_113() throws InterruptedException {
+          dependsOnMethods = "testKafkaMultipleTopicWithThreadingPerPartitionSource")
+    public void testKafkaWithoutThreadingOptionSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
             log.info("Creating test for without any threading option defined.");
@@ -606,8 +606,8 @@ public class KafkaSourceTestCase {
     }
 
     @Test(expectedExceptions = SiddhiAppValidationException.class,
-          dependsOnMethods = "testKafkaWithoutThreadingOptionSource_113")
-    public void testKafkaSingleTopicWithoutGroupIdSource_114_129_143() throws InterruptedException {
+          dependsOnMethods = "testKafkaWithoutThreadingOptionSource")
+    public void testKafkaSingleTopicWithoutGroupIdSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
             log.info("Creating test for single topic without group ID");
@@ -638,8 +638,8 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaSingleTopicWithoutGroupIdSource_114_129_143")
-    public void testKafkaSingleTopicDifferentGroupIdsSource_133() throws InterruptedException {
+    @Test (dependsOnMethods = "testKafkaSingleTopicWithoutGroupIdSource")
+    public void testKafkaSingleTopicDifferentGroupIdsSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
             log.info("Creating test for single topic subscribed by multiple sources with different group ids");
@@ -717,8 +717,8 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaSingleTopicDifferentGroupIdsSource_133")
-    public void testKafkaSingleTopicSameGroupIdsSource_140() throws InterruptedException {
+    @Test (dependsOnMethods = "testKafkaSingleTopicDifferentGroupIdsSource")
+    public void testKafkaSingleTopicSameGroupIdsSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
             log.info("Creating test for single topic subscribed by multiple sources with same group ids");
@@ -795,8 +795,8 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaSingleTopicSameGroupIdsSource_140")
-    public void testKafkaNonExistingTopicSource_121_123() throws InterruptedException {
+    @Test (dependsOnMethods = "testKafkaSingleTopicSameGroupIdsSource")
+    public void testKafkaNonExistingTopicSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
             log.info("Creating test for non-existing topic. This will create a topic with default partition");
@@ -847,7 +847,7 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaNonExistingTopicSource_121_123")
+    @Test (dependsOnMethods = "testKafkaNonExistingTopicSource")
     public void testKafkaMultipleTopicPartitionPartitionWiseSubscription() throws InterruptedException {
         log.info("-------------------------------------------------------------------------------------------");
         log.info("Creating test for multiple topics and partitions and thread partition wise");

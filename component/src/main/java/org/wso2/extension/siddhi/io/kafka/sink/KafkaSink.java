@@ -186,6 +186,11 @@ public class KafkaSink extends Sink {
     }
 
     @Override
+    public Class[] getSupportedInputEventClasses() {
+        return new Class[]{String.class};
+    }
+
+    @Override
     public String[] getSupportedDynamicOptions() {
         return new String[]{KAFKA_PUBLISH_TOPIC, KAFKA_PARTITION_NO};
     }
