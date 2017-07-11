@@ -47,21 +47,20 @@ import java.util.concurrent.ScheduledExecutorService;
 @Extension(
         name = "kafka",
         namespace = "source",
-        description = "The Kafka Sink publishes records to a topic with a partition for a Kafka cluster which are in "
-                + "format such as `text`, `XML` and `JSON`.\n"
-                + "The Kafka Sink will create the default partition for a given topic, if the topic is not already "
+        description = "The Kafka Source receives records from a topic with a partition for a Kafka cluster which are "
+                + "in format such as `text`, `XML` and `JSON`.\n"
+                + "The Kafka Source will create the default partition for a given topic, if the topic is not already "
                 + "been created in the Kafka cluster.",
         parameters = {
+                @Parameter(name = "bootstrap.servers",
+                           description = "This should contain the kafka server list which the kafka source should be "
+                                   + "listening to. This should be given in comma separated values. "
+                                   + "eg: 'localhost:9092,localhost:9093' ",
+                           type = {DataType.STRING}),
                 @Parameter(name = "topic.list",
                            description = "The topic list which the source would be listening to. This should be given "
                                    + "in comma separated values. eg: 'topic_one,topic_two' ",
                            type = {DataType.STRING}),
-                @Parameter(name = "partition.no.list",
-                           description = "The partition number list for the given topic. This should be given in "
-                                   + "comma separated values. eg: '0,1,1' ",
-                           type = {DataType.STRING},
-                           optional = true,
-                           defaultValue = "0"),
                 @Parameter(name = "group.id",
                            description = "This is used to identify the Kafka source group. And sources with same "
                                    + "topic and partition which are in the same group wont receive the same event",
@@ -70,11 +69,19 @@ import java.util.concurrent.ScheduledExecutorService;
                            description = "Each source can be run in either single thread or in multi threads. The "
                                    + "threading options are `single.thread`, `topic.wise` and `partition.wise` ",
                            type = {DataType.STRING}),
-                @Parameter(name = "bootstrap.servers",
-                           description = "This should contain the kafka server list which the kafka source should be "
-                                   + "listening to. This should be given in comma separated values. "
-                                   + "eg: 'localhost:9092,localhost:9093' ",
-                           type = {DataType.STRING})
+                @Parameter(name = "partition.no.list",
+                           description = "The partition number list for the given topic. This should be given in "
+                                   + "comma separated values. eg: '0,1,2' ",
+                           type = {DataType.STRING},
+                           optional = true,
+                           defaultValue = "0"),
+                @Parameter(name = "optional.configuration",
+                           description = "This may contain all the other possible configurations which the consumer "
+                                   + "should be created with."
+                                   + "eg: producer.type:async,batch.size:200",
+                           type = {DataType.STRING},
+                           optional = true,
+                           defaultValue = "null")
         },
         examples = {
                 @Example(
@@ -323,7 +330,7 @@ public class KafkaSource extends Source {
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 
-        if (optionalConfigs != null) {
+        if (optionalConfigs != null && optionalConfigs.isEmpty()) {
             String[] optionalProperties = optionalConfigs.split(HEADER_SEPARATOR);
             if (optionalProperties.length > 0) {
                 for (String header : optionalProperties) {

@@ -51,6 +51,11 @@ import java.util.concurrent.ScheduledExecutorService;
                 + "been created in the Kafka cluster. The publishing topic and partition can be a dynamic value taken"
                 + " from the Siddhi event",
         parameters = {
+                @Parameter(name = "bootstrap.servers",
+                           description = "This should contain the kafka server list which the kafka sink should be "
+                                   + "publishing to. This should be given in comma separated values. "
+                                   + "eg: 'localhost:9092,localhost:9093' ",
+                           type = {DataType.STRING}),
                 @Parameter(name = "topic",
                            description = "The topic list which the sink  should publish to. Only one topic should be "
                                    + "given",
@@ -62,11 +67,13 @@ import java.util.concurrent.ScheduledExecutorService;
                            type = {DataType.INT},
                            optional = true,
                            defaultValue = "0"),
-               @Parameter(name = "bootstrap.servers",
-                           description = "This should contain the kafka server list which the kafka sink should be "
-                                   + "publishing to. This should be given in comma separated values. "
-                                   + "eg: 'localhost:9092,localhost:9093' ",
-                           type = {DataType.STRING})
+                @Parameter(name = "optional.configuration",
+                           description = "This may contain all the other possible configurations which the consumer "
+                                   + "should be created with."
+                                   + "eg: producer.type:async,batch.size:200",
+                           optional = true,
+                           type = {DataType.STRING},
+                           defaultValue = "null")
         },
         examples = {
                 @Example(
@@ -139,7 +146,7 @@ public class KafkaSink extends Sink {
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
-        if (optionalConfigs != null) {
+        if (optionalConfigs != null && optionalConfigs.isEmpty()) {
             String[] optionalProperties = optionalConfigs.split(HEADER_SEPARATOR);
             if (optionalProperties.length > 0) {
                 for (String header : optionalProperties) {

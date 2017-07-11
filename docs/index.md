@@ -42,3 +42,7 @@ The publishing topic and partition can be a dynamic value taken from the Siddhi 
 **We welcome your feedback and contribution.**
 
 Siddhi SP Team
+
+## API Docs:
+
+1. <a href="./api/4.0.3-SNAPSHOT.md">4.0.3-SNAPSHOT</a>

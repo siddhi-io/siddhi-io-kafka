@@ -64,7 +64,7 @@ public class KafkaConsumerThread implements Runnable {
                 }
                 for (String partition1 : partitions) {
                     TopicPartition partition = new TopicPartition(topic, Integer.parseInt(partition1));
-                    LOG.error("Adding partition " + partition1 + " for topic: " + topic);
+                    LOG.info("Adding partition " + partition1 + " for topic: " + topic);
                     partitionsList.add(partition);
                 }
                 LOG.info("Adding partitions " + Arrays.toString(partitions) + " for topic: " + topic);
