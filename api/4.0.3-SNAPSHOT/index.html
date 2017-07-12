@@ -219,8 +219,6 @@
     
     <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="toc">
     
-      
-    
     
       <label class="md-nav__link md-nav__link--active" for="toc">
         4.0.3-SNAPSHOT
@@ -234,13 +232,19 @@
 <nav class="md-nav md-nav--secondary">
   
   
-    
-  
   
     <label class="md-nav__title" for="toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#sink" title="Sink" class="md-nav__link">
+    Sink
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#kafka-sink" title="kafka (Sink)" class="md-nav__link">
     kafka (Sink)
   </a>
@@ -287,6 +291,84 @@
   <a href="#example-2" title="Example 2" class="md-nav__link">
     Example 2
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#source" title="Source" class="md-nav__link">
+    Source
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kafka-source" title="kafka (Source)" class="md-nav__link">
+    kafka (Source)
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#syntax_1" title="Syntax" class="md-nav__link">
+    Syntax
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#query-parameters_1" title="Query Parameters" class="md-nav__link">
+    Query Parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples_1" title="Examples" class="md-nav__link">
+    Examples
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1_1" title="Example 1" class="md-nav__link">
+    Example 1
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2_1" title="Example 2" class="md-nav__link">
+    Example 2
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -328,13 +410,19 @@
 <nav class="md-nav md-nav--secondary">
   
   
-    
-  
   
     <label class="md-nav__title" for="toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#sink" title="Sink" class="md-nav__link">
+    Sink
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#kafka-sink" title="kafka (Sink)" class="md-nav__link">
     kafka (Sink)
   </a>
@@ -393,6 +481,84 @@
     </nav>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#source" title="Source" class="md-nav__link">
+    Source
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kafka-source" title="kafka (Source)" class="md-nav__link">
+    kafka (Source)
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#syntax_1" title="Syntax" class="md-nav__link">
+    Syntax
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#query-parameters_1" title="Query Parameters" class="md-nav__link">
+    Query Parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples_1" title="Examples" class="md-nav__link">
+    Examples
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1_1" title="Example 1" class="md-nav__link">
+    Example 1
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2_1" title="Example 2" class="md-nav__link">
+    Example 2
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
       
       
@@ -409,15 +575,17 @@
               
                 
                 
-                <h1 id="sink">Sink</h1>
-<h2 id="kafka-sink">kafka <em>(Sink)</em></h2>
+                  <h1>4.0.3-SNAPSHOT</h1>
+                
+                <h2 id="sink">Sink</h2>
+<h3 id="kafka-sink">kafka <em>(Sink)</em></h3>
 <p style="word-wrap: break-word">The Kafka Sink publishes records to a topic with a partition for a Kafka cluster which are in format such as <code>text</code>, <code>XML</code> and <code>JSON</code>.<br>The Kafka Sink will create the default partition for a given topic, if the topic is not already been created in the Kafka cluster. The publishing topic and partition can be a dynamic value taken from the Siddhi event</p>
 
-<h3 id="syntax">Syntax</h3>
+<h4 id="syntax">Syntax</h4>
 <pre><code>@sink(type=&quot;kafka&quot;, bootstrap.servers=&quot;&lt;STRING&gt;&quot;, topic=&quot;&lt;STRING&gt;&quot;, partition.no=&quot;&lt;INT&gt;&quot;, optional.configuration=&quot;&lt;STRING&gt;&quot;, @map(...)))
 </code></pre>
 
-<h4 id="query-parameters">Query Parameters</h4>
+<h5 id="query-parameters">Query Parameters</h5>
 <table>
     <tr>
         <th>Name</th>
@@ -461,8 +629,8 @@
     </tr>
 </table>
 
-<h3 id="examples">Examples</h3>
-<h4 id="example-1">Example 1</h4>
+<h4 id="examples">Examples</h4>
+<h5 id="example-1">Example 1</h5>
 <pre><code>@App:name('TestExecutionPlan') 
 define stream FooStream (symbol string, price float, volume long); 
 @info(name = 'query1') 
@@ -473,7 +641,7 @@ from FooStream select symbol, price, volume insert into BarStream;
 
 <p style="word-wrap: break-word">The following query will publish to 'topic_with_partitions' and to its 0th partition</p>
 
-<h4 id="example-2">Example 2</h4>
+<h5 id="example-2">Example 2</h5>
 <pre><code>@App:name('TestExecutionPlan') 
 define stream FooStream (symbol string, price float, volume long); 
 @info(name = 'query1') 
@@ -484,15 +652,15 @@ from FooStream select symbol, price, volume insert into BarStream;
 
 <p style="word-wrap: break-word">The following query will publish dynamic topic and partitions which will be taken from the siddhi event. partition number value will be taken from the 'volume' attribute and the topic value will be taken from the 'symbol' attribute.</p>
 
-<h1 id="source">Source</h1>
-<h2 id="kafka-source">kafka <em>(Source)</em></h2>
+<h2 id="source">Source</h2>
+<h3 id="kafka-source">kafka <em>(Source)</em></h3>
 <p style="word-wrap: break-word">The Kafka Source receives records from a topic with a partition for a Kafka cluster which are in format such as <code>text</code>, <code>XML</code> and <code>JSON</code>.<br>The Kafka Source will create the default partition for a given topic, if the topic is not already been created in the Kafka cluster.</p>
 
-<h3 id="syntax_1">Syntax</h3>
+<h4 id="syntax_1">Syntax</h4>
 <pre><code>@source(type=&quot;kafka&quot;, bootstrap.servers=&quot;&lt;STRING&gt;&quot;, topic.list=&quot;&lt;STRING&gt;&quot;, group.id=&quot;&lt;STRING&gt;&quot;, threading.option=&quot;&lt;STRING&gt;&quot;, partition.no.list=&quot;&lt;STRING&gt;&quot;, optional.configuration=&quot;&lt;STRING&gt;&quot;, @map(...)))
 </code></pre>
 
-<h4 id="query-parameters_1">Query Parameters</h4>
+<h5 id="query-parameters_1">Query Parameters</h5>
 <table>
     <tr>
         <th>Name</th>
@@ -536,7 +704,7 @@ from FooStream select symbol, price, volume insert into BarStream;
     </tr>
     <tr>
         <td valign="top">partition.no.list</td>
-        <td valign="top"><p style="word-wrap: break-word">The partition number list for the given topic. This should be given in comma separated values. eg: '0,1,1' </p></td>
+        <td valign="top"><p style="word-wrap: break-word">The partition number list for the given topic. This should be given in comma separated values. eg: '0,1,2' </p></td>
         <td valign="top">0</td>
         <td valign="top">STRING</td>
         <td valign="top">Yes</td>
@@ -552,8 +720,8 @@ from FooStream select symbol, price, volume insert into BarStream;
     </tr>
 </table>
 
-<h3 id="examples_1">Examples</h3>
-<h4 id="example-1_1">Example 1</h4>
+<h4 id="examples_1">Examples</h4>
+<h5 id="example-1_1">Example 1</h5>
 <pre><code>@App:name('TestExecutionPlan') 
 define stream BarStream (symbol string, price float, volume long); 
 @info(name = 'query1') 
@@ -565,7 +733,7 @@ from FooStream select symbol, price, volume insert into BarStream;
 
 <p style="word-wrap: break-word">The following query will listen to 'kafka_topic' and 'kafka_topic2' topics with 0 and 1 partitions. There will be a thread created for each topic and partition combination. The receiving xml events will be mapped to a siddhi event and will be send to the FooStream.</p>
 
-<h4 id="example-2_1">Example 2</h4>
+<h5 id="example-2_1">Example 2</h5>
 <pre><code>@App:name('TestExecutionPlan') 
 define stream BarStream (symbol string, price float, volume long); 
 @info(name = 'query1') 
