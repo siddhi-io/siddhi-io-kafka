@@ -162,11 +162,9 @@ public class KafkaSource extends Source {
         String topicList = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_TOPIC);
         topics = topicList.split(HEADER_SEPARATOR);
         optionalConfigs = optionHolder.validateAndGetStaticValue(ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES, null);
-        checkTopicsAvailableInCluster();
-        checkPartitionsAvailableForTheTopicsInCluster();
-        if (KafkaSource.PARTITION_WISE.equals(threadingOption) && null == partitions) {
-            throw new SiddhiAppValidationException("The threading option is 'partition.wise' but there are no "
-                                                           + "partition numbers defined.");
+        if (PARTITION_WISE.equals(threadingOption) && null == partitions) {
+            throw new SiddhiAppValidationException("Threading option is selected as 'partition.wise' but there are no"
+                                                           + " partitions given");
         }
         siddhiAppContext.getSnapshotService().addSnapshotable("kafka-sink", this);
     }
@@ -178,6 +176,8 @@ public class KafkaSource extends Source {
 
     @Override
     public void connect(ConnectionCallback connectionCallback) throws ConnectionUnavailableException {
+        checkTopicsAvailableInCluster();
+        checkPartitionsAvailableForTheTopicsInCluster();
         consumerKafkaGroup = new ConsumerKafkaGroup(topics, partitions,
                                                     KafkaSource.createConsumerConfig(bootstrapServers, groupID,
                                                                                      optionalConfigs),
@@ -234,45 +234,53 @@ public class KafkaSource extends Source {
         consumerKafkaGroup.restore(topicOffsetMap);
     }
 
-    private void checkTopicsAvailableInCluster() {
+    private void checkTopicsAvailableInCluster() throws ConnectionUnavailableException {
         Properties props = new Properties();
         props.put("bootstrap.servers", bootstrapServers);
         props.put("group.id", "test-consumer-group");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         KafkaConsumer<String, String> consumer = new KafkaConsumer<String, String>(props);
-        Map<String, List<PartitionInfo>> testTopicList = consumer.listTopics();
-        boolean topicsAvailable = true;
-        StringBuilder invalidTopics = new StringBuilder("");
-        for (String topic : topics) {
-            boolean topicAvailable = false;
-            for (Map.Entry<String, List<PartitionInfo>> entry : testTopicList.entrySet()) {
-                if (entry.getKey().equals(topic)) {
-                    topicAvailable = true;
+        try {
+            Map<String, List<PartitionInfo>> testTopicList = consumer.listTopics();
+            boolean topicsAvailable = true;
+            StringBuilder invalidTopics = new StringBuilder("");
+            for (String topic : topics) {
+                boolean topicAvailable = false;
+                for (Map.Entry<String, List<PartitionInfo>> entry : testTopicList.entrySet()) {
+                    if (entry.getKey().equals(topic)) {
+                        topicAvailable = true;
+                    }
+                }
+                if (!topicAvailable) {
+                    topicsAvailable = false;
+                    if ("".equals(invalidTopics.toString())) {
+                        invalidTopics.append(topic);
+                    } else {
+                        invalidTopics.append(',').append(topic);
+                    }
+                    LOG.warn("Topic, " + topic + " is not available.");
                 }
             }
-            if (!topicAvailable) {
-                topicsAvailable = false;
-                if ("".equals(invalidTopics.toString())) {
-                    invalidTopics.append(topic);
-                } else {
-                    invalidTopics.append(',').append(topic);
-                }
-                LOG.warn("Topic, " + topic + " is not available.");
+            if (null != partitions && !(partitions.length == 1 && partitions[0].equals("0")) && !topicsAvailable) {
+                String errorMessage = "Topic/s " + invalidTopics + " aren't available. Topics wont created since there "
+                        + "are partition numbers defined in the query.";
+                LOG.error(errorMessage);
+                throw new ConnectionUnavailableException("Topic/s " + invalidTopics + " aren't available. "
+                                                                 + "Topics wont created since there "
+                                                                 + "are partition numbers defined in the query.");
+            } else if (!topicsAvailable) {
+                LOG.warn("Topic/s " + invalidTopics + " aren't available. "
+                                 + "These Topics will be created with the default partition.");
             }
-        }
-        if (null != partitions && !topicsAvailable) {
-            String errorMessage = "Topic/s " + invalidTopics + " aren't available. Topics wont created since there "
-                    + "are partition numbers defined in the query.";
-            LOG.error(errorMessage);
-            throw new SiddhiAppValidationException(errorMessage);
-        } else if (!topicsAvailable) {
-            LOG.warn("Topic/s " + invalidTopics + " aren't available. These Topics will be created with the default "
-                             + "partition.");
+        } catch (NullPointerException ex) {
+            //calling super class logs the exception and retry
+            throw new ConnectionUnavailableException("Exception when connecting to kafka servers: "
+                                                             + sourceEventListener.getStreamDefinition().getId(), ex);
         }
     }
 
-    private void checkPartitionsAvailableForTheTopicsInCluster() {
+    private void checkPartitionsAvailableForTheTopicsInCluster() throws ConnectionUnavailableException {
         //checking whether the defined partitions are available in the defined topic
         Properties configProperties = new Properties();
         configProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
@@ -280,16 +288,12 @@ public class KafkaSource extends Source {
                              "org.apache.kafka.common.serialization.ByteArraySerializer");
         configProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
                              "org.apache.kafka.common.serialization.StringSerializer");
-        if (PARTITION_WISE.equals(threadingOption) && null == partitions) {
-            throw new SiddhiAppValidationException("Threading option is selected as 'partition.wise' but there are no"
-                                                           + " partitions given");
-        }
         org.apache.kafka.clients.producer.Producer producer = new KafkaProducer(configProperties);
         boolean partitionsAvailable = true;
         StringBuilder invalidPartitions = new StringBuilder("");
         for (String topic : topics) {
             List<PartitionInfo> partitionInfos = producer.partitionsFor(topic);
-            if (null != partitions) {
+            if (null != partitions && !(partitions.length == 1 && partitions[0].equals("0"))) {
                 for (String partition : partitions) {
                     boolean partitonAvailable = false;
                     for (PartitionInfo partitionInfo : partitionInfos) {
@@ -309,7 +313,7 @@ public class KafkaSource extends Source {
                     }
                 }
                 if (!partitionsAvailable) {
-                    throw new SiddhiAppValidationException(
+                    throw new ConnectionUnavailableException(
                             "Partition number/s " + invalidPartitions + " aren't available for "
                                     + "the topic: " + topic);
                 }
