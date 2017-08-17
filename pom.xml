@@ -54,7 +54,7 @@
         <commons-io.version>2.5</commons-io.version>
         <kafka.client.version>0.9.0.0</kafka.client.version>
         <xml.mapper.version>4.0.0-M7</xml.mapper.version>
-        <!--<text.mapper.version>1.0.0-SNAPSHOT</text.mapper.version>-->
+        <jacoco.version>0.7.9</jacoco.version>
 
         <mavan.findbugsplugin.exclude.file>findbugs-exclude.xml</mavan.findbugsplugin.exclude.file>
         <mavan.checkstyle.suppression.file>checkstyle-suppressions.xml</mavan.checkstyle.suppression.file>
@@ -149,12 +149,12 @@
                 <version>${xml.mapper.version}</version>
                 <scope>test</scope>
             </dependency>
-            <!--<dependency>-->
-                <!--<groupId>org.wso2.extension.siddhi.map.text</groupId>-->
-                <!--<artifactId>siddhi-map-text</artifactId>-->
-                <!--<version>${text.mapper.version}</version>-->
-                <!--<scope>test</scope>-->
-            <!--</dependency>-->
+            <dependency>
+                <groupId>org.jacoco</groupId>
+                <artifactId>org.jacoco.agent</artifactId>
+                <classifier>runtime</classifier>
+                <version>${jacoco.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -269,7 +269,7 @@
                     <version>2.16</version>
                     <configuration>
                         <suiteXmlFiles>
-                            <suiteXmlFile>src/test/resources/testing.xml</suiteXmlFile>
+                            <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
                         </suiteXmlFiles>
                     </configuration>
                 </plugin>
