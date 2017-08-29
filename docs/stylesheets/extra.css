@@ -17,5 +17,37 @@
  */
 
 .md-header-nav__button.md-logo img {
-    width: 120px;
+    width: 140px;
+    height: 33px;
+    margin-right: 0;
+}
+
+.md-content__icon, 
+.md-footer-nav__button, 
+.md-header-nav__button, 
+.md-nav__button, 
+.md-nav__title::before, 
+.md-search-result__article--document::before {
+    margin: 0.3rem;
+    padding: 0;
+}
+
+.extention-title {
+	font-weight: 700;
+	margin-right: 50px;
+}
+
+.md-header-nav__title {
+	padding-left: 5px;
+}
+
+@media (max-width: 1219px) {
+
+	.extention-title {
+		display: none;
+	}
+
+	html .md-nav--primary .md-nav__title--site .md-nav__button {	    
+	    width: 13.4rem;
+	}
 }
