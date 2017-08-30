@@ -28,6 +28,27 @@ Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/si
 
 ## How to use
 
+### Prerequisites for using the feature
+ - Download and install Kafka.
+ - Then convert and copy the Kafka client jars from the <KAFKA_HOME>/libs directory to the <DAS_HOME>/libs directory
+ as follows.
+   - Create a directory (SOURCE_DIRECTORY) in a preferred location in your machine and copy the following JARs to it from the
+   <KAFKA_HOME>/libs directory.
+     - kafka_2.11-0.9.0.1.jar
+     - kafka-clients-0.9.0.1.jar
+     - metrics-core-2.2.0.jar
+     - scala-library-2.11.7.jar
+     - scala-parser-combinators_2.11-1.0.4.jar
+     - zkclient-0.7.jar
+     - zookeeper-3.4.6.jar
+   - Create another directory (DESTINATION_DIRECTORY) in a preferred location in your machine.
+   - To convert all the Kafka jars you copied into the <SOURCE_DIRECTORY>, issue the following command.
+     For Windows: <DAS_HOME>/bin/jartobundle.bat <SOURCE_DIRECTORY_PATH> <DESTINATION_DIRECTORY_PATH>
+     For Linux: <DAS_HOME>/bin/jartobundle.sh <SOURCE_DIRECTORY_PATH> <DESTINATION_DIRECTORY_PATH>
+   - Copy the converted files from the <DESTINATION_DIRECTORY> to the <DAS_HOME>/libs directory.
+   - Copy the jars that are not converted from the <SOURCE_DIRECTORY> to the <DAS_HOME>/samples/sample-clients/lib directory.
+
+
 **Using the extension in <a target="_blank" href="https://github.com/wso2/product-sp">WSO2 Stream Processor</a>**
 
 * You can use this extension in the latest <a target="_blank" href="https://github.com/wso2/product-sp/releases">WSO2 Stream Processor</a> that is a part of <a target="_blank" href="http://wso2.com/analytics?utm_source=gitanalytics&utm_campaign=gitanalytics_Jul17">WSO2 Analytics</a> offering, with editor, debugger and simulation support.
@@ -42,7 +63,7 @@ extension you can replace the component <a target="_blank" href="https://github.
 ```
      <dependency>
         <groupId>org.wso2.extension.siddhi.io.kafka</groupId>
-        <artifactId>siddhi-io-kafka-parent</artifactId>
+        <artifactId>siddhi-io-kafka</artifactId>
         <version>x.x.x</version>
      </dependency>
 ```
