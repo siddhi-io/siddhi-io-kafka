@@ -1,9 +1,6 @@
 siddhi-io-kafka
 ======================================
 
-This is an extension for siddhi kafka source and sink implementation.
-This extension can be used to receive events from a kafka cluster and to publish events to a kafka cluster.
-
 The **siddhi-io-kafka extension** is an extension to <a target="_blank" href="https://wso2.github.io/siddhi">Siddhi</a>.
 This implements siddhi kafka source and sink that can be used to receive events from a kafka cluster and to publish
 events to a kafka cluster.
