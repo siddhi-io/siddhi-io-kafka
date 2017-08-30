@@ -24,13 +24,15 @@ Find some useful links below:
 
 ## Latest API Docs
 
-Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.0.3-SNAPSHOT">4.0.3-SNAPSHOT</a>.
+Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.0.4-SNAPSHOT">4.0.4-SNAPSHOT</a>.
 
 ## How to use
 
-### Prerequisites for using the feature
+**Using the extension in <a target="_blank" href="https://github.com/wso2/product-sp">WSO2 Stream Processor</a>**
+
+***Prerequisites for using the feature***
  - Download and install Kafka.
- - Then convert and copy the Kafka client jars from the <KAFKA_HOME>/libs directory to the <DAS_HOME>/libs directory
+ - Then convert and copy the Kafka client jars from the <KAFKA_HOME>/libs directory to the <SP_HOME>/libs directory
  as follows.
    - Create a directory (SOURCE_DIRECTORY) in a preferred location in your machine and copy the following JARs to it from the
    <KAFKA_HOME>/libs directory.
@@ -43,13 +45,11 @@ Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/si
      - zookeeper-3.4.6.jar
    - Create another directory (DESTINATION_DIRECTORY) in a preferred location in your machine.
    - To convert all the Kafka jars you copied into the <SOURCE_DIRECTORY>, issue the following command.
-     For Windows: <DAS_HOME>/bin/jartobundle.bat <SOURCE_DIRECTORY_PATH> <DESTINATION_DIRECTORY_PATH>
-     For Linux: <DAS_HOME>/bin/jartobundle.sh <SOURCE_DIRECTORY_PATH> <DESTINATION_DIRECTORY_PATH>
-   - Copy the converted files from the <DESTINATION_DIRECTORY> to the <DAS_HOME>/libs directory.
-   - Copy the jars that are not converted from the <SOURCE_DIRECTORY> to the <DAS_HOME>/samples/sample-clients/lib directory.
+     For Windows: <SP_HOME>/bin/jartobundle.bat <SOURCE_DIRECTORY_PATH> <DESTINATION_DIRECTORY_PATH>
+     For Linux: <SP_HOME>/bin/jartobundle.sh <SOURCE_DIRECTORY_PATH> <DESTINATION_DIRECTORY_PATH>
+   - Copy the converted files from the <DESTINATION_DIRECTORY> to the <SP_HOME>/libs directory.
+   - Copy the jars that are not converted from the <SOURCE_DIRECTORY> to the <SP_HOME>/samples/sample-clients/lib directory.
 
-
-**Using the extension in <a target="_blank" href="https://github.com/wso2/product-sp">WSO2 Stream Processor</a>**
 
 * You can use this extension in the latest <a target="_blank" href="https://github.com/wso2/product-sp/releases">WSO2 Stream Processor</a> that is a part of <a target="_blank" href="http://wso2.com/analytics?utm_source=gitanalytics&utm_campaign=gitanalytics_Jul17">WSO2 Analytics</a> offering, with editor, debugger and simulation support.
 
@@ -80,8 +80,8 @@ extension you can replace the component <a target="_blank" href="https://github.
 
 ## Features
 
-* <a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.0.3-SNAPSHOT/#kafka-sink">kafka</a> *(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sinks">Sink</a>)*<br><div style="padding-left: 1em;"><p>The Kafka Sink publishes records to a topic with a partition for a Kafka cluster which are in format such as <code>text</code>, <code>XML</code> and <code>JSON</code>.<br>The Kafka Sink will create the default partition for a given topic, if the topic is not already been created in the Kafka cluster. The publishing topic and partition can be a dynamic value taken from the Siddhi event</p></div>
-* <a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.0.3-SNAPSHOT/#kafka-source">kafka</a> *(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sources">Source</a>)*<br><div style="padding-left: 1em;"><p>The Kafka Source receives records from a topic with a partition for a Kafka cluster which are in format such as <code>text</code>, <code>XML</code> and <code>JSON</code>.<br>The Kafka Source will create the default partition for a given topic, if the topic is not already been created in the Kafka cluster.</p></div>
+* <a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.0.4-SNAPSHOT/#kafka-sink">kafka</a> *(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sinks">Sink</a>)*<br><div style="padding-left: 1em;"><p>The Kafka Sink publishes records to a topic with a partition for a Kafka cluster which are in format such as <code>text</code>, <code>XML</code> and <code>JSON</code>.<br>The Kafka Sink will create the default partition for a given topic, if the topic is not already been created in the Kafka cluster. The publishing topic and partition can be a dynamic value taken from the Siddhi event</p></div>
+* <a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.0.4-SNAPSHOT/#kafka-source">kafka</a> *(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sources">Source</a>)*<br><div style="padding-left: 1em;"><p>The Kafka Source receives records from a topic with a partition for a Kafka cluster which are in format such as <code>text</code>, <code>XML</code> and <code>JSON</code>.<br>The Kafka Source will create the default partition for a given topic, if the topic is not already been created in the Kafka cluster.</p></div>
 
 ## How to Contribute
 
