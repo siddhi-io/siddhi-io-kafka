@@ -34,6 +34,13 @@ Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/si
  - Download and install Kafka.
  - Then convert and copy the Kafka client jars from the <KAFKA_HOME>/libs directory to the <SP_HOME>/libs directory
  as follows.
+**Using the extension in <a target="_blank" href="https://github.com/wso2/product-sp">WSO2 Stream Processor</a>**
+
+***Prerequisites for using the feature***
+ - Download and install Kafka and Zookeeper.
+ - Start the Apache ZooKeeper server with the following command: `bin/zookeeper-server-start.sh config/zookeeper.properties`.
+ - Start the Kafka server with the following command:  `bin/kafka-server-start.sh config/server.properties`
+ - Convert and copy the Kafka client jars from the <KAFKA_HOME>/libs directory to the <SP_HOME>/libs directory as follows.
    - Create a directory (SOURCE_DIRECTORY) in a preferred location in your machine and copy the following JARs to it from the
    <KAFKA_HOME>/libs directory.
      - kafka_2.11-0.9.0.1.jar
@@ -80,8 +87,8 @@ extension you can replace the component <a target="_blank" href="https://github.
 
 ## Features
 
-* <a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.0.4-SNAPSHOT/#kafka-sink">kafka</a> *(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sinks">Sink</a>)*<br><div style="padding-left: 1em;"><p>The Kafka Sink publishes records to a topic with a partition for a Kafka cluster which are in format such as <code>text</code>, <code>XML</code> and <code>JSON</code>.<br>The Kafka Sink will create the default partition for a given topic, if the topic is not already been created in the Kafka cluster. The publishing topic and partition can be a dynamic value taken from the Siddhi event</p></div>
-* <a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.0.4-SNAPSHOT/#kafka-source">kafka</a> *(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sources">Source</a>)*<br><div style="padding-left: 1em;"><p>The Kafka Source receives records from a topic with a partition for a Kafka cluster which are in format such as <code>text</code>, <code>XML</code> and <code>JSON</code>.<br>The Kafka Source will create the default partition for a given topic, if the topic is not already been created in the Kafka cluster.</p></div>
+* <a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.0.3-SNAPSHOT/#kafka-sink">kafka</a> *(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sinks">Sink</a>)*<br><div style="padding-left: 1em;"><p>The Kafka Sink publishes records to a topic with a partition for a Kafka cluster which are in format such as <code>text</code>, <code>XML</code> and <code>JSON</code>.<br>The Kafka Sink will create the default partition for a given topic, if the topic is not already been created in the Kafka cluster. The publishing topic and partition can be a dynamic value taken from the Siddhi event</p></div>
+* <a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.0.3-SNAPSHOT/#kafka-source">kafka</a> *(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sources">Source</a>)*<br><div style="padding-left: 1em;"><p>The Kafka Source receives records from a topic with a partition for a Kafka cluster which are in format such as <code>text</code>, <code>XML</code> and <code>JSON</code>.<br>The Kafka Source will create the default partition for a given topic, if the topic is not already been created in the Kafka cluster.</p></div>
 
 ## How to Contribute
 
