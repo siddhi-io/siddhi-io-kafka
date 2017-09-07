@@ -57,7 +57,7 @@ import java.util.concurrent.ScheduledExecutorService;
                                    + "eg: 'localhost:9092,localhost:9093' ",
                            type = {DataType.STRING}),
                 @Parameter(name = "topic",
-                           description = "The topic list which the sink  should publish to. Only one topic should be "
+                           description = "The topic list which the sink should publish to. Only one topic should be "
                                    + "given",
                            type = {DataType.STRING}),
                 @Parameter(name = "partition.no",
@@ -67,6 +67,12 @@ import java.util.concurrent.ScheduledExecutorService;
                            type = {DataType.INT},
                            optional = true,
                            defaultValue = "0"),
+                @Parameter(name = "key",
+                           description = "The key will contain the values which is used to maintain ordering in a "
+                                   + "kafka partition.",
+                           type = {DataType.STRING},
+                           optional = true,
+                           defaultValue = "null"),
                 @Parameter(name = "optional.configuration",
                            description = "This may contain all the other possible configurations which the consumer "
                                    + "should be created with."
@@ -114,9 +120,11 @@ public class KafkaSink extends Sink {
     private String bootstrapServers;
     private String optionalConfigs;
     private Option partitionOption;
+    private Option keyOption;
 
     private static final String KAFKA_PUBLISH_TOPIC = "topic";
     private static final String KAFKA_BROKER_LIST = "bootstrap.servers";
+    private static final String KAFKA_MESSAGE_KEY = "key";
     private static final String KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
     private static final String HEADER_SEPARATOR = ",";
     private static final String ENTRY_SEPARATOR = ":";
@@ -132,6 +140,7 @@ public class KafkaSink extends Sink {
         topicOption = optionHolder.validateAndGetOption(KAFKA_PUBLISH_TOPIC);
         partitionOption = optionHolder.getOrCreateOption(KAFKA_PARTITION_NO, null);
         executorService = siddhiAppContext.getScheduledExecutorService();
+        keyOption = optionHolder.getOrCreateOption(KAFKA_MESSAGE_KEY, null);
     }
 
     @Override
@@ -167,11 +176,12 @@ public class KafkaSink extends Sink {
     public void publish(Object payload, DynamicOptions transportOptions) throws ConnectionUnavailableException {
         String topic = topicOption.getValue(transportOptions);
         String partitionNo = partitionOption.getValue(transportOptions);
+        String key = keyOption.getValue(transportOptions);
         try {
             if (null == partitionNo) {
-                producer.send(new ProducerRecord<>(topic, payload.toString()));
+                producer.send(new ProducerRecord<>(topic, null, key, payload.toString()));
             } else {
-                producer.send(new ProducerRecord<>(topic, partitionNo, payload.toString()));
+                producer.send(new ProducerRecord<>(topic, Integer.parseInt(partitionNo), key, payload.toString()));
             }
         } catch (Exception e) {
             LOG.error(String.format("Failed to publish the message to [topic] %s [partition-no] %s. Error: %s",
@@ -199,7 +209,7 @@ public class KafkaSink extends Sink {
 
     @Override
     public String[] getSupportedDynamicOptions() {
-        return new String[]{KAFKA_PUBLISH_TOPIC, KAFKA_PARTITION_NO};
+        return new String[]{KAFKA_PUBLISH_TOPIC, KAFKA_PARTITION_NO, KAFKA_MESSAGE_KEY};
     }
 
     @Override

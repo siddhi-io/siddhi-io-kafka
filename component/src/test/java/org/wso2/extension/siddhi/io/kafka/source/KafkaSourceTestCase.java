@@ -143,7 +143,7 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaWithoutTopicSource")
+    @Test(dependsOnMethods = "testKafkaWithoutTopicSource")
     public void testKafkaMultipleTopicSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
@@ -203,7 +203,7 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaMultipleTopicSource")
+    @Test(dependsOnMethods = "testKafkaMultipleTopicSource")
     public void testKafkaSingleTopicWithSpecificSubscribeSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
@@ -293,9 +293,9 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaSpecificSubscribeForUnavailablePartitionSource")
+    @Test(dependsOnMethods = "testKafkaSpecificSubscribeForUnavailablePartitionSource")
     public void testKafkaMultipleTopic_MultiplePartition_OnePartitionSubscribe_Source() throws
-                                                                                            InterruptedException {
+                                                                                        InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
             log.info("Creating test to configure Kafka source with multiple topics having multiple partitions "
@@ -354,9 +354,9 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaMultipleTopic_MultiplePartition_OnePartitionSubscribe_Source")
+    @Test(dependsOnMethods = "testKafkaMultipleTopic_MultiplePartition_OnePartitionSubscribe_Source")
     public void testKafkaMultipleTopic_MultiplePartition_AllPartitionSubscribe_Source() throws
-                                                                                            InterruptedException {
+                                                                                        InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
             log.info("Creating test to configure Kafka source with multiple topics having multiple partitions "
@@ -449,7 +449,7 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaWithoutBootstrapServerSource")
+    @Test(dependsOnMethods = "testKafkaWithoutBootstrapServerSource")
     public void testKafkaMultipleTopicWithThreadingPerTopicSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
@@ -512,7 +512,7 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaMultipleTopicWithThreadingPerTopicSource")
+    @Test(dependsOnMethods = "testKafkaMultipleTopicWithThreadingPerTopicSource")
     public void testKafkaMultipleTopicWithThreadingPerPartitionSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
@@ -638,7 +638,7 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaSingleTopicWithoutGroupIdSource")
+    @Test(dependsOnMethods = "testKafkaSingleTopicWithoutGroupIdSource")
     public void testKafkaSingleTopicDifferentGroupIdsSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
@@ -717,7 +717,7 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaSingleTopicDifferentGroupIdsSource")
+    @Test(dependsOnMethods = "testKafkaSingleTopicDifferentGroupIdsSource")
     public void testKafkaSingleTopicSameGroupIdsSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
@@ -795,7 +795,7 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaSingleTopicSameGroupIdsSource")
+    @Test(dependsOnMethods = "testKafkaSingleTopicSameGroupIdsSource")
     public void testKafkaNonExistingTopicSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
@@ -847,7 +847,7 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaNonExistingTopicSource")
+    @Test(dependsOnMethods = "testKafkaNonExistingTopicSource")
     public void testKafkaMultipleTopicPartitionPartitionWiseSubscription() throws InterruptedException {
         log.info("-------------------------------------------------------------------------------------------");
         log.info("Creating test for multiple topics and partitions and thread partition wise");
@@ -904,7 +904,7 @@ public class KafkaSourceTestCase {
         siddhiAppRuntime.shutdown();
     }
 
-    @Test (dependsOnMethods = "testKafkaMultipleTopicPartitionPartitionWiseSubscription")
+    @Test(dependsOnMethods = "testKafkaMultipleTopicPartitionPartitionWiseSubscription")
     public void testKafkaMultipleTopicPartitionTopicWiseSubscription() throws InterruptedException {
         log.info("-------------------------------------------------------------------------------------------");
         log.info("Creating test for multiple topics and partitions and thread topic wise");
@@ -963,7 +963,7 @@ public class KafkaSourceTestCase {
         }
     }
 
-//    @Test
+    //    @Test
     public void testKafkaSingleTopic_MultiplePartition_AllPartitionSubscribe_Source_106() throws
                                                                                           InterruptedException {
         try {
@@ -1020,6 +1020,225 @@ public class KafkaSourceTestCase {
             KafkaTestUtil.deleteTopic(topics);
             Thread.sleep(1000);
             KafkaTestUtil.stopKafkaBroker2();
+            siddhiAppRuntime.shutdown();
+        } catch (ZkTimeoutException ex) {
+            log.warn("No zookeeper may not be available.", ex);
+        }
+    }
+
+    @Test (dependsOnMethods = "testKafkaMultipleTopicPartitionTopicWiseSubscription")
+    public void testKafkaTopic_MultiplePartition_AllSubscribe_Source() throws InterruptedException {
+        try {
+            log.info("-------------------------------------------------------------------------------------------");
+            log.info("Creating test to configure Kafka source with a single topic having multiple partitions "
+                             + "subscribing for all partition ids");
+            log.info("-------------------------------------------------------------------------------------------");
+            String topics[] = new String[]{"kafka_topic_888"};
+            receivedEventNameList = new ArrayList<>(4);
+            receivedValueList = new ArrayList<>(4);
+            KafkaTestUtil.createTopic(topics, 4);
+            Thread.sleep(4000);
+            SiddhiManager siddhiManager = new SiddhiManager();
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
+                    "@App:name('TestExecutionPlan') " +
+                            "define stream BarStream (symbol string, price float, volume long); " +
+                            "@info(name = 'query1') " +
+                            "@source(type='kafka', "
+                            + "topic.list='kafka_topic_888', "
+                            + "partition.no.list='0,1,2,3', "
+                            + "group.id='test_single_topic1_multiple_par_all_sub', "
+                            + "threading.option='single.thread', "
+                            + "bootstrap.servers='localhost:9092'," +
+                            "@map(type='xml'))" +
+                            "Define stream FooStream (symbol string, price float, volume long);" +
+                            "from FooStream select symbol, price, volume insert into BarStream;");
+            siddhiAppRuntime.addCallback("BarStream", new StreamCallback() {
+                @Override
+                public void receive(Event[] events) {
+                    for (Event event : events) {
+                        log.info(event);
+                        eventArrived = true;
+                        count++;
+                        receivedEventNameList.add(event.getData(0).toString());
+                        receivedValueList.add((long) event.getData(2));
+                    }
+                }
+            });
+            siddhiAppRuntime.start();
+            Thread.sleep(2000);
+            KafkaTestUtil.kafkaPublisher(topics, 4, 4, true, null, true);
+            Thread.sleep(1000);
+            List<String> expectedNames = new ArrayList<>(2);
+            expectedNames.add("kafka_topic_888");
+            expectedNames.add("kafka_topic_888");
+            expectedNames.add("kafka_topic_888");
+            expectedNames.add("kafka_topic_888");
+            List<Long> expectedValues = new ArrayList<>(2);
+            expectedValues.add(0L);
+            expectedValues.add(1L);
+            expectedValues.add(2L);
+            expectedValues.add(3L);
+            AssertJUnit.assertEquals(4, count);
+            AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames, receivedEventNameList);
+            AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
+            KafkaTestUtil.deleteTopic(topics);
+            Thread.sleep(4000);
+            siddhiAppRuntime.shutdown();
+        } catch (ZkTimeoutException ex) {
+            log.warn("No zookeeper may not be available.", ex);
+        }
+    }
+
+    @Test (dependsOnMethods = "testKafkaTopic_MultiplePartition_AllSubscribe_Source")
+    public void testKafkaTopic_MultiplePartition_SubscribeALl_oneByOne_Source() throws InterruptedException {
+        try {
+            log.info("-------------------------------------------------------------------------------------------");
+            log.info("Creating test to configure Kafka source with a single topic having multiple partitions "
+                             + "subscribing for all partition ids with separate apps");
+            log.info("-------------------------------------------------------------------------------------------");
+            String topics[] = new String[]{"kafka_topic_999"};
+            receivedEventNameList = new ArrayList<>(4);
+            receivedValueList = new ArrayList<>(4);
+            List<String> retrivedAppNames = new ArrayList<>(4);
+            KafkaTestUtil.createTopic(topics, 4);
+            Thread.sleep(4000);
+            SiddhiManager siddhiManager = new SiddhiManager();
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
+                    "@App:name('TestExecutionPlan') " +
+                            "define stream BarStream (symbol string, price float, volume long); " +
+                            "@info(name = 'query1') " +
+                            "@source(type='kafka', "
+                            + "topic.list='kafka_topic_999', "
+                            + "partition.no.list='0', "
+                            + "group.id='test_single_topic1_multiple_par_all_sub', "
+                            + "threading.option='single.thread', "
+                            + "bootstrap.servers='localhost:9092'," +
+                            "@map(type='xml'))" +
+                            "Define stream FooStream (symbol string, price float, volume long);" +
+                            "from FooStream select symbol, price, volume insert into BarStream;");
+            SiddhiAppRuntime siddhiAppRuntime2 = siddhiManager.createSiddhiAppRuntime(
+                    "@App:name('TestExecutionPlan2') " +
+                            "define stream BarStream (symbol string, price float, volume long); " +
+                            "@info(name = 'query1') " +
+                            "@source(type='kafka', "
+                            + "topic.list='kafka_topic_999', "
+                            + "partition.no.list='1', "
+                            + "group.id='test_single_topic1_multiple_par_all_sub', "
+                            + "threading.option='single.thread', "
+                            + "bootstrap.servers='localhost:9092'," +
+                            "@map(type='xml'))" +
+                            "Define stream FooStream (symbol string, price float, volume long);" +
+                            "from FooStream select symbol, price, volume insert into BarStream;");
+            SiddhiAppRuntime siddhiAppRuntime3 = siddhiManager.createSiddhiAppRuntime(
+                    "@App:name('TestExecutionPlan3') " +
+                            "define stream BarStream (symbol string, price float, volume long); " +
+                            "@info(name = 'query1') " +
+                            "@source(type='kafka', "
+                            + "topic.list='kafka_topic_999', "
+                            + "partition.no.list='2', "
+                            + "group.id='test_single_topic1_multiple_par_all_sub', "
+                            + "threading.option='single.thread', "
+                            + "bootstrap.servers='localhost:9092'," +
+                            "@map(type='xml'))" +
+                            "Define stream FooStream (symbol string, price float, volume long);" +
+                            "from FooStream select symbol, price, volume insert into BarStream;");
+            SiddhiAppRuntime siddhiAppRuntime4 = siddhiManager.createSiddhiAppRuntime(
+                    "@App:name('TestExecutionPlan4') " +
+                            "define stream BarStream (symbol string, price float, volume long); " +
+                            "@info(name = 'query1') " +
+                            "@source(type='kafka', "
+                            + "topic.list='kafka_topic_999', "
+                            + "partition.no.list='3', "
+                            + "group.id='test_single_topic1_multiple_par_all_sub', "
+                            + "threading.option='single.thread', "
+                            + "bootstrap.servers='localhost:9092'," +
+                            "@map(type='xml'))" +
+                            "Define stream FooStream (symbol string, price float, volume long);" +
+                            "from FooStream select symbol, price, volume insert into BarStream;");
+            siddhiAppRuntime.addCallback("BarStream", new StreamCallback() {
+                @Override
+                public void receive(Event[] events) {
+                    for (Event event : events) {
+                        log.info("Received from 1st App");
+                        log.info(event);
+                        eventArrived = true;
+                        count++;
+                        retrivedAppNames.add("1");
+                        receivedEventNameList.add(event.getData(0).toString());
+                        receivedValueList.add((long) event.getData(2));
+                    }
+                }
+            });
+            siddhiAppRuntime2.addCallback("BarStream", new StreamCallback() {
+                @Override
+                public void receive(Event[] events) {
+                    for (Event event : events) {
+                        log.info("Received from 2nd App");
+                        log.info(event);
+                        eventArrived = true;
+                        count++;
+                        retrivedAppNames.add("2");
+                        receivedEventNameList.add(event.getData(0).toString());
+                        receivedValueList.add((long) event.getData(2));
+                    }
+                }
+            });
+            siddhiAppRuntime3.addCallback("BarStream", new StreamCallback() {
+                @Override
+                public void receive(Event[] events) {
+                    for (Event event : events) {
+                        log.info("Received from 3rd App");
+                        log.info(event);
+                        eventArrived = true;
+                        count++;
+                        retrivedAppNames.add("3");
+                        receivedEventNameList.add(event.getData(0).toString());
+                        receivedValueList.add((long) event.getData(2));
+                    }
+                }
+            });
+            siddhiAppRuntime4.addCallback("BarStream", new StreamCallback() {
+                @Override
+                public void receive(Event[] events) {
+                    for (Event event : events) {
+                        log.info("Received from 4th App");
+                        log.info(event);
+                        eventArrived = true;
+                        count++;
+                        retrivedAppNames.add("4");
+                        receivedEventNameList.add(event.getData(0).toString());
+                        receivedValueList.add((long) event.getData(2));
+                    }
+                }
+            });
+            siddhiAppRuntime.start();
+            siddhiAppRuntime2.start();
+            siddhiAppRuntime3.start();
+            siddhiAppRuntime4.start();
+            Thread.sleep(4000);
+            KafkaTestUtil.kafkaPublisher(topics, 4, 4, true, null, true);
+            Thread.sleep(4000);
+            List<String> expectedNames = new ArrayList<>(2);
+            expectedNames.add("kafka_topic_999");
+            expectedNames.add("kafka_topic_999");
+            expectedNames.add("kafka_topic_999");
+            expectedNames.add("kafka_topic_999");
+            List<String> expectedSiddiApps = new ArrayList<>(2);
+            expectedSiddiApps.add("1");
+            expectedSiddiApps.add("2");
+            expectedSiddiApps.add("3");
+            expectedSiddiApps.add("4");
+            List<Long> expectedValues = new ArrayList<>(2);
+            expectedValues.add(0L);
+            expectedValues.add(1L);
+            expectedValues.add(2L);
+            expectedValues.add(3L);
+            AssertJUnit.assertEquals(4, count);
+            AssertJUnit.assertEquals("Kafka Source expected input not received", expectedSiddiApps, retrivedAppNames);
+            AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames, receivedEventNameList);
+            AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
+            KafkaTestUtil.deleteTopic(topics);
+            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
             log.warn("No zookeeper may not be available.", ex);
