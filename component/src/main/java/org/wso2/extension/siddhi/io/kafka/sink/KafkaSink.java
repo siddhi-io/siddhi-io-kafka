@@ -59,7 +59,7 @@ import java.util.concurrent.atomic.AtomicInteger;
                                    + "eg: 'localhost:9092,localhost:9093' ",
                            type = {DataType.STRING}),
                 @Parameter(name = "topic",
-                           description = "The topic list which the sink  should publish to. Only one topic should be "
+                           description = "The topic list which the sink should publish to. Only one topic should be "
                                    + "given",
                            type = {DataType.STRING}),
                 @Parameter(name = "partition.no",
@@ -69,17 +69,18 @@ import java.util.concurrent.atomic.AtomicInteger;
                            type = {DataType.INT},
                            optional = true,
                            defaultValue = "0"),
-                @Parameter(name = "tag.sequence.no",
-                        description = "Prepend sequence number to messages published by the sinks",
-                        type = {DataType.BOOL},
-                        optional = true,
-                        defaultValue = "false"),
                 @Parameter(name = "sequence.id",
                         description = "Unique identifier to identify the messages published by this sink. Using this " +
                                 "id receivers can identify the sink which produced the message",
                         type = {DataType.STRING},
                         optional = true,
                         defaultValue = "null"),
+                @Parameter(name = "key",
+                           description = "The key will contain the values which is used to maintain ordering in a "
+                                   + "kafka partition.",
+                           type = {DataType.STRING},
+                           optional = true,
+                           defaultValue = "null"),
                 @Parameter(name = "optional.configuration",
                            description = "This may contain all the other possible configurations which the consumer "
                                    + "should be created with."
@@ -134,9 +135,11 @@ public class KafkaSink extends Sink {
     public static final String LAST_SENT_SEQ_NO_PERSIST_KEY = "lastSentSequenceNo";
     public static final String SEQ_NO_HEADER_DELIMITER = "~";
     public static final String SEQ_NO_HEADER_FIELD_SEPERATOR = ":";
+    private Option keyOption;
 
     private static final String KAFKA_PUBLISH_TOPIC = "topic";
     private static final String KAFKA_BROKER_LIST = "bootstrap.servers";
+    private static final String KAFKA_MESSAGE_KEY = "key";
     private static final String KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
     private static final String HEADER_SEPARATOR = ",";
     private static final String ENTRY_SEPARATOR = ":";
@@ -155,6 +158,7 @@ public class KafkaSink extends Sink {
         sequenceId = optionHolder.validateAndGetStaticValue(SEQ_ID, null);
         isSequenced = (sequenceId == null) ? false : true;
         executorService = siddhiAppContext.getScheduledExecutorService();
+        keyOption = optionHolder.getOrCreateOption(KAFKA_MESSAGE_KEY, null);
     }
 
     @Override
@@ -190,6 +194,7 @@ public class KafkaSink extends Sink {
     public void publish(Object payload, DynamicOptions transportOptions) throws ConnectionUnavailableException {
         String topic = topicOption.getValue(transportOptions);
         String partitionNo = partitionOption.getValue(transportOptions);
+        String key = keyOption.getValue(transportOptions);
         try {
             String payloadToSend;
             if (isSequenced) {
@@ -204,9 +209,9 @@ public class KafkaSink extends Sink {
             }
 
             if (null == partitionNo) {
-                producer.send(new ProducerRecord<>(topic, payloadToSend));
+                producer.send(new ProducerRecord<>(topic, null, key, payloadToSend));
             } else {
-                producer.send(new ProducerRecord<>(topic, Integer.parseInt(partitionNo), null, payloadToSend));
+                producer.send(new ProducerRecord<>(topic, Integer.parseInt(partitionNo), key, payloadToSend));
             }
         } catch (Exception e) {
             LOG.error(String.format("Failed to publish the message to [topic] %s [partition-no] %s. Error: %s",
@@ -234,7 +239,7 @@ public class KafkaSink extends Sink {
 
     @Override
     public String[] getSupportedDynamicOptions() {
-        return new String[]{KAFKA_PUBLISH_TOPIC, KAFKA_PARTITION_NO};
+        return new String[]{KAFKA_PUBLISH_TOPIC, KAFKA_PARTITION_NO, KAFKA_MESSAGE_KEY};
     }
 
     @Override
