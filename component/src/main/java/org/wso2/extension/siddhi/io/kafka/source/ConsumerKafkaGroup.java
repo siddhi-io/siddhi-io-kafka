@@ -41,11 +41,14 @@ public class ConsumerKafkaGroup {
     private Map<String, Map<Integer, Long>> topicOffsetMap = new HashMap<>();
     private ScheduledExecutorService executorService;
     private String threadingOption;
+    private Map<String, Map<SequenceKey, Integer>> perConsumerLastReceivedSeqNo = new HashMap<>();
 
     ConsumerKafkaGroup(String topics[], String partitions[], Properties props, Map<String, Map<Integer, Long>>
-            topicOffsetMap, String threadingOption, ScheduledExecutorService executorService) {
+            topicOffsetMap, Map<String, Map<SequenceKey, Integer>> perConsumerLastReceivedSeqNo, String threadingOption,
+                       ScheduledExecutorService executorService) {
         this.threadingOption = threadingOption;
         this.topicOffsetMap = topicOffsetMap;
+        this.perConsumerLastReceivedSeqNo = perConsumerLastReceivedSeqNo;
         this.topics = topics;
         this.partitions = partitions;
         this.props = props;
@@ -72,18 +75,16 @@ public class ConsumerKafkaGroup {
         try {
             if (KafkaSource.SINGLE_THREADED.equals(threadingOption)) {
                 KafkaConsumerThread kafkaConsumerThread =
-                        new KafkaConsumerThread(sourceEventListener, topics, partitions, props, topicOffsetMap);
+                        new KafkaConsumerThread(sourceEventListener, topics, partitions, props, topicOffsetMap, false);
                 kafkaConsumerThreadList.add(kafkaConsumerThread);
                 LOG.info("Kafka Consumer thread starting to listen on topic/s: " + Arrays.toString(topics) +
                         " with partition/s: " + Arrays.toString(partitions));
-                executorService.submit(kafkaConsumerThread);
             } else if (KafkaSource.TOPIC_WISE.equals(threadingOption)) {
                 for (String topic : topics) {
                     KafkaConsumerThread kafkaConsumerThread =
                             new KafkaConsumerThread(sourceEventListener, new String[]{topic}, partitions, props,
-                                    topicOffsetMap);
+                                    topicOffsetMap, false);
                     kafkaConsumerThreadList.add(kafkaConsumerThread);
-                    executorService.submit(kafkaConsumerThread);
                     LOG.info("Kafka Consumer thread starting to listen on topic: " + topic +
                             " with partition/s: " + Arrays.toString(partitions));
                 }
@@ -92,13 +93,22 @@ public class ConsumerKafkaGroup {
                     for (String partition : partitions) {
                         KafkaConsumerThread kafkaConsumerThread =
                                 new KafkaConsumerThread(sourceEventListener, new String[]{topic},
-                                        new String[]{partition}, props, topicOffsetMap);
+                                        new String[]{partition}, props, topicOffsetMap, true);
                         kafkaConsumerThreadList.add(kafkaConsumerThread);
-                        executorService.submit(kafkaConsumerThread);
                         LOG.info("Kafka Consumer thread starting to listen on topic: " + topic +
                                 " with partition: " + partition);
                     }
                 }
+            }
+
+            for (KafkaConsumerThread consumerThread : kafkaConsumerThreadList) {
+                if (perConsumerLastReceivedSeqNo != null) {
+                    Map<SequenceKey, Integer> seqNoMap = perConsumerLastReceivedSeqNo
+                            .get(consumerThread.getConsumerThreadId());
+                    seqNoMap = (seqNoMap != null) ? seqNoMap : new HashMap<>();
+                    consumerThread.setLastReceivedSeqNoMap(seqNoMap);
+                }
+                executorService.submit(consumerThread);
             }
         } catch (Throwable t) {
             LOG.error("Error while creating KafkaConsumerThread for topic/s: " + Arrays.toString(topics), t);
@@ -114,5 +124,14 @@ public class ConsumerKafkaGroup {
             }
         }
         return topicOffsetMap;
+    }
+
+    public Map<String, Map<SequenceKey, Integer>> getPerConsumerLastReceivedSeqNo() {
+        if (perConsumerLastReceivedSeqNo != null) {
+            for (KafkaConsumerThread consumer : kafkaConsumerThreadList) {
+                perConsumerLastReceivedSeqNo.put(consumer.getConsumerThreadId(), consumer.getLastReceivedSeqNoMap());
+            }
+        }
+        return perConsumerLastReceivedSeqNo;
     }
 }

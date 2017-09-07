@@ -75,6 +75,11 @@ import java.util.concurrent.ScheduledExecutorService;
                            type = {DataType.STRING},
                            optional = true,
                            defaultValue = "0"),
+                @Parameter(name = "seq.enabled",
+                        description = "Indicate if a the record contains a sequnce number to indicate their order ",
+                        type = {DataType.BOOL},
+                        optional = true,
+                        defaultValue = "false"),
                 @Parameter(name = "optional.configuration",
                            description = "This may contain all the other possible configurations which the consumer "
                                    + "should be created with."
@@ -134,8 +139,10 @@ public class KafkaSource extends Source {
     private static final String ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
     private static final String TOPIC_OFFSET_MAP = "topic.offset.map";
     private static final String THREADING_OPTION = "threading.option";
+    private static final String SEQ_ENABLED = "seq.enabled";
     private static final String HEADER_SEPARATOR = ",";
     private static final String ENTRY_SEPARATOR = ":";
+    private static final String LAST_RECEIVED_SEQ_NO_KEY = "lastReceivedSeqNo";
     private SourceEventListener sourceEventListener;
     private ScheduledExecutorService executorService;
     private OptionHolder optionHolder;
@@ -147,6 +154,9 @@ public class KafkaSource extends Source {
     private String partitions[];
     private String topics[];
     private String optionalConfigs;
+    private Boolean seqEnabled = false;
+    private Map<String, Map<SequenceKey, Integer>> consumerLastReceivedSeqNoMap = null;
+
 
     @Override
     public void init(SourceEventListener sourceEventListener, OptionHolder optionHolder, String[] strings,
@@ -161,12 +171,12 @@ public class KafkaSource extends Source {
         partitions = (partitionList != null) ? partitionList.split(HEADER_SEPARATOR) : null;
         String topicList = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_TOPIC);
         topics = topicList.split(HEADER_SEPARATOR);
+        seqEnabled = optionHolder.validateAndGetStaticValue(SEQ_ENABLED, "false").equalsIgnoreCase("true");
         optionalConfigs = optionHolder.validateAndGetStaticValue(ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES, null);
         if (PARTITION_WISE.equals(threadingOption) && null == partitions) {
             throw new SiddhiAppValidationException("Threading option is selected as 'partition.wise' but there are no"
                                                            + " partitions given");
         }
-        siddhiAppContext.getSnapshotService().addSnapshotable("kafka-sink", this);
     }
 
     @Override
@@ -178,10 +188,15 @@ public class KafkaSource extends Source {
     public void connect(ConnectionCallback connectionCallback) throws ConnectionUnavailableException {
         checkTopicsAvailableInCluster();
         checkPartitionsAvailableForTheTopicsInCluster();
+
+        if (seqEnabled && consumerLastReceivedSeqNoMap == null) {
+            consumerLastReceivedSeqNoMap = new HashMap<>();
+        }
+
         consumerKafkaGroup = new ConsumerKafkaGroup(topics, partitions,
                                                     KafkaSource.createConsumerConfig(bootstrapServers, groupID,
-                                                                                     optionalConfigs),
-                                                    topicOffsetMap, threadingOption, this.executorService);
+                                                    optionalConfigs), topicOffsetMap, consumerLastReceivedSeqNoMap,
+                                                    threadingOption, executorService);
         consumerKafkaGroup.run(sourceEventListener);
     }
 
@@ -225,12 +240,19 @@ public class KafkaSource extends Source {
     public Map<String, Object> currentState() {
         Map<String, Object> currentState = new HashMap<>();
         currentState.put(TOPIC_OFFSET_MAP, this.topicOffsetMap);
+        if (seqEnabled) {
+            currentState.put(LAST_RECEIVED_SEQ_NO_KEY, consumerKafkaGroup.getPerConsumerLastReceivedSeqNo());
+        }
         return currentState;
     }
 
     @Override
     public void restoreState(Map<String, Object> state) {
         this.topicOffsetMap = (Map<String, Map<Integer, Long>>) state.get(TOPIC_OFFSET_MAP);
+        if (seqEnabled) {
+            this.consumerLastReceivedSeqNoMap =
+                    (Map<String, Map<SequenceKey, Integer>>) state.get(LAST_RECEIVED_SEQ_NO_KEY);
+        }
         consumerKafkaGroup.restore(topicOffsetMap);
     }
 

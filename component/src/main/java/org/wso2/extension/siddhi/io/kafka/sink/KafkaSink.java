@@ -35,9 +35,11 @@ import org.wso2.siddhi.core.util.transport.Option;
 import org.wso2.siddhi.core.util.transport.OptionHolder;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This class implements a Kafka sink to publish Siddhi events to a kafka cluster.
@@ -67,6 +69,12 @@ import java.util.concurrent.ScheduledExecutorService;
                            type = {DataType.INT},
                            optional = true,
                            defaultValue = "0"),
+                @Parameter(name = "sequence.id",
+                        description = "Unique identifier to identify the messages published by this sink. Using this " +
+                                "id receivers can identify the sink which produced the message",
+                        type = {DataType.STRING},
+                        optional = true,
+                        defaultValue = "null"),
                 @Parameter(name = "key",
                            description = "The key will contain the values which is used to maintain ordering in a "
                                    + "kafka partition.",
@@ -120,6 +128,13 @@ public class KafkaSink extends Sink {
     private String bootstrapServers;
     private String optionalConfigs;
     private Option partitionOption;
+    private Boolean isSequenced = false;
+    private AtomicInteger lastSentSequenceNo = new AtomicInteger(0);
+    private String sequenceId = null;
+
+    public static final String LAST_SENT_SEQ_NO_PERSIST_KEY = "lastSentSequenceNo";
+    public static final String SEQ_NO_HEADER_DELIMITER = "~";
+    public static final String SEQ_NO_HEADER_FIELD_SEPERATOR = ":";
     private Option keyOption;
 
     private static final String KAFKA_PUBLISH_TOPIC = "topic";
@@ -129,6 +144,7 @@ public class KafkaSink extends Sink {
     private static final String HEADER_SEPARATOR = ",";
     private static final String ENTRY_SEPARATOR = ":";
     private static final String KAFKA_PARTITION_NO = "partition.no";
+    private static final String SEQ_ID = "sequence.id";
 
     private static final Logger LOG = Logger.getLogger(KafkaSink.class);
 
@@ -139,6 +155,8 @@ public class KafkaSink extends Sink {
         optionalConfigs = optionHolder.validateAndGetStaticValue(KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES, null);
         topicOption = optionHolder.validateAndGetOption(KAFKA_PUBLISH_TOPIC);
         partitionOption = optionHolder.getOrCreateOption(KAFKA_PARTITION_NO, null);
+        sequenceId = optionHolder.validateAndGetStaticValue(SEQ_ID, null);
+        isSequenced = (sequenceId == null) ? false : true;
         executorService = siddhiAppContext.getScheduledExecutorService();
         keyOption = optionHolder.getOrCreateOption(KAFKA_MESSAGE_KEY, null);
     }
@@ -178,10 +196,22 @@ public class KafkaSink extends Sink {
         String partitionNo = partitionOption.getValue(transportOptions);
         String key = keyOption.getValue(transportOptions);
         try {
-            if (null == partitionNo) {
-                producer.send(new ProducerRecord<>(topic, null, key, payload.toString()));
+            String payloadToSend;
+            if (isSequenced) {
+                StringBuilder strPayload = new StringBuilder();
+                strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR).append(lastSentSequenceNo)
+                        .append(SEQ_NO_HEADER_DELIMITER)
+                        .append(payload.toString());
+                payloadToSend = strPayload.toString();
+                lastSentSequenceNo.incrementAndGet();
             } else {
-                producer.send(new ProducerRecord<>(topic, Integer.parseInt(partitionNo), key, payload.toString()));
+                payloadToSend = payload.toString();
+            }
+
+            if (null == partitionNo) {
+                producer.send(new ProducerRecord<>(topic, null, key, payloadToSend));
+            } else {
+                producer.send(new ProducerRecord<>(topic, Integer.parseInt(partitionNo), key, payloadToSend));
             }
         } catch (Exception e) {
             LOG.error(String.format("Failed to publish the message to [topic] %s [partition-no] %s. Error: %s",
@@ -214,11 +244,22 @@ public class KafkaSink extends Sink {
 
     @Override
     public Map<String, Object> currentState() {
-        return null;
+        if (isSequenced) {
+            Map<String, Object> state = new HashMap<>();
+            state.put(LAST_SENT_SEQ_NO_PERSIST_KEY, lastSentSequenceNo.get());
+            return state;
+        } else {
+            return null;
+        }
     }
 
     @Override
     public void restoreState(Map<String, Object> state) {
-
+        if (isSequenced) {
+            Object sequenceNumber = state.get(LAST_SENT_SEQ_NO_PERSIST_KEY);
+            if (sequenceNumber != null) {
+                lastSentSequenceNo.set((Integer) sequenceNumber);
+            }
+        }
     }
 }
