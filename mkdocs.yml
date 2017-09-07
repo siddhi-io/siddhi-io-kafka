@@ -16,6 +16,6 @@ pages:
 - Welcome to WSO2 Siddhi IO Kafka: index.md
 - API Docs:
   - 4.0.3-SNAPSHOT: api/4.0.3-SNAPSHOT.md
-  - 4.0.4-SNAPSHOT: api/4.0.4-SNAPSHOT.md
+  - 4.0.4: api/4.0.4.md
 - License: license.md
 theme: material
