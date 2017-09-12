@@ -307,7 +307,7 @@ public class SequencedMessagingTestCase {
 
         dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
             @Override
-            public void receive(Event[] events) {
+            public synchronized void receive(Event[] events) {
                 count += events.length;
             }
         });
@@ -351,6 +351,7 @@ public class SequencedMessagingTestCase {
         while (!eventSender.isDone()) {
             Thread.sleep(100);
         }
+        Thread.sleep(5000);
 
         // Shutting down the external relay app to mimic a node failure and starting it again like a restart so that
         // after the restart it will replay the last published 5 messages as it's not being persisted.
@@ -423,7 +424,7 @@ public class SequencedMessagingTestCase {
 
         dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
             @Override
-            public void receive(Event[] events) {
+            public synchronized void receive(Event[] events) {
                 count += events.length;
             }
         });
@@ -540,7 +541,7 @@ public class SequencedMessagingTestCase {
 
         dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
             @Override
-            public void receive(Event[] events) {
+            public synchronized void receive(Event[] events) {
                 count += events.length;
             }
         });
