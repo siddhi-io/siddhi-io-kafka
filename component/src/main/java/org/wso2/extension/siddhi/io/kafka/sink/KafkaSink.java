@@ -47,78 +47,80 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Extension(
         name = "kafka",
         namespace = "sink",
-        description = "The Kafka Sink publishes records to a topic with a partition for a Kafka cluster which are in "
-                + "format such as `text`, `XML` and `JSON`.\n"
-                + "The Kafka Sink will create the default partition for a given topic, if the topic is not already "
-                + "been created in the Kafka cluster. The publishing topic and partition can be a dynamic value taken"
-                + " from the Siddhi event",
+        description = "A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka " +
+                "cluster. The events can be published in the `TEXT` `XML` or `JSON` format.\n" +
+                "If the topic is not already created in the Kafka cluster, the Kafka sink creates the default " +
+                "partition for the given topic. The publishing topic and partition can be a dynamic value taken " +
+                "from the Siddhi event.",
         parameters = {
                 @Parameter(name = "bootstrap.servers",
-                           description = "This should contain the kafka server list which the kafka sink should be "
-                                   + "publishing to. This should be given in comma separated values. "
-                                   + "eg: 'localhost:9092,localhost:9093' ",
+                           description = " This parameter specifies the list of Kafka servers to which the Kafka " +
+                                   "sink must publish events. This list should be provided as a set of comma " +
+                                   "separated values. e.g., `localhost:9092,localhost:9093`.",
                            type = {DataType.STRING}),
                 @Parameter(name = "topic",
-                           description = "The topic list which the sink should publish to. Only one topic should be "
-                                   + "given",
+                           description = "The topic to which the Kafka sink needs to publish events. Only one " +
+                                   "topic must be specified.",
                            type = {DataType.STRING}),
                 @Parameter(name = "partition.no",
-                           description = "The partition number for the given topic. Only one partition id can be "
-                                   + "defined. If this is not defined, the sink will be publishing to the topic's "
-                                   + "default partition.",
+                           description = "The partition number for the given topic. Only one partition ID can be " +
+                                   "defined. If no value is specified for this parameter, the Kafka sink publishes " +
+                                   "to the default partition of the topic",
                            type = {DataType.INT},
                            optional = true,
                            defaultValue = "0"),
                 @Parameter(name = "sequence.id",
-                        description = "Unique identifier to identify the messages published by this sink. Using this " +
-                                "id receivers can identify the sink which produced the message",
+                        description = "A unique identifier to identify the messages published by this sink. This ID " +
+                                "allows receivers to identify the sink that published a specific message.",
                         type = {DataType.STRING},
                         optional = true,
                         defaultValue = "null"),
                 @Parameter(name = "key",
-                           description = "The key will contain the values which is used to maintain ordering in a "
-                                   + "kafka partition.",
+                           description = "The key contains the values that are used to maintain ordering in a Kafka" +
+                                   " partition.",
                            type = {DataType.STRING},
                            optional = true,
                            defaultValue = "null"),
                 @Parameter(name = "optional.configuration",
-                           description = "This may contain all the other possible configurations which the consumer "
-                                   + "should be created with."
-                                   + "eg: producer.type:async,batch.size:200",
+                           description = "This parameter contains all the other possible configurations that the " +
+                                   "producer is created with. \n" +
+                                   "e.g., `producer.type:async,batch.size:200`",
                            optional = true,
                            type = {DataType.STRING},
                            defaultValue = "null")
         },
         examples = {
                 @Example(
-                        description = "The following query will publish to 'topic_with_partitions' and to its 0th "
-                                + "partition",
                         syntax = "@App:name('TestExecutionPlan') \n" +
                                 "define stream FooStream (symbol string, price float, volume long); \n" +
                                 "@info(name = 'query1') \n" +
-                                "@sink("
-                                    + "type='kafka', "
-                                    + "topic='topic_with_partitions', "
-                                    + "partition.no='0', "
-                                    + "bootstrap.servers='localhost:9092', "
-                                    + "@map(type='xml'))" +
+                                "@sink(\n" +
+                                "type='kafka',\n" +
+                                "topic='topic_with_partitions',\n" +
+                                "partition.no='0',\n" +
+                                "bootstrap.servers='localhost:9092',\n" +
+                                "@map(type='xml'))\n" +
                                 "Define stream BarStream (symbol string, price float, volume long);\n" +
-                                "from FooStream select symbol, price, volume insert into BarStream;\n"),
+                                "from FooStream select symbol, price, volume insert into BarStream;\n",
+                        description = "This Kafka sink configuration publishes to 0th partition of the topic named " +
+                        "`topic_with_partitions`."),
+
                 @Example(
-                        description = "The following query will publish dynamic topic and partitions which will be "
-                                + "taken from the siddhi event. partition number value will be taken from the "
-                                + "'volume' attribute and the topic value will be taken from the 'symbol' attribute.",
                         syntax = "@App:name('TestExecutionPlan') \n" +
                                 "define stream FooStream (symbol string, price float, volume long); \n" +
                                 "@info(name = 'query1') \n" +
-                                "@sink("
-                                    + "type='kafka', "
-                                    + "topic='{{symbol}}', "
-                                    + "partition.no='{{volume}}', "
-                                    + "bootstrap.servers='localhost:9092', "
-                                    + "@map(type='xml'))" +
+                                "@sink(\n" +
+                                "type='kafka',\n" +
+                                "topic='{{symbol}}',\n" +
+                                "partition.no='{{volume}}',\n" +
+                                "bootstrap.servers='localhost:9092',\n" +
+                                "@map(type='xml'))\n" +
                                 "Define stream BarStream (symbol string, price float, volume long); \n" +
-                                "from FooStream select symbol, price, volume insert into BarStream; \n")}
+                                "from FooStream select symbol, price, volume insert into BarStream;",
+                        description = "This query publishes dynamic topic and partitions that are taken from the " +
+                        "Siddhi event. The value for `partition.no` is taken from the `volume` attribute, and the " +
+                        "topic value is taken from the `symbol` attribute.")
+        }
 )
 public class KafkaSink extends Sink {
 
