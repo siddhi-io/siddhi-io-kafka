@@ -81,7 +81,7 @@ public class KafkaSourceTestCase {
                             "define stream BarStream (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
                             "@source(type='kafka', topic.list='single_topic', group.id='test_single_topic', " +
-                            "threading.option='single.thread', bootstrap.servers='127.0.0.1:9092'," +
+                            "threading.option='single.thread', bootstrap.servers='localhost:9092'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
@@ -132,7 +132,7 @@ public class KafkaSourceTestCase {
                             "define stream BarStream (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
                             "@source(type='kafka', group.id='test', threading.option='single.thread', "
-                            + "bootstrap.servers='127.0.0.1:9092'," +
+                            + "bootstrap.servers='localhost:9092'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
@@ -161,7 +161,7 @@ public class KafkaSourceTestCase {
                             "@info(name = 'query1') " +
                             "@source(type='kafka', topic.list='multiple_topic1,multiple_topic2', "
                             + "group.id='test_multiple_topic1_multiple_topic2', " +
-                            "threading.option='single.thread', bootstrap.servers='127.0.0.1:9092'," +
+                            "threading.option='single.thread', bootstrap.servers='localhost:9092'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
@@ -225,7 +225,7 @@ public class KafkaSourceTestCase {
                             + "partition.no.list='0', "
                             + "group.id='test_topic_with_one_partition', "
                             + "threading.option='single.thread', "
-                            + "bootstrap.servers='127.0.0.1:9092'," +
+                            + "bootstrap.servers='localhost:9092'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
@@ -279,7 +279,7 @@ public class KafkaSourceTestCase {
                             "@source(type='kafka', topic.list='topic_without_some_partition', "
                             + "partition.no.list='0,1,2', "
                             + "group.id='test_topic_without_some_partition', threading.option='single.thread', "
-                            + "bootstrap.servers='127.0.0.1:9092'," +
+                            + "bootstrap.servers='localhost:9092'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
@@ -316,7 +316,7 @@ public class KafkaSourceTestCase {
                             + "partition.no.list='1', "
                             + "group.id='test_multiple_topic1_two_par_one_sub', "
                             + "threading.option='single.thread', "
-                            + "bootstrap.servers='127.0.0.1:9092'," +
+                            + "bootstrap.servers='localhost:9092'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
@@ -377,7 +377,7 @@ public class KafkaSourceTestCase {
                             + "partition.no.list='0,1', "
                             + "group.id='test_multiple_topic1_two_par_all_sub', "
                             + "threading.option='single.thread', "
-                            + "bootstrap.servers='127.0.0.1:9092'," +
+                            + "bootstrap.servers='localhost:9092'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
@@ -470,7 +470,7 @@ public class KafkaSourceTestCase {
                             + "topic.list='multiple_topic1,multiple_topic2', "
                             + "group.id='test_multiple_topic1_multiple_topic2', "
                             + "threading.option='topic.wise', "
-                            + "bootstrap.servers='127.0.0.1:9092'," +
+                            + "bootstrap.servers='localhost:9092'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
@@ -532,7 +532,7 @@ public class KafkaSourceTestCase {
                             + "topic.list='multiple_topic1_2par,multiple_topic2_2par', "
                             + "group.id='test_multiple_topic1_2par_multiple_topic2_2par', "
                             + "threading.option='partition.wise', "
-                            + "bootstrap.servers='127.0.0.1:9092', "
+                            + "bootstrap.servers='localhost:9092', "
                             + "partition.no.list='0,1'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
@@ -623,7 +623,7 @@ public class KafkaSourceTestCase {
                             "@info(name = 'query1') " +
                             "@source(type='kafka', "
                             + "topic.list='single_topic_without_groupid', " +
-                            "threading.option='single.thread', bootstrap.servers='127.0.0.1:9092'," +
+                            "threading.option='single.thread', bootstrap.servers='localhost:9092'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
@@ -657,14 +657,14 @@ public class KafkaSourceTestCase {
                             "@info(name = 'query1') "
                             + "@source(type='kafka', topic.list='single_topic_different_group_ids', "
                             + "group.id='test_single_topic_different_group_ids', "
-                            + "threading.option='single.thread', bootstrap.servers='127.0.0.1:9092',"
+                            + "threading.option='single.thread', bootstrap.servers='localhost:9092',"
                             + "@map(type='xml'))"
                             + "Define stream FooStream (symbol string, price float, volume long); " +
 
                             "@info(name = 'query2') "
                             + "@source(type='kafka', topic.list='single_topic_different_group_ids', "
                             + "group.id='test2_single_topic_different_group_ids2', "
-                            + "threading.option='single.thread', bootstrap.servers='127.0.0.1:9092',"
+                            + "threading.option='single.thread', bootstrap.servers='localhost:9092',"
                             + "@map(type='xml'))"
                             + "Define stream FooStream2 (symbol string, price float, volume long); " +
 
@@ -737,14 +737,14 @@ public class KafkaSourceTestCase {
                             "@info(name = 'query1') "
                             + "@source(type='kafka', topic.list='single_topic_same_group_ids', "
                             + "group.id='test_single_topic_same_group_ids', "
-                            + "threading.option='single.thread', bootstrap.servers='127.0.0.1:9092',"
+                            + "threading.option='single.thread', bootstrap.servers='localhost:9092',"
                             + "@map(type='xml'))"
                             + "Define stream FooStream (symbol string, price float, volume long); " +
 
                             "@info(name = 'query2') "
                             + "@source(type='kafka', topic.list='single_topic_same_group_ids', "
                             + "group.id='test_single_topic_same_group_ids', "
-                            + "threading.option='single.thread', bootstrap.servers='127.0.0.1:9092',"
+                            + "threading.option='single.thread', bootstrap.servers='localhost:9092',"
                             + "@map(type='xml'))"
                             + "Define stream FooStream2 (symbol string, price float, volume long); " +
 
@@ -811,7 +811,7 @@ public class KafkaSourceTestCase {
                             "@info(name = 'query1') " +
                             "@source(type='kafka', topic.list='non_existing_topic1', "
                             + "group.id='test_non_existing_topic1', " +
-                            "threading.option='single.thread', bootstrap.servers='127.0.0.1:9092'," +
+                            "threading.option='single.thread', bootstrap.servers='localhost:9092'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
@@ -863,7 +863,7 @@ public class KafkaSourceTestCase {
                         "define stream BarStream (symbol string, price float, volume long); " +
                         "@info(name = 'query1') " +
                         "@source(type='kafka', topic.list='kafka_topic,kafka_topic2', group.id='test', " +
-                        "threading.option='partition.wise', bootstrap.servers='127.0.0.1:9092', " +
+                        "threading.option='partition.wise', bootstrap.servers='localhost:9092', " +
                         "partition.no.list='0,1', " +
                         "@map(type='xml'))" +
                         "Define stream FooStream (symbol string, price float, volume long);" +
@@ -922,7 +922,7 @@ public class KafkaSourceTestCase {
                             "@info(name = 'query1') " +
                             "@source(type='kafka', topic.list='kafka_topic_with_2par,kafka_topic2_with_2par', "
                             + "group.id='test_kafka_topic_with_2par_kafka_topic2_with_2par', "
-                            + "threading.option='topic.wise', bootstrap.servers='127.0.0.1:9092', "
+                            + "threading.option='topic.wise', bootstrap.servers='localhost:9092', "
                             + "partition.no.list='0,1', " +
                             "@map(type='xml'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
@@ -988,7 +988,7 @@ public class KafkaSourceTestCase {
                             + "partition.no.list='0,1', "
                             + "group.id='test', "
                             + "threading.option='single.thread', "
-                            + "bootstrap.servers='127.0.0.1:9092,127.0.0.1:9093'," +
+                            + "bootstrap.servers='localhost:9092,localhost:9093'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
@@ -1006,7 +1006,7 @@ public class KafkaSourceTestCase {
             });
             siddhiAppRuntime.start();
             Thread.sleep(2000);
-            KafkaTestUtil.kafkaPublisher(topics, 2, 2, false, "127.0.0.1:9093,127.0.0.1:9092", true);
+            KafkaTestUtil.kafkaPublisher(topics, 2, 2, false, "localhost:9093,localhost:9092", true);
             Thread.sleep(1000);
             List<String> expectedNames = new ArrayList<>(2);
             expectedNames.add("single_topic1_two_par_two_servers");
@@ -1048,7 +1048,7 @@ public class KafkaSourceTestCase {
                             + "partition.no.list='0,1,2,3', "
                             + "group.id='test_single_topic1_multiple_par_all_sub', "
                             + "threading.option='single.thread', "
-                            + "bootstrap.servers='127.0.0.1:9092'," +
+                            + "bootstrap.servers='localhost:9092'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
@@ -1112,7 +1112,7 @@ public class KafkaSourceTestCase {
                             + "partition.no.list='0', "
                             + "group.id='test_single_topic1_multiple_par_all_sub', "
                             + "threading.option='single.thread', "
-                            + "bootstrap.servers='127.0.0.1:9092'," +
+                            + "bootstrap.servers='localhost:9092'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
@@ -1125,7 +1125,7 @@ public class KafkaSourceTestCase {
                             + "partition.no.list='1', "
                             + "group.id='test_single_topic1_multiple_par_all_sub', "
                             + "threading.option='single.thread', "
-                            + "bootstrap.servers='127.0.0.1:9092'," +
+                            + "bootstrap.servers='localhost:9092'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
@@ -1138,7 +1138,7 @@ public class KafkaSourceTestCase {
                             + "partition.no.list='2', "
                             + "group.id='test_single_topic1_multiple_par_all_sub', "
                             + "threading.option='single.thread', "
-                            + "bootstrap.servers='127.0.0.1:9092'," +
+                            + "bootstrap.servers='localhost:9092'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
@@ -1151,7 +1151,7 @@ public class KafkaSourceTestCase {
                             + "partition.no.list='3', "
                             + "group.id='test_single_topic1_multiple_par_all_sub', "
                             + "threading.option='single.thread', "
-                            + "bootstrap.servers='127.0.0.1:9092'," +
+                            + "bootstrap.servers='localhost:9092'," +
                             "@map(type='xml'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
