@@ -55,7 +55,7 @@ import java.util.concurrent.ScheduledExecutorService;
                 @Parameter(name = "bootstrap.servers",
                            description = "This specifies the list of Kafka servers to which the Kafka source " +
                                    "must listen. This list should beprovided as a set of comma-separated values.\n" +
-                                   "e.g., `localhost:9092,localhost:9093`",
+                                   "e.g., `127.0.0.1:9092,127.0.0.1:9093`",
                            type = {DataType.STRING}),
                 @Parameter(name = "topic.list",
                            description = "This specifies the list of topics to which the source must listen. This " +
@@ -105,7 +105,7 @@ import java.util.concurrent.ScheduledExecutorService;
                                 "topic.list='kafka_topic,kafka_topic2', \n" +
                                 "group.id='test', \n" +
                                 "threading.option='partition.wise', \n" +
-                                "bootstrap.servers='localhost:9092', \n" +
+                                "bootstrap.servers='127.0.0.1:9092', \n" +
                                 "partition.no.list='0,1', \n" +
                                 "@map(type='xml'))\n" +
                                 "Define stream FooStream (symbol string, price float, volume long);\n" +
@@ -123,7 +123,7 @@ import java.util.concurrent.ScheduledExecutorService;
                                 "topic.list='kafka_topic',\n" +
                                 "group.id='test', \n" +
                                 "threading.option='single.thread',\n" +
-                                "bootstrap.servers='localhost:9092',\n" +
+                                "bootstrap.servers='127.0.0.1:9092',\n" +
                                 "@map(type='xml'))\n" +
                                 "Define stream FooStream (symbol string, price float, volume long);\n" +
                                 "from FooStream select symbol, price, volume insert into BarStream;\n",

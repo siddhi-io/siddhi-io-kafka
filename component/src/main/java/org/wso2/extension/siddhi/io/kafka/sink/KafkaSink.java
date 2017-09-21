@@ -56,7 +56,7 @@ import java.util.concurrent.atomic.AtomicInteger;
                 @Parameter(name = "bootstrap.servers",
                            description = " This parameter specifies the list of Kafka servers to which the Kafka " +
                                    "sink must publish events. This list should be provided as a set of comma " +
-                                   "separated values. e.g., `localhost:9092,localhost:9093`.",
+                                   "separated values. e.g., `127.0.0.1:9092,127.0.0.1:9093`.",
                            type = {DataType.STRING}),
                 @Parameter(name = "topic",
                            description = "The topic to which the Kafka sink needs to publish events. Only one " +
@@ -98,7 +98,7 @@ import java.util.concurrent.atomic.AtomicInteger;
                                 "type='kafka',\n" +
                                 "topic='topic_with_partitions',\n" +
                                 "partition.no='0',\n" +
-                                "bootstrap.servers='localhost:9092',\n" +
+                                "bootstrap.servers='127.0.0.1:9092',\n" +
                                 "@map(type='xml'))\n" +
                                 "Define stream BarStream (symbol string, price float, volume long);\n" +
                                 "from FooStream select symbol, price, volume insert into BarStream;\n",
@@ -113,7 +113,7 @@ import java.util.concurrent.atomic.AtomicInteger;
                                 "type='kafka',\n" +
                                 "topic='{{symbol}}',\n" +
                                 "partition.no='{{volume}}',\n" +
-                                "bootstrap.servers='localhost:9092',\n" +
+                                "bootstrap.servers='127.0.0.1:9092',\n" +
                                 "@map(type='xml'))\n" +
                                 "Define stream BarStream (symbol string, price float, volume long); \n" +
                                 "from FooStream select symbol, price, volume insert into BarStream;",

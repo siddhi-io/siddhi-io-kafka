@@ -80,12 +80,12 @@ public class SequencedMessagingTestCase {
 
         final String externalDataRelayQuery = "@App:name('ExternalDataRelayApp') " +
                 "@info(name = 'ExternalEventRelayQuery') " +
-                "@sink(type='kafka', topic='IntermediateTopic-1', bootstrap.servers='localhost:9092', " +
+                "@sink(type='kafka', topic='IntermediateTopic-1', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no='0', sequence.id='ExternalDataRelayApp', @map(type='xml')) " +
                 "define stream BarStream (symbol string, count long); " +
 
                 "@source(type='kafka', topic.list='ExternalTopic-1', group.id='test1', " +
-                "threading.option='topic.wise', bootstrap.servers='localhost:9092', " +
+                "threading.option='topic.wise', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no.list='0', @map(type='xml'))" +
 
                 "Define stream FooStream (symbol string, price float, volume long); " +
@@ -97,7 +97,7 @@ public class SequencedMessagingTestCase {
 
                 "@info(name = 'DataReceiveQuery') " +
                 "@source(type='kafka', topic.list='IntermediateTopic-1', group.id='test1', " +
-                "threading.option='topic.wise', seq.enabled='true', bootstrap.servers='localhost:9092', " +
+                "threading.option='topic.wise', seq.enabled='true', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no.list='0', @map(type='xml')) " +
                 "Define stream FooStream1 (symbol string, count long);" +
 
@@ -179,12 +179,12 @@ public class SequencedMessagingTestCase {
 
         final String externalDataRelayQuery = "@App:name('ExternalDataRelayApp') " +
                 "@info(name = 'ExternalEventRelayQuery') " +
-                "@sink(type='kafka', topic='IntermediateTopic-2', bootstrap.servers='localhost:9092', " +
+                "@sink(type='kafka', topic='IntermediateTopic-2', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no='{{count}}', sequence.id='ExternalDataRelayApp', @map(type='xml')) " +
                 "Define stream BarStream (symbol string, count long, total long); " +
 
                 "@source(type='kafka', topic.list='ExternalTopic-2', group.id='test2', " +
-                "threading.option='topic.wise', bootstrap.servers='localhost:9092', " +
+                "threading.option='topic.wise', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no.list='0', @map(type='xml'))" +
                 "Define stream FooStream (symbol string, price float, volume long); " +
 
@@ -195,7 +195,7 @@ public class SequencedMessagingTestCase {
 
                 "@info(name = 'DataReceiveQuery') " +
                 "@source(type='kafka', topic.list='IntermediateTopic-2', group.id='test2', " +
-                "threading.option='topic.wise', seq.enabled='true', bootstrap.servers='localhost:9092', " +
+                "threading.option='topic.wise', seq.enabled='true', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no.list='0,1,2', @map(type='xml')) " +
                 "Define stream FooStream1 (symbol string, count long, total long);" +
 
@@ -280,12 +280,12 @@ public class SequencedMessagingTestCase {
 
         final String externalDataRelayQuery = "@App:name('ExternalDataRelayApp') " +
                 "@info(name = 'ExternalEventRelayQuery') " +
-                "@sink(type='kafka', topic='IntermediateTopic-3', bootstrap.servers='localhost:9092', " +
+                "@sink(type='kafka', topic='IntermediateTopic-3', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no='{{count}}', sequence.id='ExternalDataRelayApp', @map(type='xml')) " +
                 "Define stream BarStream (symbol string, count long, total long); " +
 
                 "@source(type='kafka', topic.list='ExternalTopic-3', group.id='test3', " +
-                "threading.option='topic.wise', bootstrap.servers='localhost:9092', " +
+                "threading.option='topic.wise', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no.list='0', @map(type='xml'))" +
                 "Define stream FooStream (symbol string, price float, volume long); " +
 
@@ -296,7 +296,7 @@ public class SequencedMessagingTestCase {
 
                 "@info(name = 'DataReceiveQuery') " +
                 "@source(type='kafka', topic.list='IntermediateTopic-3', group.id='test3', " +
-                "threading.option='partition.wise', seq.enabled='true', bootstrap.servers='localhost:9092', " +
+                "threading.option='partition.wise', seq.enabled='true', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no.list='0,1,2', @map(type='xml')) " +
                 "Define stream FooStream1 (symbol string, count long, total long);" +
 
@@ -385,21 +385,21 @@ public class SequencedMessagingTestCase {
         // topic which is consumed by another siddhi app using two different sequence ids.
         final String externalDataRelayQuery = "@App:name('ExternalDataRelayApp') " +
                 "@info(name = 'ExternalEventRelayQuery') " +
-                "@sink(type='kafka', topic='IntermediateTopic-4', bootstrap.servers='localhost:9092', " +
+                "@sink(type='kafka', topic='IntermediateTopic-4', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no='{{count}}', sequence.id='ExternalDataRelayAppSink1', @map(type='xml')) " +
                 "Define stream BarStream (symbol string, count long, total long); " +
 
-                "@sink(type='kafka', topic='IntermediateTopic-4', bootstrap.servers='localhost:9092', " +
+                "@sink(type='kafka', topic='IntermediateTopic-4', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no='{{count}}', sequence.id='ExternalDataRelayAppSink2', @map(type='xml')) " +
                 "Define stream SecondBarStream (symbol string, count long, total long); " +
 
                 "@source(type='kafka', topic.list='ExternalTopic-4', group.id='test4', " +
-                "threading.option='topic.wise', bootstrap.servers='localhost:9092', " +
+                "threading.option='topic.wise', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no.list='0', @map(type='xml'))" +
                 "Define stream FooStream (symbol string, price float, volume long); " +
 
                 "@source(type='kafka', topic.list='SecondExternalTopic-4', group.id='test4', " +
-                "threading.option='topic.wise', bootstrap.servers='localhost:9092', " +
+                "threading.option='topic.wise', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no.list='0', @map(type='xml'))" +
                 "Define stream SecondFooStream (symbol string, price float, volume long); " +
 
@@ -412,7 +412,7 @@ public class SequencedMessagingTestCase {
 
                 "@info(name = 'DataReceiveQuery') " +
                 "@source(type='kafka', topic.list='IntermediateTopic-4', group.id='test4', " +
-                "threading.option='partition.wise', seq.enabled='true', bootstrap.servers='localhost:9092', " +
+                "threading.option='partition.wise', seq.enabled='true', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no.list='0,1,2', @map(type='xml')) " +
                 "Define stream FooStream1 (symbol string, count long, total long);" +
 
@@ -502,21 +502,21 @@ public class SequencedMessagingTestCase {
         // topic which is consumed by another siddhi app using two different sequence ids.
         final String externalDataRelayQuery = "@App:name('ExternalDataRelayApp') " +
                 "@info(name = 'ExternalEventRelayQuery') " +
-                "@sink(type='kafka', topic='IntermediateTopic-5', bootstrap.servers='localhost:9092', " +
+                "@sink(type='kafka', topic='IntermediateTopic-5', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no='0', sequence.id='ExternalDataRelayAppSink1', @map(type='xml')) " +
                 "Define stream BarStream (symbol string, count long); " +
 
-                "@sink(type='kafka', topic='IntermediateTopic-5', bootstrap.servers='localhost:9092', " +
+                "@sink(type='kafka', topic='IntermediateTopic-5', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no='0', sequence.id='ExternalDataRelayAppSink2', @map(type='xml')) " +
                 "Define stream SecondBarStream (symbol string, count long); " +
 
                 "@source(type='kafka', topic.list='ExternalTopic-5', group.id='test5', " +
-                "threading.option='topic.wise', bootstrap.servers='localhost:9092', " +
+                "threading.option='topic.wise', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no.list='0', @map(type='xml'))" +
                 "Define stream FooStream (symbol string, price float, volume long); " +
 
                 "@source(type='kafka', topic.list='SecondExternalTopic-5', group.id='test5', " +
-                "threading.option='topic.wise', bootstrap.servers='localhost:9092', " +
+                "threading.option='topic.wise', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no.list='0', @map(type='xml'))" +
                 "Define stream SecondFooStream (symbol string, price float, volume long); " +
 
@@ -529,7 +529,7 @@ public class SequencedMessagingTestCase {
 
                 "@info(name = 'DataReceiveQuery') " +
                 "@source(type='kafka', topic.list='IntermediateTopic-5', group.id='test5', " +
-                "threading.option='topic.wise', seq.enabled='true', bootstrap.servers='localhost:9092', " +
+                "threading.option='topic.wise', seq.enabled='true', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no.list='0', @map(type='xml')) " +
                 "Define stream FooStream1 (symbol string, count long);" +
 
@@ -617,12 +617,12 @@ public class SequencedMessagingTestCase {
 
         final String externalDataRelayQuery = "@App:name('ExternalDataRelayApp') " +
                 "@info(name = 'ExternalEventRelayQuery') " +
-                "@sink(type='kafka', topic='IntermediateTopic-6', bootstrap.servers='localhost:9092', " +
+                "@sink(type='kafka', topic='IntermediateTopic-6', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no='0', @map(type='xml')) " +
                 "define stream BarStream (symbol string, count long); " +
 
                 "@source(type='kafka', topic.list='ExternalTopic-6', group.id='test6', " +
-                "threading.option='topic.wise', bootstrap.servers='localhost:9092', " +
+                "threading.option='topic.wise', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no.list='0', @map(type='xml'))" +
 
                 "Define stream FooStream (symbol string, price float, volume long); " +
@@ -634,7 +634,7 @@ public class SequencedMessagingTestCase {
 
                 "@info(name = 'DataReceiveQuery') " +
                 "@source(type='kafka', topic.list='IntermediateTopic-6', group.id='test6', " +
-                "threading.option='topic.wise', seq.enabled='true', bootstrap.servers='localhost:9092', " +
+                "threading.option='topic.wise', seq.enabled='true', bootstrap.servers='127.0.0.1:9092', " +
                 "partition.no.list='0', @map(type='xml')) " +
                 "Define stream FooStream1 (symbol string, count long);" +
 

@@ -90,7 +90,7 @@ public class KafkaSourceHATestCase {
                             "@info(name = 'query1') " +
                             "@source(type='kafka', topic.list='kafka_topic3', group.id='test1', threading" +
                             ".option='partition.wise', " +
-                            "bootstrap.servers='localhost:9092', partition.no.list='0,1', " +
+                            "bootstrap.servers='127.0.0.1:9092', partition.no.list='0,1', " +
                             "@map(type='text'))" +
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
@@ -161,7 +161,7 @@ public class KafkaSourceHATestCase {
                     "define stream BarStream (count long); " +
                     "@info(name = 'query1') " +
                     "@source(type='kafka', topic.list='kafka_topic4', group.id='test', " +
-                    "threading.option='topic.wise', bootstrap.servers='localhost:9092', partition.no.list='0', " +
+                    "threading.option='topic.wise', bootstrap.servers='127.0.0.1:9092', partition.no.list='0', " +
                     "@map(type='text'))" +
                     "Define stream FooStream (symbol string, price float, volume long);" +
                     "from FooStream select count(symbol) as count insert into BarStream;";
@@ -258,12 +258,12 @@ public class KafkaSourceHATestCase {
 //            siddhiManager2.setExtension("inputmapper:text", XmlSourceMapper.class);
 
             String query1 = "@App:name('TestExecutionPlan') " +
-                    "@sink(type='kafka', topic='kafka_topic6', bootstrap.servers='localhost:9092', partition" +
+                    "@sink(type='kafka', topic='kafka_topic6', bootstrap.servers='127.0.0.1:9092', partition" +
                     ".no='0', " +
                     "@map(type='text'))" +
                     "define stream BarStream (count long); " +
                     "@source(type='kafka', topic.list='kafka_topic5', group.id='test', " +
-                    "threading.option='topic.wise', bootstrap.servers='localhost:9092', partition.no.list='0', " +
+                    "threading.option='topic.wise', bootstrap.servers='127.0.0.1:9092', partition.no.list='0', " +
                     "@map(type='text'))" +
                     "Define stream FooStream (symbol string, price float, volume long);" +
                     "@info(name = 'query1') " +
@@ -272,7 +272,7 @@ public class KafkaSourceHATestCase {
             String query2 = "@App:name('TestExecutionPlan') " +
                     "define stream BarStream (count long); " +
                     "@source(type='kafka', topic.list='kafka_topic6', group.id='test', " +
-                    "threading.option='topic.wise', bootstrap.servers='localhost:9092', partition.no.list='0', " +
+                    "threading.option='topic.wise', bootstrap.servers='127.0.0.1:9092', partition.no.list='0', " +
                     "@map(type='text'))" +
                     "Define stream FooStream (count long);" +
                     "@info(name = 'query1') " +
@@ -390,7 +390,7 @@ public class KafkaSourceHATestCase {
                                 .element("threads", "1")
                                 .element("partition.no.list", "0,1")
                                 .element("group.id", "group1")
-                                .element("bootstrap.servers", "localhost:9092")
+                                .element("bootstrap.servers", "127.0.0.1:9092")
                                 .annotation(Annotation.annotation("map")
                                         .element("type", "text")));
 
@@ -402,7 +402,7 @@ public class KafkaSourceHATestCase {
                                 .element("type", "kafka")
                                 .element("topic", "publisher_topic")
                                 .element("partition.no", "0")
-                                .element("bootstrap.servers", "localhost:9092")
+                                .element("bootstrap.servers", "127.0.0.1:9092")
                                 .annotation(Annotation.annotation("map")
                                         .element("type", "text")));
 
