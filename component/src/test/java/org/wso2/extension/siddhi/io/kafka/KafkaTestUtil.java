@@ -74,7 +74,7 @@ public class KafkaTestUtil {
             // mock kafka
             Properties props = new Properties();
             props.put("broker.id", "0");
-            props.put("host.name", "127.0.0.1");
+            props.put("host.name", "localhost");
             props.put("port", "9092");
             props.put("log.dir", kafkaLogDir);
             props.put("zookeeper.connect", zkTestServer.getConnectString());
@@ -93,7 +93,7 @@ public class KafkaTestUtil {
             // mock kafka
             Properties props = new Properties();
             props.put("broker.id", "1");
-            props.put("host.name", "127.0.0.1");
+            props.put("host.name", "localhost");
             props.put("port", "9093");
             props.put("log.dir", kafkaLogDir2);
             props.put("zookeeper.connect", zkTestServer.getConnectString());
@@ -143,8 +143,8 @@ public class KafkaTestUtil {
     }
 
     public static void createTopic(String topics[], int numOfPartitions) {
-        ZkClient zkClient = new ZkClient("127.0.0.1:2181", 30000, 30000, ZKStringSerializer$.MODULE$);
-        ZkConnection zkConnection = new ZkConnection("127.0.0.1:2181");
+        ZkClient zkClient = new ZkClient("localhost:2181", 30000, 30000, ZKStringSerializer$.MODULE$);
+        ZkConnection zkConnection = new ZkConnection("localhost:2181");
         ZkUtils zkUtils = new ZkUtils(zkClient, zkConnection, false);
         for (String topic : topics) {
             try {
@@ -157,8 +157,8 @@ public class KafkaTestUtil {
     }
 
     public static void deleteTopic(String topics[]) {
-        ZkClient zkClient = new ZkClient("127.0.0.1:2181", 30000, 30000, ZKStringSerializer$.MODULE$);
-        ZkConnection zkConnection = new ZkConnection("127.0.0.1:2181");
+        ZkClient zkClient = new ZkClient("localhost:2181", 30000, 30000, ZKStringSerializer$.MODULE$);
+        ZkConnection zkConnection = new ZkConnection("localhost:2181");
         ZkUtils zkUtils = new ZkUtils(zkClient, zkConnection, false);
         for (String topic : topics) {
             AdminUtils.deleteTopic(zkUtils, topic);
@@ -176,7 +176,7 @@ public class KafkaTestUtil {
                                       boolean publishWithPartition, String bootstrapServers, boolean isXML) {
         Properties props = new Properties();
         if (null == bootstrapServers) {
-            props.put("bootstrap.servers", "127.0.0.1:9092");
+            props.put("bootstrap.servers", "localhost:9092");
         } else {
             props.put("bootstrap.servers", bootstrapServers);
         }
