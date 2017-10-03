@@ -108,7 +108,7 @@ public class SequencedMessagingTestCase {
 
         dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
             @Override
-            public void receive(Event[] events) {
+            public synchronized void receive(Event[] events) {
                 count += events.length;
             }
         });
@@ -140,13 +140,8 @@ public class SequencedMessagingTestCase {
         LOG.info("Finished persisting the state of external event relay siddhi app");
 
         // Send more events after persisting the state
-        eventSender = executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                KafkaTestUtil.kafkaPublisher(
-                        new String[]{"ExternalTopic-1"}, 1, 5, 100, false, null, true);
-            }
-        });
+        eventSender = executorService.submit((Runnable) () -> KafkaTestUtil.kafkaPublisher(
+                new String[]{"ExternalTopic-1"}, 1, 5, 100, false, null, true));
         while (!eventSender.isDone()) {
             Thread.sleep(100);
         }
@@ -206,7 +201,7 @@ public class SequencedMessagingTestCase {
 
         dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
             @Override
-            public void receive(Event[] events) {
+            public synchronized void receive(Event[] events) {
                 count += events.length;
             }
         });
@@ -646,7 +641,7 @@ public class SequencedMessagingTestCase {
 
         dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
             @Override
-            public void receive(Event[] events) {
+            public synchronized void receive(Event[] events) {
                 count += events.length;
             }
         });
