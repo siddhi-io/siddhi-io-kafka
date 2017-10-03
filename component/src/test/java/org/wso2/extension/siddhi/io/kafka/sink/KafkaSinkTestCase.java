@@ -76,7 +76,7 @@ public class KafkaSinkTestCase {
         try {
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntimeSource = siddhiManager.createSiddhiAppRuntime(
-                    "@App:name('TestExecutionPlan2') " +
+                    "@App:name('TestExecutionPlan1') " +
                             "define stream BarStream2 (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
                             "@source(type='kafka', topic.list='single_topic', group.id='single_topic_test', " +
@@ -169,7 +169,7 @@ public class KafkaSinkTestCase {
             siddhiAppRuntimeSource.start();
             Thread.sleep(4000);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
-                    "@App:name('TestExecutionPlan') " +
+                    "@App:name('TestExecutionPlan3') " +
                             "define stream FooStream (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
                             "@sink(type='kafka', topic='topic_with_two_partitions_sub0', partition.no='0', "
@@ -214,7 +214,7 @@ public class KafkaSinkTestCase {
         try {
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
-                    "@App:name('TestExecutionPlan') " +
+                    "@App:name('TestExecutionPlan4') " +
                             "define stream FooStream (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
                             "@sink(type='kafka', topic='invalid_topic_without_partition2', "
@@ -231,7 +231,7 @@ public class KafkaSinkTestCase {
             // will create the topic.
             Thread.sleep(2000);
             SiddhiAppRuntime siddhiAppRuntimeSource = siddhiManager.createSiddhiAppRuntime(
-                    "@App:name('TestExecutionPlan2') " +
+                    "@App:name('TestExecutionPlan5') " +
                             "define stream BarStream2 (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
                             "@source(type='kafka', topic.list='invalid_topic_without_partition2', "
@@ -287,7 +287,7 @@ public class KafkaSinkTestCase {
         try {
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
-                    "@App:name('TestExecutionPlan') " +
+                    "@App:name('TestExecutionPlan6') " +
                             "define stream FooStream (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
                             "@sink(type='kafka', topic='invalid_topic_with_partition', "
@@ -304,7 +304,7 @@ public class KafkaSinkTestCase {
             // will create the topic.
             Thread.sleep(2000);
             SiddhiAppRuntime siddhiAppRuntimeSource = siddhiManager.createSiddhiAppRuntime(
-                    "@App:name('TestExecutionPlan2') " +
+                    "@App:name('TestExecutionPlan7') " +
                             "define stream BarStream2 (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
                             "@source(type='kafka', topic.list='invalid_topic_with_partition', "
@@ -363,7 +363,7 @@ public class KafkaSinkTestCase {
         try {
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
-                    "@App:name('TestExecutionPlan') " +
+                    "@App:name('TestExecutionPlan8') " +
                             "define stream FooStream (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
                             "@sink(type='kafka', topic='invalid_topic_with_partition_3', "
@@ -380,7 +380,7 @@ public class KafkaSinkTestCase {
             // will create the topic.
             Thread.sleep(2000);
             SiddhiAppRuntime siddhiAppRuntimeSource = siddhiManager.createSiddhiAppRuntime(
-                    "@App:name('TestExecutionPlan2') " +
+                    "@App:name('TestExecutionPlan9') " +
                             "define stream BarStream2 (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
                             "@source(type='kafka', topic.list='invalid_topic_with_partition_3', "
@@ -437,7 +437,7 @@ public class KafkaSinkTestCase {
         try {
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
-                    "@App:name('TestExecutionPlan') " +
+                    "@App:name('TestExecutionPlan10') " +
                             "define stream FooStream (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
                             "@sink(type='kafka', topic='invalid_topic_with_partition_2', "
@@ -454,7 +454,7 @@ public class KafkaSinkTestCase {
             // will create the topic.
             Thread.sleep(2000);
             SiddhiAppRuntime siddhiAppRuntimeSource = siddhiManager.createSiddhiAppRuntime(
-                    "@App:name('TestExecutionPlan2') " +
+                    "@App:name('TestExecutionPlan11') " +
                             "define stream BarStream2 (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
                             "@source(type='kafka', topic.list='invalid_topic_with_partition_2', "
@@ -501,7 +501,7 @@ public class KafkaSinkTestCase {
             Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime executionPlanRuntime = siddhiManager.createSiddhiAppRuntime(
-                    "@App:name('TestExecutionPlan') " +
+                    "@App:name('TestExecutionPlan12') " +
                             "define stream FooStream (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
                             "@sink(type='kafka', topic='{{symbol}}', bootstrap.servers='localhost:9092', " +
@@ -513,7 +513,7 @@ public class KafkaSinkTestCase {
 
 
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
-                    "@App:name('TestExecutionPlan') " +
+                    "@App:name('TestExecutionPlan13') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
                             "@source(type='kafka', topic.list='multiple_topic1,multiple_topic2', "
@@ -571,7 +571,7 @@ public class KafkaSinkTestCase {
             Thread.sleep(10000);
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime executionPlanRuntime = siddhiManager.createSiddhiAppRuntime(
-                    "@App:name('TestExecutionPlan') " +
+                    "@App:name('TestExecutionPlan14') " +
                             "define stream FooStream (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
                             "@sink(type='kafka', topic='{{symbol}}', partition.no='{{volume}}', "
@@ -584,7 +584,7 @@ public class KafkaSinkTestCase {
 
 
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
-                    "@App:name('TestExecutionPlan') " +
+                    "@App:name('TestExecutionPlan15') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
                             "@source(type='kafka', "

@@ -40,10 +40,16 @@ import java.util.Properties;
 public class KafkaTestUtil {
     private static final Logger log = Logger.getLogger(KafkaTestUtil.class);
     private static TestingServer zkTestServer;
+    private static TestingServer zkTestServer2;
     private static KafkaServerStartable kafkaServer;
     private static KafkaServerStartable kafkaServer2;
     private static final String kafkaLogDir = "tmp_kafka_dir";
     private static final String kafkaLogDir2 = "tmp_kafka_dir2";
+    public static final String ZK_SERVER_CON_STRING = "localhost:2181";
+    public static final String ZK_SERVER2_CON_STRING = "localhost:2182";
+    private static final long CLEANER_BUFFER_SIZE = 2 * 1024 * 1024L;
+
+
 
     public static void cleanLogDir() {
         try {
@@ -80,6 +86,7 @@ public class KafkaTestUtil {
             props.put("zookeeper.connect", zkTestServer.getConnectString());
             props.put("replica.socket.timeout.ms", "30000");
             props.put("delete.topic.enable", "true");
+            props.put("log.cleaner.dedupe.buffer.size", CLEANER_BUFFER_SIZE);
             KafkaConfig config = new KafkaConfig(props);
             kafkaServer = new KafkaServerStartable(config);
             kafkaServer.startup();
@@ -90,34 +97,50 @@ public class KafkaTestUtil {
 
     public static void setupKafkaBroker2() {
         try {
+            log.info("#############################################################################################");
+            log.info("#################################   ZOOKEEPER 2 STARTED  ####################################");
+            log.info("#############################################################################################");
+            // mock zookeeper
+            zkTestServer2 = new TestingServer(2182);
             // mock kafka
             Properties props = new Properties();
             props.put("broker.id", "1");
             props.put("host.name", "localhost");
             props.put("port", "9093");
             props.put("log.dir", kafkaLogDir2);
-            props.put("zookeeper.connect", zkTestServer.getConnectString());
+            props.put("zookeeper.connect", zkTestServer2.getConnectString());
             props.put("replica.socket.timeout.ms", "30000");
             props.put("delete.topic.enable", "true");
+            props.put("log.cleaner.dedupe.buffer.size", CLEANER_BUFFER_SIZE);
             KafkaConfig config = new KafkaConfig(props);
             kafkaServer2 = new KafkaServerStartable(config);
             kafkaServer2.startup();
+
         } catch (Exception e) {
             log.error("Error running local Kafka broker 2", e);
         }
     }
 
     public static void stopKafkaBroker2() {
-        if (kafkaServer2 != null) {
-            kafkaServer2.shutdown();
-            kafkaServer2.awaitShutdown();
-        }
+        log.info("#############################################################################################");
+        log.info("#################################   ZOOKEEPER 2 STOPPED  ####################################");
+        log.info("#############################################################################################");
         try {
+            if (kafkaServer2 != null) {
+                kafkaServer2.shutdown();
+                kafkaServer2.awaitShutdown();
+            }
             Thread.sleep(5000);
+            if (zkTestServer2 != null) {
+                zkTestServer2.stop();
+            }
+            Thread.sleep(5000);
+            cleanLogDir2();
         } catch (InterruptedException e) {
             log.error(e.getMessage(), e);
+        } catch (IOException e) {
+            log.error("Error shutting down 2nd Kafka broker / Zookeeper", e);
         }
-        cleanLogDir2();
     }
 
     public static void stopKafkaBroker() {
@@ -142,9 +165,15 @@ public class KafkaTestUtil {
         }
     }
 
+
+
     public static void createTopic(String topics[], int numOfPartitions) {
-        ZkClient zkClient = new ZkClient("localhost:2181", 30000, 30000, ZKStringSerializer$.MODULE$);
-        ZkConnection zkConnection = new ZkConnection("localhost:2181");
+        createTopic(ZK_SERVER_CON_STRING, topics, numOfPartitions);
+    }
+
+    public static void createTopic(String connectionString, String topics[], int numOfPartitions) {
+        ZkClient zkClient = new ZkClient(connectionString, 30000, 30000, ZKStringSerializer$.MODULE$);
+        ZkConnection zkConnection = new ZkConnection(connectionString);
         ZkUtils zkUtils = new ZkUtils(zkClient, zkConnection, false);
         for (String topic : topics) {
             try {
@@ -157,8 +186,12 @@ public class KafkaTestUtil {
     }
 
     public static void deleteTopic(String topics[]) {
-        ZkClient zkClient = new ZkClient("localhost:2181", 30000, 30000, ZKStringSerializer$.MODULE$);
-        ZkConnection zkConnection = new ZkConnection("localhost:2181");
+       deleteTopic("localhost:2181", topics);
+    }
+
+    public static void deleteTopic(String connectionString,  String topics[]) {
+        ZkClient zkClient = new ZkClient(connectionString, 30000, 30000, ZKStringSerializer$.MODULE$);
+        ZkConnection zkConnection = new ZkConnection(connectionString);
         ZkUtils zkUtils = new ZkUtils(zkClient, zkConnection, false);
         for (String topic : topics) {
             AdminUtils.deleteTopic(zkUtils, topic);

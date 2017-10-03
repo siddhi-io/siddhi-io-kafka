@@ -1117,7 +1117,7 @@ public class KafkaSourceTestCase {
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
             SiddhiAppRuntime siddhiAppRuntime2 = siddhiManager.createSiddhiAppRuntime(
-                    "@App:name('TestExecutionPlan2') " +
+                    "@App:name('TestExecutionPlan21') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
                             "@source(type='kafka', "
