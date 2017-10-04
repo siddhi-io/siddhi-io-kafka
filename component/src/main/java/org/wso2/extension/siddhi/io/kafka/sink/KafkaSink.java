@@ -57,8 +57,7 @@ import java.util.concurrent.atomic.AtomicInteger;
                 @Parameter(name = "bootstrap.servers",
                            description = " This parameter specifies the list of Kafka servers to which the Kafka " +
                                    "sink must publish events. This list should be provided as a set of comma " +
-                                   "separated values. e.g., `localhost:9092,localhost:9093`. More than one value " +
-                                   "must be specified when the sink type is `kafkaMultiDC`.",
+                                   "separated values. e.g., `localhost:9092,localhost:9093`.",
                            type = {DataType.STRING}),
                 @Parameter(name = "topic",
                            description = "The topic to which the Kafka sink needs to publish events. Only one " +
