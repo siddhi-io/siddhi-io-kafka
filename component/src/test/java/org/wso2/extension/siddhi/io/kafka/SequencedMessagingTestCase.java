@@ -78,7 +78,7 @@ public class SequencedMessagingTestCase {
         SiddhiManager siddhiManager = new SiddhiManager();
         siddhiManager.setPersistenceStore(new InMemoryPersistenceStore());
 
-        final String externalDataRelayQuery = "@App:name('ExternalDataRelayApp') " +
+        final String externalDataRelayQuery = "@App:name('ExternalDataRelayApp1') " +
                 "@info(name = 'ExternalEventRelayQuery') " +
                 "@sink(type='kafka', topic='IntermediateTopic-1', bootstrap.servers='localhost:9092', " +
                 "partition.no='0', sequence.id='ExternalDataRelayApp', @map(type='xml')) " +
@@ -92,7 +92,7 @@ public class SequencedMessagingTestCase {
 
                 "from FooStream select symbol, count() as count insert into BarStream;";
 
-        final String dataReceiveQuery = "@App:name('DataReceiveApp') " +
+        final String dataReceiveQuery = "@App:name('DataReceiveApp2') " +
                 "define stream BarStream1 (symbol string, count long); " +
 
                 "@info(name = 'DataReceiveQuery') " +
@@ -172,7 +172,7 @@ public class SequencedMessagingTestCase {
         SiddhiManager siddhiManager = new SiddhiManager();
         siddhiManager.setPersistenceStore(new InMemoryPersistenceStore());
 
-        final String externalDataRelayQuery = "@App:name('ExternalDataRelayApp') " +
+        final String externalDataRelayQuery = "@App:name('ExternalDataRelayApp2') " +
                 "@info(name = 'ExternalEventRelayQuery') " +
                 "@sink(type='kafka', topic='IntermediateTopic-2', bootstrap.servers='localhost:9092', " +
                 "partition.no='{{count}}', sequence.id='ExternalDataRelayApp', @map(type='xml')) " +
@@ -185,7 +185,7 @@ public class SequencedMessagingTestCase {
 
                 "from FooStream select symbol, count()%3 as count, count() as total insert into BarStream;";
 
-        final String dataReceiveQuery = "@App:name('DataReceiveApp') " +
+        final String dataReceiveQuery = "@App:name('DataReceiveApp2') " +
                 "Define stream BarStream1 (symbol string, count long, total long); " +
 
                 "@info(name = 'DataReceiveQuery') " +
@@ -273,7 +273,7 @@ public class SequencedMessagingTestCase {
         SiddhiManager siddhiManager = new SiddhiManager();
         siddhiManager.setPersistenceStore(new InMemoryPersistenceStore());
 
-        final String externalDataRelayQuery = "@App:name('ExternalDataRelayApp') " +
+        final String externalDataRelayQuery = "@App:name('ExternalDataRelayApp3') " +
                 "@info(name = 'ExternalEventRelayQuery') " +
                 "@sink(type='kafka', topic='IntermediateTopic-3', bootstrap.servers='localhost:9092', " +
                 "partition.no='{{count}}', sequence.id='ExternalDataRelayApp', @map(type='xml')) " +
@@ -286,7 +286,7 @@ public class SequencedMessagingTestCase {
 
                 "from FooStream select symbol, count()%3 as count, count() as total insert into BarStream;";
 
-        final String dataReceiveQuery = "@App:name('DataReceiveApp') " +
+        final String dataReceiveQuery = "@App:name('DataReceiveApp3') " +
                 "Define stream BarStream1 (symbol string, count long, total long); " +
 
                 "@info(name = 'DataReceiveQuery') " +
@@ -379,7 +379,7 @@ public class SequencedMessagingTestCase {
 
         //Receive data from two external topics. And two different Sinks publishes events to the same intermediate
         // topic which is consumed by another siddhi app using two different sequence ids.
-        final String externalDataRelayQuery = "@App:name('ExternalDataRelayApp') " +
+        final String externalDataRelayQuery = "@App:name('ExternalDataRelayApp4') " +
                 "@info(name = 'ExternalEventRelayQuery') " +
                 "@sink(type='kafka', topic='IntermediateTopic-4', bootstrap.servers='localhost:9092', " +
                 "partition.no='{{count}}', sequence.id='ExternalDataRelayAppSink1', @map(type='xml')) " +
@@ -403,7 +403,7 @@ public class SequencedMessagingTestCase {
 
                 "From SecondFooStream select symbol, count()%3 as count, count() as total insert into SecondBarStream;";
 
-        final String dataReceiveQuery = "@App:name('DataReceiveApp') " +
+        final String dataReceiveQuery = "@App:name('DataReceiveApp4') " +
                 "Define stream BarStream1 (symbol string, count long, total long); " +
 
                 "@info(name = 'DataReceiveQuery') " +
@@ -496,7 +496,7 @@ public class SequencedMessagingTestCase {
 
         //Receive data from two external topics. And two different Sinks publishes events to the same intermediate
         // topic which is consumed by another siddhi app using two different sequence ids.
-        final String externalDataRelayQuery = "@App:name('ExternalDataRelayApp') " +
+        final String externalDataRelayQuery = "@App:name('ExternalDataRelayApp5') " +
                 "@info(name = 'ExternalEventRelayQuery') " +
                 "@sink(type='kafka', topic='IntermediateTopic-5', bootstrap.servers='localhost:9092', " +
                 "partition.no='0', sequence.id='ExternalDataRelayAppSink1', @map(type='xml')) " +
@@ -520,7 +520,7 @@ public class SequencedMessagingTestCase {
 
                 "From SecondFooStream select symbol, count() as count insert into SecondBarStream;";
 
-        final String dataReceiveQuery = "@App:name('DataReceiveApp') " +
+        final String dataReceiveQuery = "@App:name('DataReceiveApp5') " +
                 "Define stream BarStream1 (symbol string, count long); " +
 
                 "@info(name = 'DataReceiveQuery') " +
@@ -611,7 +611,7 @@ public class SequencedMessagingTestCase {
         SiddhiManager siddhiManager = new SiddhiManager();
         siddhiManager.setPersistenceStore(new InMemoryPersistenceStore());
 
-        final String externalDataRelayQuery = "@App:name('ExternalDataRelayApp') " +
+        final String externalDataRelayQuery = "@App:name('ExternalDataRelayApp6') " +
                 "@info(name = 'ExternalEventRelayQuery') " +
                 "@sink(type='kafka', topic='IntermediateTopic-6', bootstrap.servers='localhost:9092', " +
                 "partition.no='0', @map(type='xml')) " +
@@ -625,7 +625,7 @@ public class SequencedMessagingTestCase {
 
                 "from FooStream select symbol, count() as count insert into BarStream;";
 
-        final String dataReceiveQuery = "@App:name('DataReceiveApp') " +
+        final String dataReceiveQuery = "@App:name('DataReceiveApp6') " +
                 "define stream BarStream1 (symbol string, count long); " +
 
                 "@info(name = 'DataReceiveQuery') " +

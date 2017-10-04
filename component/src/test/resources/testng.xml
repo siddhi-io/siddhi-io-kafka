@@ -22,12 +22,12 @@
 <suite name="Siddhi-Execution-Kafka_Test-Suite">
     <test name="siddhi-execution-kafka-unit-tests" preserve-order="true">
         <classes>
-            <class name="org.wso2.extension.siddhi.io.kafka.SequencedMessagingTestCase" />
             <class name="org.wso2.extension.siddhi.io.kafka.sink.KafkaSinkTestCase" />
             <class name="org.wso2.extension.siddhi.io.kafka.source.KafkaSourceTestCase" />
-            <class name="org.wso2.extension.siddhi.io.kafka.multidc.KafkaMultiDCSinkTestCases" />
             <!-- TODO uncomment when the text mapper is released -->
-            <!--<class name="org.wso2.extension.siddhi.io.kafka.source.KafkaSourceHATestCase" />-->
+            <!--class name="org.wso2.extension.siddhi.io.kafka.SequencedMessagingTestCase" />
+            <class name="org.wso2.extension.siddhi.io.kafka.multidc.KafkaMultiDCSinkTestCases" />
+            <class name="org.wso2.extension.siddhi.io.kafka.source.KafkaSourceHATestCase" /-->
         </classes>
     </test>
 </suite>
