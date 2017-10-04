@@ -176,7 +176,7 @@ public class KafkaConsumerThread implements Runnable {
                                     String eventBody = event.substring(headerStartingIndex + 1);
                                     sourceEventListener.onEvent(eventBody, new String[0]);
                                     if (LOG.isDebugEnabled()) {
-                                    LOG.debug("Last Received SeqNo Updated to:" + seqNo + " for " +
+                                        LOG.debug("Last Received SeqNo Updated to:" + seqNo + " for " +
                                             "SeqKey:[" + sequenceKey.toString() + "] in Kafka consumer thread:"
                                             + consumerThreadId);
                                     }

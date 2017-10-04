@@ -38,7 +38,6 @@ import org.wso2.siddhi.query.api.definition.StreamDefinition;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -143,29 +142,28 @@ import java.util.concurrent.atomic.AtomicInteger;
 )
 public class KafkaSink extends Sink {
 
-    private ScheduledExecutorService executorService;
     private Producer<String, String>  producer;
-    private Option topicOption = null;
-    private String bootstrapServers;
-    private String optionalConfigs;
-    private Option partitionOption;
-    private Boolean isSequenced = false;
-    private AtomicInteger lastSentSequenceNo = new AtomicInteger(0);
-    private String sequenceId = null;
+    protected Option topicOption = null;
+    protected String bootstrapServers;
+    protected String optionalConfigs;
+    protected Option partitionOption;
+    protected Boolean isSequenced = false;
+    protected AtomicInteger lastSentSequenceNo = new AtomicInteger(0);
+    protected String sequenceId = null;
 
     public static final String LAST_SENT_SEQ_NO_PERSIST_KEY = "lastSentSequenceNo";
     public static final String SEQ_NO_HEADER_DELIMITER = "~";
     public static final String SEQ_NO_HEADER_FIELD_SEPERATOR = ":";
-    private Option keyOption;
+    protected Option keyOption;
 
-    private static final String KAFKA_PUBLISH_TOPIC = "topic";
-    private static final String KAFKA_BROKER_LIST = "bootstrap.servers";
-    private static final String KAFKA_MESSAGE_KEY = "key";
-    private static final String KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
-    private static final String HEADER_SEPARATOR = ",";
-    private static final String ENTRY_SEPARATOR = ":";
-    private static final String KAFKA_PARTITION_NO = "partition.no";
-    private static final String SEQ_ID = "sequence.id";
+    protected static final String KAFKA_PUBLISH_TOPIC = "topic";
+    protected static final String KAFKA_BROKER_LIST = "bootstrap.servers";
+    protected static final String KAFKA_MESSAGE_KEY = "key";
+    protected static final String KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
+    protected static final String HEADER_SEPARATOR = ",";
+    protected static final String ENTRY_SEPARATOR = ":";
+    protected static final String KAFKA_PARTITION_NO = "partition.no";
+    protected static final String SEQ_ID = "sequence.id";
 
     private static final Logger LOG = Logger.getLogger(KafkaSink.class);
 
@@ -178,7 +176,6 @@ public class KafkaSink extends Sink {
         partitionOption = optionHolder.getOrCreateOption(KAFKA_PARTITION_NO, null);
         sequenceId = optionHolder.validateAndGetStaticValue(SEQ_ID, null);
         isSequenced = (sequenceId == null) ? false : true;
-        executorService = siddhiAppContext.getScheduledExecutorService();
         keyOption = optionHolder.getOrCreateOption(KAFKA_MESSAGE_KEY, null);
     }
 
@@ -194,19 +191,8 @@ public class KafkaSink extends Sink {
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
-        if (optionalConfigs != null && optionalConfigs.isEmpty()) {
-            String[] optionalProperties = optionalConfigs.split(HEADER_SEPARATOR);
-            if (optionalProperties.length > 0) {
-                for (String header : optionalProperties) {
-                    try {
-                        String[] configPropertyWithValue = header.split(ENTRY_SEPARATOR, 2);
-                        props.put(configPropertyWithValue[0], configPropertyWithValue[1]);
-                    } catch (Exception e) {
-                        LOG.warn("Optional property '" + header + "' is not defined in the correct format.", e);
-                    }
-                }
-            }
-        }
+        readOptionalConfigs(props, optionalConfigs);
+
         producer = new KafkaProducer<>(props);
         LOG.info("Kafka producer created.");
     }
@@ -280,6 +266,22 @@ public class KafkaSink extends Sink {
             Object sequenceNumber = state.get(LAST_SENT_SEQ_NO_PERSIST_KEY);
             if (sequenceNumber != null) {
                 lastSentSequenceNo.set((Integer) sequenceNumber);
+            }
+        }
+    }
+
+    public static void readOptionalConfigs(Properties props, String optionalConfigs) {
+        if (optionalConfigs != null && !optionalConfigs.isEmpty()) {
+            String[] optionalProperties = optionalConfigs.split(HEADER_SEPARATOR);
+            if (optionalProperties.length > 0) {
+                for (String header : optionalProperties) {
+                    try {
+                        String[] configPropertyWithValue = header.split(ENTRY_SEPARATOR, 2);
+                        props.put(configPropertyWithValue[0], configPropertyWithValue[1]);
+                    } catch (Exception e) {
+                        LOG.warn("Optional property '" + header + "' is not defined in the correct format.", e);
+                    }
+                }
             }
         }
     }

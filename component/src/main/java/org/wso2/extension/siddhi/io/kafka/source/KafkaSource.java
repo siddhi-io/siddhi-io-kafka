@@ -211,7 +211,7 @@ public class KafkaSource extends Source {
     public void disconnect() {
         if (consumerKafkaGroup != null) {
             consumerKafkaGroup.shutdown();
-            LOG.debug("Kafka Adapter disconnected for topic/s" +
+            LOG.info("Kafka Adapter disconnected for topic/s" +
                               optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_TOPIC));
         }
     }
@@ -225,10 +225,8 @@ public class KafkaSource extends Source {
     public void pause() {
         if (consumerKafkaGroup != null) {
             consumerKafkaGroup.pause();
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Kafka Adapter paused for topic/s" + optionHolder.validateAndGetStaticValue
+                LOG.info("Kafka Adapter paused for topic/s" + optionHolder.validateAndGetStaticValue
                         (ADAPTOR_SUBSCRIBER_TOPIC));
-            }
         }
     }
 
