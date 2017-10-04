@@ -51,12 +51,16 @@ import java.util.concurrent.atomic.AtomicInteger;
                 "cluster. The events can be published in the `TEXT` `XML` or `JSON` format.\n" +
                 "If the topic is not already created in the Kafka cluster, the Kafka sink creates the default " +
                 "partition for the given topic. The publishing topic and partition can be a dynamic value taken " +
-                "from the Siddhi event.",
+                "from the Siddhi event.\n" +
+                "To configure a sink to use the Kafka transport, the `type` parameter should have `kafka` as its " +
+                "value. However, if two Kafka brokers are used to publish events to the same topic, the value for " +
+                "this parameter should be `kafkaMultiDC`.",
         parameters = {
                 @Parameter(name = "bootstrap.servers",
                            description = " This parameter specifies the list of Kafka servers to which the Kafka " +
                                    "sink must publish events. This list should be provided as a set of comma " +
-                                   "separated values. e.g., `localhost:9092,localhost:9093`.",
+                                   "separated values. e.g., `localhost:9092,localhost:9093`. More than one value " +
+                                   "must be specified when the sink type is `kafkaMultiDC`.",
                            type = {DataType.STRING}),
                 @Parameter(name = "topic",
                            description = "The topic to which the Kafka sink needs to publish events. Only one " +
@@ -71,7 +75,9 @@ import java.util.concurrent.atomic.AtomicInteger;
                            defaultValue = "0"),
                 @Parameter(name = "sequence.id",
                         description = "A unique identifier to identify the messages published by this sink. This ID " +
-                                "allows receivers to identify the sink that published a specific message.",
+                                "allows receivers to identify the sink that published a specific message. A " +
+                                "sequence ID is assigned to each message published regardless of whether all the " +
+                                "Kafka brokers recives that message or not.",
                         type = {DataType.STRING},
                         optional = true,
                         defaultValue = "null"),
@@ -119,7 +125,20 @@ import java.util.concurrent.atomic.AtomicInteger;
                                 "from FooStream select symbol, price, volume insert into BarStream;",
                         description = "This query publishes dynamic topic and partitions that are taken from the " +
                         "Siddhi event. The value for `partition.no` is taken from the `volume` attribute, and the " +
-                        "topic value is taken from the `symbol` attribute.")
+                        "topic value is taken from the `symbol` attribute."),
+                @Example(
+                        syntax = "@App:name('TestExecutionPlan') \n" +
+                                "define stream FooStream (symbol string, price float, volume long); \n" +
+                                "@info(name = 'query1') \n" +
+                                "@sink(\n" +
+                                "type='kafkaMultiDC',\n" +
+                                "topic='myTopic',\n" +
+                                "bootstrap.servers='host1:9092, host2:9092',\n" +
+                                "sequence.id=’sink1’,\n" +
+                                "@map(type='xml'))\n" +
+                                "Define stream BarStream (symbol string, price float, volume long);",
+                        description = "This query publishes to the `myTopic` topic using two Kafka brokers with hosts" +
+                                " `host1:9092 and `host2:9092`.")
         }
 )
 public class KafkaSink extends Sink {
