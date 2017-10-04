@@ -46,53 +46,53 @@ import java.util.Properties;
 @Extension(
         name = "kafkaMultiDC",
         namespace = "sink",
-        description = "The Kafka Sink publishes records to a topic with the default a partition only for a Kafka " +
-                "cluster which are in format such as `text`, `XML` and `JSON`.\n"
-                + "The Kafka Sink will create the default partition for a given topic, if the topic is not already "
-                + "been created in the Kafka cluster. The publishing topic and partition can be a dynamic value taken"
-                + " from the Siddhi event",
+        description = "A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka " +
+                "cluster. The events can be published in the `TEXT` `XML` or `JSON` format.\n" +
+                "If the topic is not already created in the Kafka cluster, the Kafka sink creates the default " +
+                "partition for the given topic. The publishing topic and partition can be a dynamic value taken " +
+                "from the Siddhi event.\n" +
+                "To configure a sink to publish events via the Kafka transport, and using two Kafka brokers to " +
+                "publish events to the same topic, the `type` parameter must have `kafkaMultiDC` as its value.",
         parameters = {
                 @Parameter(name = "bootstrap.servers",
-                        description = "This should contain the kafka server list which the kafka sink should be "
-                                + "publishing to. This should be given in comma separated values. There should be " +
-                                "at least two in this list."
-                                + "eg: 'localhost:9092,localhost:9093' ",
+                        description = " This parameter specifies the list of Kafka servers to which the Kafka " +
+                                "sink must publish events. This list should be provided as a set of comma " +
+                                "separated values. There must be " +
+                                "at least two servers in this list. e.g., `localhost:9092,localhost:9093`.",
                         type = {DataType.STRING}),
                 @Parameter(name = "topic",
-                        description = "The topic which the sink should publish to. Only one topic should be "
-                                + "given",
+                        description = "The topic to which the Kafka sink needs to publish events. Only one " +
+                                "topic must be specified.",
                         type = {DataType.STRING}),
                 @Parameter(name = "sequence.id",
-                        description = "Unique identifier to identify the messages published by this sink. Using this " +
-                                "id receivers can identify the sink which produced the message",
+                        description = "A unique identifier to identify the messages published by this sink. This ID " +
+                        "allows receivers to identify the sink that published a specific message.",
                         type = {DataType.STRING},
                         optional = true,
                         defaultValue = "null"),
                 @Parameter(name = "key",
-                        description = "The key will contain the values which is used to maintain ordering in a "
-                                + "kafka partition.",
+                        description = "The key contains the values that are used to maintain ordering in a Kafka" +
+                                " partition.",
                         type = {DataType.STRING},
                         optional = true,
                         defaultValue = "null"),
                 @Parameter(name = "partition.no",
-                        description = "The partition number for the given topic. Only one partition id can be "
-                                + "defined. If this is not defined, the sink will be publishing to the topic's "
-                                + "default partition number 0.",
+                        description = "The partition number for the given topic. Only one partition ID can be " +
+                                "defined. If no value is specified for this parameter, the Kafka sink publishes " +
+                                "to the default partition of the topic (i.e., 0)",
                         type = {DataType.INT},
                         optional = true,
                         defaultValue = "0"),
                 @Parameter(name = "optional.configuration",
-                        description = "This may contain all the other possible configurations which the consumer "
-                                + "should be created with."
-                                + "eg: producer.type:async,batch.size:200",
+                        description = "This parameter contains all the other possible configurations that the " +
+                                "producer is created with. \n" +
+                                "e.g., `producer.type:async,batch.size:200`",
                         optional = true,
                         type = {DataType.STRING},
                         defaultValue = "null")
         },
         examples = {
                 @Example(
-                        description = "The following query will publish to  default (0th) "
-                                + "partition of the brokers in two data centers ",
                         syntax = "@App:name('TestExecutionPlan') \n" +
                                 "define stream FooStream (symbol string, price float, volume long); \n" +
                                 "@info(name = 'query1') \n" +
@@ -103,7 +103,10 @@ import java.util.Properties;
                                 + "bootstrap.servers='host1:9092, host2:9092', "
                                 + "@map(type='xml'))" +
                                 "Define stream BarStream (symbol string, price float, volume long);\n" +
-                                "from FooStream select symbol, price, volume insert into BarStream;\n")}
+                                "from FooStream select symbol, price, volume insert into BarStream;\n",
+                        description = "This query publishes to the  default (i.e., 0th) partition of the brokers in " +
+                                "two data centers ")
+        }
 )
 // TODO : improve the prameter list to contain partition.no
 public class KafkaMultiDCSink extends KafkaSink {
