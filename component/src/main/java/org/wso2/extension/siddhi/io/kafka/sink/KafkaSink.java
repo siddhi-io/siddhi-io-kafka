@@ -50,7 +50,9 @@ import java.util.concurrent.atomic.AtomicInteger;
                 "cluster. The events can be published in the `TEXT` `XML` or `JSON` format.\n" +
                 "If the topic is not already created in the Kafka cluster, the Kafka sink creates the default " +
                 "partition for the given topic. The publishing topic and partition can be a dynamic value taken " +
-                "from the Siddhi event.",
+                "from the Siddhi event.\n" +
+                "To configure a sink to use the Kafka transport, the `type` parameter should have `kafka` as its " +
+                "value.",
         parameters = {
                 @Parameter(name = "bootstrap.servers",
                            description = " This parameter specifies the list of Kafka servers to which the Kafka " +
@@ -64,7 +66,7 @@ import java.util.concurrent.atomic.AtomicInteger;
                 @Parameter(name = "partition.no",
                            description = "The partition number for the given topic. Only one partition ID can be " +
                                    "defined. If no value is specified for this parameter, the Kafka sink publishes " +
-                                   "to the default partition of the topic",
+                                   "to the default partition of the topic (i.e., 0)",
                            type = {DataType.INT},
                            optional = true,
                            defaultValue = "0"),
