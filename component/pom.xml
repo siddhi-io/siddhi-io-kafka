@@ -18,7 +18,8 @@
   ~ under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.wso2.extension.siddhi.io.kafka</groupId>
         <artifactId>siddhi-io-kafka-parent</artifactId>
@@ -84,6 +85,29 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>documentation-deploy</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wso2.siddhi</groupId>
+                        <artifactId>siddhi-doc-gen</artifactId>
+                        <version>${siddhi.version}</version>
+                        <executions>
+                            <execution>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>deploy-mkdocs-github-pages</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
             <plugin>
@@ -126,6 +150,19 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.wso2.siddhi</groupId>
+                <artifactId>siddhi-doc-gen</artifactId>
+                <version>${siddhi.version}</version>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>generate-md-docs</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
