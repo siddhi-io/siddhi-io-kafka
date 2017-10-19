@@ -15,8 +15,7 @@ google_analytics:
 pages:
 - Welcome to WSO2 Siddhi IO Kafka: index.md
 - API Docs:
-  - 4.0.3-SNAPSHOT: api/4.0.3-SNAPSHOT.md
-  - 4.0.5-SNAPSHOT: api/4.0.5-SNAPSHOT.md
-  - 4.0.6-SNAPSHOT: api/4.0.6-SNAPSHOT.md
+  - 4.0.7: api/4.0.7.md
+  - latest: api/latest.md
 - License: license.md
 theme: material

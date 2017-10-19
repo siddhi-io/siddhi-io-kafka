@@ -24,7 +24,7 @@ Find some useful links below:
 
 ## Latest API Docs
 
-Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.0.5-SNAPSHOT">4.0.5-SNAPSHOT</a>.
+Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.0.7">4.0.7</a>.
 
 ## How to use
 
@@ -81,8 +81,6 @@ extension you can replace the component <a target="_blank" href="https://github.
 
 ## Features
 
-* <a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.0.5-SNAPSHOT/#kafka-source">kafka</a> *(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sources">Source</a>)*<br><div style="padding-left: 1em;"><p>A Kafka source receives events to be processed by WSO2 SP from a topic with a partition for a Kafka cluster. The events received can be in the <code>TEXT</code> <code>XML</code> or <code>JSON</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic.</p></div>
-* <a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.0.5-SNAPSHOT/#kafka-sink">kafka</a> *(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sinks">Sink</a>)*<br><div style="padding-left: 1em;"><p>A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> or <code>JSON</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.</p></div>
 
 ## How to Contribute
 
