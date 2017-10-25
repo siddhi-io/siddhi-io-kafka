@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
- * The source Synchronize
+ * The source Synchronize to merge events from two kafka source
  */
 public class SourceSynchronizer {
     private static final Logger LOG = Logger.getLogger(SourceSynchronizer.class);
@@ -61,21 +61,17 @@ public class SourceSynchronizer {
         perSourceReceivedSeqNo.put(bootstrapServers[1], -1L);
     }
 
-    private static void logDebug(String message) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(message);
-        }
-    }
-
     private synchronized void forceFlushBuffer(long flushTillSeqNo) {
         for (Map.Entry<Long, BufferValueHolder> entry : eventBuffer.entrySet()) {
             Long sequenceNumber = entry.getKey();
             BufferValueHolder eventHolder = entry.getValue();
             if ((sequenceNumber > lastConsumedSeqNo) &&
                 (sequenceNumber <= flushTillSeqNo)) {
-                logDebug("Updating the lastConsumedSeqNo=" + sequenceNumber
-                    + " as the event is forcefully flushed,"
-                    + " from the source " + eventHolder.getSourceId());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Updating the lastConsumedSeqNo=" + sequenceNumber
+                        + " as the event is forcefully flushed,"
+                        + " from the source " + eventHolder.getSourceId());
+                }
 
                 if (!(sequenceNumber < lastConsumedSeqNo) &&
                     (lastConsumedSeqNo != sequenceNumber + 1)) {
@@ -93,39 +89,51 @@ public class SourceSynchronizer {
     }
 
     private synchronized void flushBuffer() {
-        logDebug("Start flushing buffer");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Start flushing buffer");
+        }
         for (Map.Entry<Long, BufferValueHolder> entry : eventBuffer.entrySet()) {
             Long sequenceNumber = entry.getKey();
             BufferValueHolder eventHolder = entry.getValue();
             if (sequenceNumber <= lastConsumedSeqNo) {
-                logDebug("Message with sequence " + sequenceNumber + " already received. " +
-                    "Dropping the event from the buffer");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Message with sequence " + sequenceNumber + " already received. " +
+                        "Dropping the event from the buffer");
+                }
                 toRemoveSeqNos.add(sequenceNumber);
                 continue;
             } else if (sequenceNumber == lastConsumedSeqNo + 1) {
                 isEventGap = false;
                 lastConsumedSeqNo++;
-                logDebug("Message with sequence " + sequenceNumber
-                    + " flushed from buffer. Updating lastConsumedSeqNo=" + lastConsumedSeqNo);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Message with sequence " + sequenceNumber
+                        + " flushed from buffer. Updating lastConsumedSeqNo=" + lastConsumedSeqNo);
+                }
 
                 toRemoveSeqNos.add(sequenceNumber);
                 eventListener.onEvent(eventHolder.getEvent(), eventHolder.getStrings());
             } else {
                 isEventGap = true;
-                logDebug("Gap detected while flushing the buffer. Flushed message sequence=" + sequenceNumber
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Gap detected while flushing the buffer. Flushed message sequence=" + sequenceNumber
                         + ". Expected sequence=" + (lastConsumedSeqNo + 1)
                         + ". Stop flushing the buffer.");
+                }
                 break;
             }
         }
 
         toRemoveSeqNos.forEach(seqNo -> eventBuffer.remove(seqNo)); // To avoid concurrent modification.
         toRemoveSeqNos.clear();
-        logDebug("End flushing buffer");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("End flushing buffer");
+        }
     }
 
     private synchronized void bufferEvent(String sourceId, long sequenceNumber, Object event, String[] strings) {
-        logDebug("Buffering Event. SourceId=" + sourceId + ", SequenceNumber=" + sequenceNumber);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Buffering Event. SourceId=" + sourceId + ", SequenceNumber=" + sequenceNumber);
+        }
 
         if (eventBuffer.size() >= maxBufferSize) {
             long flushTillSeq = Math.max(
@@ -137,18 +145,21 @@ public class SourceSynchronizer {
         eventBuffer.put(sequenceNumber, new BufferValueHolder(event, sourceId, strings));
     }
 
-    // TODO: add siddhi app details
     public synchronized void onEvent(String sourceId, long sequenceNumber, Object event, String[] strings) {
         perSourceReceivedSeqNo.put(sourceId, sequenceNumber);
 
         if (sequenceNumber <= lastConsumedSeqNo) {
-            logDebug("Message with sequence " + sequenceNumber + " already received. " +
-                        "Dropping the event from source " + sourceId + ":" + event);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Message with sequence " + sequenceNumber + " already received. " +
+                    "Dropping the event from source " + sourceId + ":" + event);
+            }
         } else if (sequenceNumber == lastConsumedSeqNo + 1) {
             lastConsumedSeqNo++;
-            logDebug("Message with sequence " + sequenceNumber
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Message with sequence " + sequenceNumber
                     + " received from source "
                     + sourceId + ". Updating lastConsumedSeqNo=" + lastConsumedSeqNo);
+            }
             eventListener.onEvent(event, strings);
 
             // Gap is filled by receiving the next expected sequence number
@@ -157,8 +168,10 @@ public class SourceSynchronizer {
             }
         } else { // Sequence number is greater than the expected sequence number
             if (isEventGap) {
-                logDebug("Message with sequence " + sequenceNumber + " from source" + sourceId
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Message with sequence " + sequenceNumber + " from source" + sourceId
                         + ". Couldn't fill the gap, buffering the event.");
+                }
 
                 bufferEvent(sourceId, sequenceNumber, event, strings);
                 long flushTillSeq = Math.min(perSourceReceivedSeqNo.get(bootstrapServers[0]),
@@ -166,10 +179,12 @@ public class SourceSynchronizer {
                 isEventGap = false;
                 forceFlushBuffer(flushTillSeq);
             } else {
-                logDebug("Gap detected. Message with sequence " + sequenceNumber
-                    + " received from source " + sourceId
-                    + ". Expected sequence number is " + (lastConsumedSeqNo + 1)
-                    + ". Starting buffering events");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Gap detected. Message with sequence " + sequenceNumber
+                        + " received from source " + sourceId
+                        + ". Expected sequence number is " + (lastConsumedSeqNo + 1)
+                        + ". Starting buffering events");
+                }
                 isEventGap = true;
                 bufferEvent(sourceId, sequenceNumber, event, strings);
 

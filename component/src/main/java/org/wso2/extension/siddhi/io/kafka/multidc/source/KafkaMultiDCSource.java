@@ -60,7 +60,7 @@ import java.util.UUID;
                         type = {DataType.STRING}),
                 @Parameter(name = "partition.no",
                         description = "The partition number for the given topic",
-                        type = {DataType.STRING},
+                        type = {DataType.INT},
                         optional = true,
                         defaultValue = "0"),
                 @Parameter(name = "optional.configuration",
