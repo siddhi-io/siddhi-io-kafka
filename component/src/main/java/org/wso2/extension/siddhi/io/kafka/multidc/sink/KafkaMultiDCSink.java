@@ -99,13 +99,12 @@ import java.util.Properties;
                                 "@sink("
                                 + "type='kafkaMultiDC', "
                                 + "topic='myTopic', "
-                                + "partition='0',"
+                                + "partition.no='0',"
                                 + "bootstrap.servers='host1:9092, host2:9092', "
                                 + "@map(type='xml'))" +
                                 "Define stream BarStream (symbol string, price float, volume long);\n" +
                                 "from FooStream select symbol, price, volume insert into BarStream;\n")}
 )
-// TODO : improve the prameter list to contain partition.no
 public class KafkaMultiDCSink extends KafkaSink {
     List<Producer<String, String>> producers = new ArrayList<>();
     private String topic;
