@@ -99,7 +99,7 @@ import java.util.Properties;
                                 "@sink("
                                 + "type='kafkaMultiDC', "
                                 + "topic='myTopic', "
-                                + "partition.no='0',"
+                                + "partition='0',"
                                 + "bootstrap.servers='host1:9092, host2:9092', "
                                 + "@map(type='xml'))" +
                                 "Define stream BarStream (symbol string, price float, volume long);\n" +
@@ -108,6 +108,7 @@ import java.util.Properties;
                                 "two data centers ")
         }
 )
+// TODO : improve the prameter list to contain partition.no
 public class KafkaMultiDCSink extends KafkaSink {
     List<Producer<String, String>> producers = new ArrayList<>();
     private String topic;
