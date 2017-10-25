@@ -28,7 +28,7 @@
 
     <groupId>org.wso2.extension.siddhi.io.kafka</groupId>
     <artifactId>siddhi-io-kafka-parent</artifactId>
-    <version>4.0.4-SNAPSHOT</version>
+    <version>4.0.8-SNAPSHOT</version>
     <name>Siddhi IO Kafka Extension Parent</name>
 
     <profiles>
@@ -44,7 +44,7 @@
     </profiles>
 
     <properties>
-        <siddhi.version>4.0.0-M62</siddhi.version>
+        <siddhi.version>4.0.0-M106</siddhi.version>
         <log4j.version>1.2.17.wso2v1</log4j.version>
         <testng.version>6.8</testng.version>
         <commons.logging.version>1.1.1</commons.logging.version>
@@ -53,13 +53,12 @@
         <zookeeper.version>3.4.0</zookeeper.version>
         <commons-io.version>2.5</commons-io.version>
         <kafka.client.version>0.9.0.0</kafka.client.version>
-        <xml.mapper.version>4.0.0-M7</xml.mapper.version>
+        <xml.mapper.version>4.0.2</xml.mapper.version>
         <jacoco.version>0.7.9</jacoco.version>
 
         <mavan.findbugsplugin.exclude.file>findbugs-exclude.xml</mavan.findbugsplugin.exclude.file>
         <mavan.checkstyle.suppression.file>checkstyle-suppressions.xml</mavan.checkstyle.suppression.file>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jacoco.maven.version>0.7.8</jacoco.maven.version>
     </properties>
 
     <scm>
@@ -173,21 +172,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
                 <configuration>
-                    <preparationGoals>clean install</preparationGoals>
+                    <preparationGoals>clean install -Pdocumentation-deploy</preparationGoals>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.wso2.siddhi</groupId>
-                <artifactId>siddhi-doc-gen</artifactId>
-                <version>${siddhi.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate-md-docs</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
 
@@ -196,21 +183,18 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.19.1</version>
                     <configuration>
-                        <includes>
-                            <include>**/*TestCase.java</include>
-                        </includes>
-                        <reportFormat>brief</reportFormat>
-                        <useFile>false</useFile>
-                        <forkMode>once</forkMode>
+                        <skipTests>false</skipTests>
+                        <suiteXmlFiles>
+                            <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                        </suiteXmlFiles>
                         <argLine>${surefireArgLine} -ea -Xmx512m</argLine>
                     </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>${jacoco.maven.version}</version>
+                    <version>${jacoco.version}</version>
                     <executions>
                         <execution>
                             <id>jacoco-initialize</id>

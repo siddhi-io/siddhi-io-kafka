@@ -47,83 +47,90 @@ import java.util.concurrent.ScheduledExecutorService;
 @Extension(
         name = "kafka",
         namespace = "source",
-        description = "The Kafka Source receives records from a topic with a partition for a Kafka cluster which are "
-                + "in format such as `text`, `XML` and `JSON`.\n"
-                + "The Kafka Source will create the default partition for a given topic, if the topic is not already "
-                + "been created in the Kafka cluster.",
+        description = "A Kafka source receives events to be processed by WSO2 SP from a topic with a partition " +
+                "for a Kafka cluster. The events received can be in the `TEXT` `XML` or `JSON` format.\n" +
+                "If the topic is not already created in the Kafka cluster, the Kafka sink creates the default " +
+                "partition for the given topic.",
         parameters = {
                 @Parameter(name = "bootstrap.servers",
-                           description = "This should contain the kafka server list which the kafka source should be "
-                                   + "listening to. This should be given in comma separated values. "
-                                   + "eg: 'localhost:9092,localhost:9093' ",
+                           description = "This specifies the list of Kafka servers to which the Kafka source " +
+                                   "must listen. This list should beprovided as a set of comma-separated values.\n" +
+                                   "e.g., `localhost:9092,localhost:9093`",
                            type = {DataType.STRING}),
                 @Parameter(name = "topic.list",
-                           description = "The topic list which the source would be listening to. This should be given "
-                                   + "in comma separated values. eg: 'topic_one,topic_two' ",
+                           description = "This specifies the list of topics to which the source must listen. This " +
+                                   "list should be provided as a set of comma-separated values.\n" +
+                                   "e.g., `topic_one,topic_two`",
                            type = {DataType.STRING}),
                 @Parameter(name = "group.id",
-                           description = "This is used to identify the Kafka source group. And sources with same "
-                                   + "topic and partition which are in the same group wont receive the same event",
+                           description = "This is an ID to identify the Kafka source group. The group ID ensures " +
+                                   "that sources with the same topic and partition that are in the same group do not" +
+                                   " receive the same event.",
                            type = {DataType.STRING}),
                 @Parameter(name = "threading.option",
-                           description = "Each source can be run in either single thread or in multi threads. The "
-                                   + "threading options are `single.thread`, `topic.wise` and `partition.wise` ",
+                           description = " This specifies whether the Kafka source is to be run on a single thread," +
+                                   " or in multiple threads based on a condition. Possible values are as follows:\n" +
+                                   "`single.thread`: To run the Kafka source on a single thread.\n" +
+                                   "`topic-wise`: To use  separate thread per topic.\n" +
+                                   "`partition.wise`: To use a separate thread per partition.",
                            type = {DataType.STRING}),
                 @Parameter(name = "partition.no.list",
-                           description = "The partition number list for the given topic. This should be given in "
-                                   + "comma separated values. eg: '0,1,2' ",
+                           description = "The partition number list for the given topic. This is provided as a list" +
+                                   " of comma-separated values. e.g., `0,1,2,`.",
                            type = {DataType.STRING},
                            optional = true,
                            defaultValue = "0"),
                 @Parameter(name = "seq.enabled",
-                        description = "Indicate if a the record contains a sequnce number to indicate their order ",
+                        description = "If this parameter is set to `true`, the sequence of the events received via" +
+                                " the source is taken into account. Therefore, each event should contain a " +
+                                "sequence number as an attribute value to indicate the sequence.",
                         type = {DataType.BOOL},
                         optional = true,
                         defaultValue = "false"),
                 @Parameter(name = "optional.configuration",
-                           description = "This may contain all the other possible configurations which the consumer "
-                                   + "should be created with."
-                                   + "eg: producer.type:async,batch.size:200",
+                           description = "This parameter contains all the other possible configurations that the " +
+                                   "consumer is created with. \n" +
+                                   "e.g., `ssl.keystore.type:JKS,batch.size:200`.",
                            type = {DataType.STRING},
                            optional = true,
                            defaultValue = "null")
         },
         examples = {
                 @Example(
-                        description = "The following query will listen to 'kafka_topic' and 'kafka_topic2' topics "
-                                + "with 0 and 1 partitions. There will be a thread created for each topic and "
-                                + "partition combination. The receiving xml events will be mapped to a siddhi event "
-                                + "and will be send to the FooStream.",
                         syntax = "@App:name('TestExecutionPlan') \n" +
                                 "define stream BarStream (symbol string, price float, volume long); \n" +
                                 "@info(name = 'query1') \n" +
-                                "@source("
-                                    + "type='kafka', "
-                                    + "topic.list='kafka_topic,kafka_topic2', "
-                                    + "group.id='test', "
-                                    + "threading.option='partition.wise', "
-                                    + "bootstrap.servers='localhost:9092', "
-                                    + "partition.no.list='0,1', "
-                                    + "@map(type='xml'))\n" +
+                                "@source(\n" +
+                                "type='kafka', \n" +
+                                "topic.list='kafka_topic,kafka_topic2', \n" +
+                                "group.id='test', \n" +
+                                "threading.option='partition.wise', \n" +
+                                "bootstrap.servers='localhost:9092', \n" +
+                                "partition.no.list='0,1', \n" +
+                                "@map(type='xml'))\n" +
                                 "Define stream FooStream (symbol string, price float, volume long);\n" +
-                                "from FooStream select symbol, price, volume insert into BarStream;\n"),
+                                "from FooStream select symbol, price, volume insert into BarStream;\n",
+                        description = "This kafka source configuration listens to the `kafka_topic` and " +
+                                "`kafka_topic2` topics with `0` and `1` partitions. A thread is created for each " +
+                                "topic and partition combination. The events are received in the XML format, mapped" +
+                                " to a Siddhi event, and sent to a stream named `FooStream`. "),
                 @Example(
-                        description = "The following query will listen to 'kafka_topic' topic for the default "
-                                + "partition since there is no 'partition.no.list' is defined. There will be a only "
-                                + "one thread created for the topic. The receiving xml events will be mapped to a "
-                                + "siddhi event and will be send to the FooStream.",
                         syntax = "@App:name('TestExecutionPlan') \n" +
                                 "define stream BarStream (symbol string, price float, volume long); \n" +
                                 "@info(name = 'query1') \n" +
-                                "@source("
-                                    + "type='kafka', "
-                                    + "topic.list='kafka_topic', "
-                                    + "group.id='test', "
-                                    + "threading.option='single.thread', "
-                                    + "bootstrap.servers='localhost:9092', "
-                                    + "@map(type='xml'))\n" +
+                                "@source(\n" +
+                                "type='kafka', \n" +
+                                "topic.list='kafka_topic',\n" +
+                                "group.id='test', \n" +
+                                "threading.option='single.thread',\n" +
+                                "bootstrap.servers='localhost:9092',\n" +
+                                "@map(type='xml'))\n" +
                                 "Define stream FooStream (symbol string, price float, volume long);\n" +
-                                "from FooStream select symbol, price, volume insert into BarStream;\n")
+                                "from FooStream select symbol, price, volume insert into BarStream;\n",
+                        description = "This Kafka source configuration listens to the `kafka_topic` topic for the " +
+                                "default partition because no `partition.no.list` is defined. Only one thread is " +
+                                "created for the topic. The events are received in the XML format, mapped" +
+                                " to a Siddhi event, and sent to a stream named `FooStream`.")
         }
 )
 public class KafkaSource extends Source {

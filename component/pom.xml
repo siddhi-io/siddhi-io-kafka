@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.wso2.extension.siddhi.io.kafka</groupId>
         <artifactId>siddhi-io-kafka-parent</artifactId>
-        <version>4.0.4-SNAPSHOT</version>
+        <version>4.0.8-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -84,6 +84,29 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>documentation-deploy</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wso2.siddhi</groupId>
+                        <artifactId>siddhi-doc-gen</artifactId>
+                        <version>${siddhi.version}</version>
+                        <executions>
+                            <execution>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>deploy-mkdocs-github-pages</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
             <plugin>
@@ -126,6 +149,19 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.wso2.siddhi</groupId>
+                <artifactId>siddhi-doc-gen</artifactId>
+                <version>${siddhi.version}</version>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>generate-md-docs</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
