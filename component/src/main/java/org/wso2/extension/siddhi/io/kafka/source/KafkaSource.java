@@ -135,21 +135,21 @@ import java.util.concurrent.ScheduledExecutorService;
 )
 public class KafkaSource extends Source {
 
-    protected static final String SINGLE_THREADED = "single.thread";
-    protected static final String TOPIC_WISE = "topic.wise";
-    protected static final String PARTITION_WISE = "partition.wise";
+    public static final String SINGLE_THREADED = "single.thread";
+    public static final String TOPIC_WISE = "topic.wise";
+    public static final String PARTITION_WISE = "partition.wise";
+    public static final String ADAPTOR_SUBSCRIBER_TOPIC = "topic.list";
+    public static final String ADAPTOR_SUBSCRIBER_GROUP_ID = "group.id";
+    public static final String ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS = "bootstrap.servers";
+    public static final String ADAPTOR_SUBSCRIBER_PARTITION_NO_LIST = "partition.no.list";
+    public static final String ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
+    public static final String TOPIC_OFFSET_MAP = "topic.offset.map";
+    public static final String THREADING_OPTION = "threading.option";
+    public static final String SEQ_ENABLED = "seq.enabled";
+    public static final String HEADER_SEPARATOR = ",";
+    public static final String ENTRY_SEPARATOR = ":";
+    public static final String LAST_RECEIVED_SEQ_NO_KEY = "lastReceivedSeqNo";
     private static final Logger LOG = Logger.getLogger(KafkaSource.class);
-    private static final String ADAPTOR_SUBSCRIBER_TOPIC = "topic.list";
-    private static final String ADAPTOR_SUBSCRIBER_GROUP_ID = "group.id";
-    private static final String ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS = "bootstrap.servers";
-    private static final String ADAPTOR_SUBSCRIBER_PARTITION_NO_LIST = "partition.no.list";
-    private static final String ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
-    private static final String TOPIC_OFFSET_MAP = "topic.offset.map";
-    private static final String THREADING_OPTION = "threading.option";
-    private static final String SEQ_ENABLED = "seq.enabled";
-    private static final String HEADER_SEPARATOR = ",";
-    private static final String ENTRY_SEPARATOR = ":";
-    private static final String LAST_RECEIVED_SEQ_NO_KEY = "lastReceivedSeqNo";
     private SourceEventListener sourceEventListener;
     private ScheduledExecutorService executorService;
     private OptionHolder optionHolder;
