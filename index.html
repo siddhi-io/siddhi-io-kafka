@@ -255,6 +255,18 @@
 
 
   <li class="md-nav__item">
+    <a href="api/4.0.11/" title="4.0.11" class="md-nav__link">
+      4.0.11
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
     <a href="api/4.0.10/" title="4.0.10" class="md-nav__link">
       4.0.10
     </a>
@@ -430,7 +442,7 @@ The publishing topic and partition can be a dynamic value taken from the Siddhi 
 <li><a target="_blank" href="https://github.com/wso2-extensions/siddhi-io-kafka/issues">Issue tracker</a></li>
 </ul>
 <h2 id="latest-api-docs">Latest API Docs</h2>
-<p>Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.0.10">4.0.10</a>.</p>
+<p>Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.0.11">4.0.11</a>.</p>
 <h2 id="how-to-use">How to use</h2>
 <p><strong>Using the extension in <a target="_blank" href="https://github.com/wso2/product-sp">WSO2 Stream Processor</a></strong></p>
 <p><strong><em>Prerequisites for using the feature</em></strong>
@@ -491,6 +503,12 @@ extension you can replace the component <a target="_blank" href="https://github.
 </table>
 <hr />
 <h2 id="features">Features</h2>
+<ul>
+<li><a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.0.11/#kafkamultidc-source">kafkaMultiDC</a> <em>(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#source">(Source)</a>)</em><br><div style="padding-left: 1em;"><p>The Kafka Multi Data Center(DC) Source receives records from the same topic in brokers deployed in two different kafka cluster. It will filter out all duplicate messages and try to ensurethat the events are received in the correct order by using sequence numbers. events are received in format such as <code>text</code>, <code>XML</code> and <code>JSON</code>.The Kafka Source will create the default partition  '0' for a given topic, if the topic is not already been created in the Kafka cluster.</p></div></li>
+<li><a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.0.11/#kafka-source">kafka</a> <em>(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#source">(Source)</a>)</em><br><div style="padding-left: 1em;"><p>A Kafka source receives events to be processed by WSO2 SP from a topic with a partition for a Kafka cluster. The events received can be in the <code>TEXT</code> <code>XML</code> or <code>JSON</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic.</p></div></li>
+<li><a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.0.11/#kafkamultidc-sink">kafkaMultiDC</a> <em>(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sink">(Sink)</a>)</em><br><div style="padding-left: 1em;"><p>A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> or <code>JSON</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.<br>To configure a sink to publish events via the Kafka transport, and using two Kafka brokers to publish events to the same topic, the <code>type</code> parameter must have <code>kafkaMultiDC</code> as its value.</p></div></li>
+<li><a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.0.11/#kafka-sink">kafka</a> <em>(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sink">(Sink)</a>)</em><br><div style="padding-left: 1em;"><p>A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> or <code>JSON</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.<br>To configure a sink to use the Kafka transport, the <code>type</code> parameter should have <code>kafka</code> as its value.</p></div></li>
+</ul>
 <h2 id="how-to-contribute">How to Contribute</h2>
 <ul>
 <li>
@@ -539,13 +557,13 @@ extension you can replace the component <a target="_blank" href="https://github.
       <nav class="md-footer-nav__inner md-grid">
         
         
-          <a href="api/4.0.10/" title="4.0.10" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="api/4.0.11/" title="4.0.11" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                4.0.10
+                4.0.11
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">
