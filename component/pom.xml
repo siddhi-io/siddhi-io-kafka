@@ -82,6 +82,11 @@
             <classifier>runtime</classifier>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.extension.siddhi.map.text</groupId>
+            <artifactId>siddhi-map-text</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>

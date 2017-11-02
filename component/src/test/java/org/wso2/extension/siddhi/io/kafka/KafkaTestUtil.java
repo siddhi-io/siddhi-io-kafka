@@ -233,7 +233,7 @@ public class KafkaTestUtil {
                             + "</event>"
                             + "</events>";
                 } else {
-                    msg = topic + ",12.5," + i;
+                    msg = "symbol:\"" + topic + "\",\nprice:12.5,\nvolume:"+i;
                 }
 
                 try {
