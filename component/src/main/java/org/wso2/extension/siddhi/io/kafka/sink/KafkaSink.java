@@ -157,8 +157,8 @@ public class KafkaSink extends Sink {
         optionalConfigs = optionHolder.validateAndGetStaticValue(KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES, null);
         topicOption = optionHolder.validateAndGetOption(KAFKA_PUBLISH_TOPIC);
         partitionOption = optionHolder.getOrCreateOption(KAFKA_PARTITION_NO, null);
-        sequenceId = optionHolder.validateAndGetStaticValue(SEQ_ID, outputStreamDefinition.getId());
-        isSequenced = (sequenceId == null) ? false : true;
+        sequenceId = optionHolder.validateAndGetStaticValue(SEQ_ID, null);
+        isSequenced = sequenceId != null;
         keyOption = optionHolder.getOrCreateOption(KAFKA_MESSAGE_KEY, null);
     }
 
