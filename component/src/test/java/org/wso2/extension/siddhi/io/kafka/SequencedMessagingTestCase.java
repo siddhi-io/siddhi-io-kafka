@@ -28,6 +28,7 @@ import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
+import org.wso2.siddhi.core.util.EventPrinter;
 import org.wso2.siddhi.core.util.persistence.InMemoryPersistenceStore;
 
 import java.rmi.RemoteException;
@@ -37,7 +38,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * Created by sajith on 8/21/17.
+ * Class implementing the Test cases for Sequenced Messaging.
  */
 public class SequencedMessagingTestCase {
     static final Logger LOG = Logger.getLogger(SequencedMessagingTestCase.class);
@@ -109,6 +110,7 @@ public class SequencedMessagingTestCase {
         dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
             @Override
             public synchronized void receive(Event[] events) {
+                EventPrinter.print(events);
                 count += events.length;
             }
         });
@@ -202,6 +204,7 @@ public class SequencedMessagingTestCase {
         dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
             @Override
             public synchronized void receive(Event[] events) {
+                EventPrinter.print(events);
                 count += events.length;
             }
         });
@@ -303,6 +306,7 @@ public class SequencedMessagingTestCase {
         dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
             @Override
             public synchronized void receive(Event[] events) {
+                EventPrinter.print(events);
                 count += events.length;
             }
         });
@@ -420,6 +424,7 @@ public class SequencedMessagingTestCase {
         dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
             @Override
             public synchronized void receive(Event[] events) {
+                EventPrinter.print(events);
                 count += events.length;
             }
         });
@@ -537,6 +542,7 @@ public class SequencedMessagingTestCase {
         dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
             @Override
             public synchronized void receive(Event[] events) {
+                EventPrinter.print(events);
                 count += events.length;
             }
         });
@@ -642,6 +648,7 @@ public class SequencedMessagingTestCase {
         dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
             @Override
             public synchronized void receive(Event[] events) {
+                EventPrinter.print(events);
                 count += events.length;
             }
         });

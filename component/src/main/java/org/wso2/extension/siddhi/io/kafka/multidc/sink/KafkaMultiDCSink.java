@@ -147,7 +147,7 @@ public class KafkaMultiDCSink extends KafkaSink {
         props.put("buffer.memory", 33554432);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
-        if (isBinaryMessage) {
+        if (!isBinaryMessage) {
             props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         } else {
             props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");

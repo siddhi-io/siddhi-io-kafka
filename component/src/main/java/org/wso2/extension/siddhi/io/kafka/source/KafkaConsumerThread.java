@@ -27,7 +27,6 @@ import org.apache.log4j.Logger;
 import org.wso2.extension.siddhi.io.kafka.sink.KafkaSink;
 import org.wso2.siddhi.core.stream.input.source.SourceEventListener;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -155,8 +154,9 @@ public class KafkaConsumerThread implements Runnable {
                         Object eventBody = null;
                         String header = null;
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("Event received in Kafka Event Adaptor with offSet: " + record.offset() + ", key: "
-                                    + record.key() + ", topic: " + record.topic() + ", partition: " + partition);
+                            LOG.debug("Event received in Kafka Event Adaptor with offSet: " + record.offset()
+                                    + ", key: " + record.key() + ", topic: " + record.topic() +
+                                    ", partition: " + partition);
                         }
                         topicOffsetMap.get(record.topic()).put(record.partition(), record.offset());
 
@@ -199,8 +199,9 @@ public class KafkaConsumerThread implements Runnable {
                                     }
                                 } else {
                                     if (LOG.isDebugEnabled()) {
-                                        LOG.debug("Duplicate Message arrived at Kafka Consumer Thread:" + consumerThreadId
-                                                + ". SeqKey:[" + sequenceKey.toString() + "]" + ", Latest SeqNo:" + lastReceivedSeqNo
+                                        LOG.debug("Duplicate Message arrived at Kafka Consumer Thread:"
+                                                + consumerThreadId + ". SeqKey:[" + sequenceKey.toString() + "]"
+                                                + ", Latest SeqNo:" + lastReceivedSeqNo
                                                 + ", this message SeqNo:" + seqNo + ". Ignoring the message.");
                                     }
                                 }

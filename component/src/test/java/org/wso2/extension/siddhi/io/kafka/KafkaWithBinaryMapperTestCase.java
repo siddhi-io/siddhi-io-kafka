@@ -4,8 +4,7 @@ import org.I0Itec.zkclient.exception.ZkTimeoutException;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.AssertJUnit;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.siddhi.core.SiddhiAppRuntime;
@@ -13,6 +12,7 @@ import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
+import org.wso2.siddhi.core.util.EventPrinter;
 import org.wso2.siddhi.core.util.persistence.InMemoryPersistenceStore;
 
 import java.rmi.RemoteException;
@@ -28,35 +28,32 @@ import java.util.concurrent.Future;
 public class KafkaWithBinaryMapperTestCase {
     static final Logger LOG = Logger.getLogger(SequencedMessagingTestCase.class);
     private static ExecutorService executorService;
-    private volatile int count;
-    private volatile boolean eventArrived;
+    private static volatile int count;
+    private static volatile boolean eventArrived;
     private volatile List<String> receivedEventNameList;
     private volatile List<Long> receivedValueList;
 
-    @BeforeClass
+    @BeforeMethod
     public static void init() throws Exception {
         try {
             executorService = Executors.newFixedThreadPool(5);
             KafkaTestUtil.cleanLogDir();
             KafkaTestUtil.setupKafkaBroker();
             Thread.sleep(1000);
+            count = 0;
+            eventArrived = false;
         } catch (Exception e) {
             throw new RemoteException("Exception caught when starting server", e);
         }
     }
 
-    @AfterClass
+    @AfterMethod
     public static void stopKafkaBroker() {
         KafkaTestUtil.stopKafkaBroker();
     }
 
-    @BeforeMethod
-    public void reset() {
-        count = 0;
-        eventArrived = false;
-    }
 
-    @Test
+   @Test
     public void basicKafkaTestUsingBinaryMessage() throws InterruptedException {
         LOG.info("Test to verify recovering process of a Siddhi node on a failure when Kafka is the event source");
         String topics[] = new String[]{"ExternalTopic-1", "IntermediateTopic-1"};
@@ -96,6 +93,7 @@ public class KafkaWithBinaryMapperTestCase {
         dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
             @Override
             public synchronized void receive(Event[] events) {
+                EventPrinter.print(events);
                 count += events.length;
             }
         });
@@ -174,6 +172,7 @@ public class KafkaWithBinaryMapperTestCase {
             siddhiAppRuntimeSource.addCallback("BarStream2", new StreamCallback() {
                 @Override
                 public void receive(Event[] events) {
+                    EventPrinter.print(events);
                     for (Event event : events) {
                         LOG.info(event);
                         eventArrived = true;

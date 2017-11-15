@@ -34,7 +34,6 @@ import org.wso2.siddhi.core.util.transport.OptionHolder;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
 import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -116,8 +115,8 @@ public class KafkaMultiDCSource extends Source {
         this.eventListener = sourceEventListener;
         String serverList = optionHolder.validateAndGetStaticValue(KafkaSource
             .ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS);
-        boolean isBinaryMessage = Boolean.getBoolean(optionHolder.validateAndGetStaticValue(KafkaSource.IS_BINARY_MESSAGE,
-                "false"));
+        boolean isBinaryMessage = Boolean.getBoolean(
+                optionHolder.validateAndGetStaticValue(KafkaSource.IS_BINARY_MESSAGE, "false"));
         bootstrapServers = serverList.split(",");
         if (bootstrapServers.length != 2) {
             throw new SiddhiAppValidationException("There should be two servers listed in " +
@@ -255,7 +254,7 @@ class Interceptor implements SourceEventListener {
     @Override
     public void onEvent(Object event, String[] strings) {
 
-        if (isBinaryMessage) {
+        if (!isBinaryMessage) {
             String eventString = (String) event;
             int headerStartingIndex = eventString.indexOf(KafkaSink.SEQ_NO_HEADER_DELIMITER);
             if (headerStartingIndex > 0) {
@@ -271,7 +270,7 @@ class Interceptor implements SourceEventListener {
         } else {
             byte[] byteEvents = (byte[]) event;
             int stringSize = ByteBuffer.wrap(byteEvents).getInt();
-            String header = new String(byteEvents, 4, stringSize-1, Charset.defaultCharset());
+            String header = new String(byteEvents, 4, stringSize - 1, Charset.defaultCharset());
             if (!header.isEmpty()) {
                 String[] headerElements = header.split(KafkaSink.SEQ_NO_HEADER_FIELD_SEPERATOR);
                 Integer seqNo = Integer.parseInt(headerElements[1]);

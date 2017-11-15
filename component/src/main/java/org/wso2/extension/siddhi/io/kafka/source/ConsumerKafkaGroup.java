@@ -77,7 +77,8 @@ public class ConsumerKafkaGroup {
         try {
             if (KafkaSource.SINGLE_THREADED.equals(threadingOption)) {
                 KafkaConsumerThread kafkaConsumerThread =
-                        new KafkaConsumerThread(sourceEventListener, topics, partitions, props, topicOffsetMap, false, isBinaryMessage);
+                        new KafkaConsumerThread(sourceEventListener, topics, partitions, props, topicOffsetMap,
+                                false, isBinaryMessage);
                 kafkaConsumerThreadList.add(kafkaConsumerThread);
                 LOG.info("Kafka Consumer thread starting to listen on topic/s: " + Arrays.toString(topics) +
                         " with partition/s: " + Arrays.toString(partitions));

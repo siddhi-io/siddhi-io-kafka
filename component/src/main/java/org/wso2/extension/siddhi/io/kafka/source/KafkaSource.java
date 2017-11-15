@@ -277,7 +277,11 @@ public class KafkaSource extends Source {
         props.put("bootstrap.servers", bootstrapServers);
         props.put("group.id", "test-consumer-group");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        if (!isBinaryMessage) {
+            props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        } else {
+            props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
+        }
         KafkaConsumer<String, String> consumer = new KafkaConsumer<String, String>(props);
         try {
             Map<String, List<PartitionInfo>> testTopicList = consumer.listTopics();
@@ -324,8 +328,13 @@ public class KafkaSource extends Source {
         configProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
                              "org.apache.kafka.common.serialization.ByteArraySerializer");
-        configProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                             "org.apache.kafka.common.serialization.StringSerializer");
+        if (!isBinaryMessage) {
+            configProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                    "org.apache.kafka.common.serialization.StringSerializer");
+        } else {
+            configProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                    "org.apache.kafka.common.serialization.ByteArraySerializer");
+        }
         org.apache.kafka.clients.producer.Producer producer = new KafkaProducer(configProperties);
         boolean partitionsAvailable = true;
         StringBuilder invalidPartitions = new StringBuilder("");
