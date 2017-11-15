@@ -83,6 +83,12 @@ import java.util.Properties;
                         type = {DataType.INT},
                         optional = true,
                         defaultValue = "0"),
+                @Parameter(name = "is.binary.message",
+                        description = "To send the binary event via kafkaMultiDCSink, it is needed to set "
+                                + "this parameter value to `true`.",
+                        type = {DataType.BOOL},
+                        optional = false,
+                        defaultValue = "null"),
                 @Parameter(name = "optional.configuration",
                         description = "This parameter contains all the other possible configurations that the " +
                                 "producer is created with. \n" +
@@ -140,7 +146,12 @@ public class KafkaMultiDCSink extends KafkaSink {
         props.put("linger.ms", 1);
         props.put("buffer.memory", 33554432);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+
+        if (isBinaryMessage) {
+            props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        } else {
+            props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
+        }
 
         readOptionalConfigs(props, optionalConfigs);
 
@@ -158,16 +169,30 @@ public class KafkaMultiDCSink extends KafkaSink {
     @Override
     public void publish(Object payload, DynamicOptions transportOptions) throws ConnectionUnavailableException {
         String key = keyOption.getValue(transportOptions);
+        Object payloadToSend = null;
 
-        StringBuilder strPayload = new StringBuilder();
-        strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR).append(lastSentSequenceNo)
-                .append(SEQ_NO_HEADER_DELIMITER)
-                .append(payload.toString());
-        lastSentSequenceNo.incrementAndGet();
+        if (payload instanceof String) {
+            if (isSequenced) {
+                StringBuilder strPayload = new StringBuilder();
+                strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR).append(lastSentSequenceNo)
+                        .append(SEQ_NO_HEADER_DELIMITER).append(payload.toString());
+                payloadToSend = strPayload.toString();
+                lastSentSequenceNo.incrementAndGet();
+            } else {
+                payloadToSend = payload.toString();
+            }
+        } else {
+            if (isSequenced) {
+                payloadToSend = getSequencedBinaryPayloadToSend((byte[]) payload);
+                lastSentSequenceNo.incrementAndGet();
+            } else {
+                payloadToSend = payload;
+            }
+        }
 
         for (Producer producer : producers) {
             try {
-                producer.send(new ProducerRecord<>(topic, partitionNo, key, strPayload.toString()));
+                producer.send(new ProducerRecord<>(topic, partitionNo, key, payloadToSend));
             } catch (Exception e) {
                 LOG.error(String.format("Failed to publish the message to [topic] %s. Error: %s. Sequence Number " +
                         ": %d", topic, e.getMessage(), lastSentSequenceNo.get() - 1), e);

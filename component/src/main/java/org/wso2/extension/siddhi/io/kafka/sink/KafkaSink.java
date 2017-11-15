@@ -35,6 +35,8 @@ import org.wso2.siddhi.core.util.transport.Option;
 import org.wso2.siddhi.core.util.transport.OptionHolder;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -82,6 +84,12 @@ import java.util.concurrent.atomic.AtomicInteger;
                            type = {DataType.STRING},
                            optional = true,
                            defaultValue = "null"),
+                @Parameter(name = "is.binary.message",
+                        description = "To send the binary event via kafka sink, it is needed to set "
+                                + "this parameter value to `true`.",
+                        type = {DataType.BOOL},
+                        optional = false,
+                        defaultValue = "null"),
                 @Parameter(name = "optional.configuration",
                            description = "This parameter contains all the other possible configurations that the " +
                                    "producer is created with. \n" +
@@ -125,7 +133,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 )
 public class KafkaSink extends Sink {
 
-    private Producer<String, String>  producer;
+    private Producer<String, Object>  producer;
     protected Option topicOption = null;
     protected String bootstrapServers;
     protected String optionalConfigs;
@@ -133,6 +141,7 @@ public class KafkaSink extends Sink {
     protected Boolean isSequenced = false;
     protected AtomicInteger lastSentSequenceNo = new AtomicInteger(0);
     protected String sequenceId = null;
+    protected Boolean isBinaryMessage;
 
     public static final String LAST_SENT_SEQ_NO_PERSIST_KEY = "lastSentSequenceNo";
     public static final String SEQ_NO_HEADER_DELIMITER = "~";
@@ -147,6 +156,7 @@ public class KafkaSink extends Sink {
     protected static final String ENTRY_SEPARATOR = ":";
     protected static final String KAFKA_PARTITION_NO = "partition.no";
     protected static final String SEQ_ID = "sequence.id";
+    protected static final String IS_BINARY_MESSAGE = "is.binary.message";
 
     private static final Logger LOG = Logger.getLogger(KafkaSink.class);
 
@@ -158,6 +168,8 @@ public class KafkaSink extends Sink {
         topicOption = optionHolder.validateAndGetOption(KAFKA_PUBLISH_TOPIC);
         partitionOption = optionHolder.getOrCreateOption(KAFKA_PARTITION_NO, null);
         sequenceId = optionHolder.validateAndGetStaticValue(SEQ_ID, null);
+        isBinaryMessage = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(IS_BINARY_MESSAGE,
+                "false"));
         isSequenced = sequenceId != null;
         keyOption = optionHolder.getOrCreateOption(KAFKA_MESSAGE_KEY, null);
     }
@@ -172,7 +184,12 @@ public class KafkaSink extends Sink {
         props.put("linger.ms", 1);
         props.put("buffer.memory", 33554432);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+
+        if (!isBinaryMessage) {
+            props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        } else {
+            props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
+        }
 
         readOptionalConfigs(props, optionalConfigs);
 
@@ -185,17 +202,27 @@ public class KafkaSink extends Sink {
         String topic = topicOption.getValue(transportOptions);
         String partitionNo = partitionOption.getValue(transportOptions);
         String key = keyOption.getValue(transportOptions);
+        Object payloadToSend;
+
         try {
-            String payloadToSend;
-            if (isSequenced) {
-                StringBuilder strPayload = new StringBuilder();
-                strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR).append(lastSentSequenceNo)
-                        .append(SEQ_NO_HEADER_DELIMITER)
-                        .append(payload.toString());
-                payloadToSend = strPayload.toString();
-                lastSentSequenceNo.incrementAndGet();
+            if (payload instanceof String) {
+                if (isSequenced) {
+                    StringBuilder strPayload = new StringBuilder();
+                    strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR).append(lastSentSequenceNo)
+                            .append(SEQ_NO_HEADER_DELIMITER).append(payload.toString());
+                    payloadToSend = strPayload.toString();
+                    lastSentSequenceNo.incrementAndGet();
+                } else {
+                    payloadToSend = payload.toString();
+                }
             } else {
-                payloadToSend = payload.toString();
+                byte[] byteEvents = ((ByteBuffer) payload).array();
+                if (isSequenced) {
+                    payloadToSend = getSequencedBinaryPayloadToSend(byteEvents);
+                    lastSentSequenceNo.incrementAndGet();
+                } else {
+                    payloadToSend = byteEvents;
+                }
             }
 
             if (null == partitionNo) {
@@ -224,7 +251,7 @@ public class KafkaSink extends Sink {
 
     @Override
     public Class[] getSupportedInputEventClasses() {
-        return new Class[]{String.class};
+        return new Class[]{String.class, ByteBuffer.class};
     }
 
     @Override
@@ -267,5 +294,18 @@ public class KafkaSink extends Sink {
                 }
             }
         }
+    }
+
+    public byte[] getSequencedBinaryPayloadToSend(byte[] payload) {
+        StringBuilder strPayload = new StringBuilder();
+        strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR).append(lastSentSequenceNo)
+                .append(SEQ_NO_HEADER_DELIMITER);
+        int headerSize = strPayload.toString().length();
+        int bufferSize = headerSize + 4 + payload.length;
+        ByteBuffer byteBuffer = ByteBuffer.wrap(new byte[bufferSize]);
+        byteBuffer.putInt(headerSize);
+        byteBuffer.put(strPayload.toString().getBytes(Charset.defaultCharset()));
+        byteBuffer.put(payload);
+        return byteBuffer.array();
     }
 }

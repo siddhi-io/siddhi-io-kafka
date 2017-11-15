@@ -55,6 +55,7 @@
         <kafka.client.version>0.9.0.0</kafka.client.version>
         <xml.mapper.version>4.0.6</xml.mapper.version>
         <text.mapper.version>1.0.7</text.mapper.version>
+        <binary.mapper.version>1.0.6</binary.mapper.version>
         <jacoco.version>0.7.9</jacoco.version>
 
         <mavan.findbugsplugin.exclude.file>findbugs-exclude.xml</mavan.findbugsplugin.exclude.file>
@@ -154,6 +155,12 @@
                 <groupId>org.wso2.extension.siddhi.map.text</groupId>
                 <artifactId>siddhi-map-text</artifactId>
                 <version>${text.mapper.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.extension.siddhi.map.binary</groupId>
+                <artifactId>siddhi-map-binary</artifactId>
+                <version>${binary.mapper.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

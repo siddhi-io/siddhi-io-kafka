@@ -35,6 +35,7 @@ import org.wso2.siddhi.core.util.config.ConfigReader;
 import org.wso2.siddhi.core.util.transport.OptionHolder;
 import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +85,12 @@ import java.util.concurrent.ScheduledExecutorService;
                         description = "If this parameter is set to `true`, the sequence of the events received via" +
                                 " the source is taken into account. Therefore, each event should contain a " +
                                 "sequence number as an attribute value to indicate the sequence.",
+                        type = {DataType.BOOL},
+                        optional = true,
+                        defaultValue = "false"),
+                @Parameter(name = "is.binary.message",
+                        description = "To receive the binary event via kafka source, it is needed to set "
+                                + "this parameter value to `true`.",
                         type = {DataType.BOOL},
                         optional = true,
                         defaultValue = "false"),
@@ -149,6 +156,7 @@ public class KafkaSource extends Source {
     public static final String HEADER_SEPARATOR = ",";
     public static final String ENTRY_SEPARATOR = ":";
     public static final String LAST_RECEIVED_SEQ_NO_KEY = "lastReceivedSeqNo";
+    public static final String IS_BINARY_MESSAGE = "is.binary.message";
     private static final Logger LOG = Logger.getLogger(KafkaSource.class);
     private SourceEventListener sourceEventListener;
     private ScheduledExecutorService executorService;
@@ -161,8 +169,9 @@ public class KafkaSource extends Source {
     private String partitions[];
     private String topics[];
     private String optionalConfigs;
-    private Boolean seqEnabled = false;
+    private boolean seqEnabled = false;
     private Map<String, Map<SequenceKey, Integer>> consumerLastReceivedSeqNoMap = null;
+    private boolean isBinaryMessage;
 
 
     @Override
@@ -180,6 +189,8 @@ public class KafkaSource extends Source {
         topics = topicList.split(HEADER_SEPARATOR);
         seqEnabled = optionHolder.validateAndGetStaticValue(SEQ_ENABLED, "false").equalsIgnoreCase("true");
         optionalConfigs = optionHolder.validateAndGetStaticValue(ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES, null);
+        isBinaryMessage = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(IS_BINARY_MESSAGE,
+                "false"));
         if (PARTITION_WISE.equals(threadingOption) && null == partitions) {
             throw new SiddhiAppValidationException("Threading option is selected as 'partition.wise' but there are no"
                                                            + " partitions given");
@@ -188,7 +199,7 @@ public class KafkaSource extends Source {
 
     @Override
     public Class[] getOutputEventClasses() {
-        return new Class[]{String.class};
+        return new Class[]{String.class, ByteBuffer.class};
     }
 
     @Override
@@ -202,8 +213,8 @@ public class KafkaSource extends Source {
 
         consumerKafkaGroup = new ConsumerKafkaGroup(topics, partitions,
                                                     KafkaSource.createConsumerConfig(bootstrapServers, groupID,
-                                                    optionalConfigs), topicOffsetMap, consumerLastReceivedSeqNoMap,
-                                                    threadingOption, executorService);
+                                                    optionalConfigs, isBinaryMessage), topicOffsetMap,
+                consumerLastReceivedSeqNoMap, threadingOption, executorService, isBinaryMessage);
         consumerKafkaGroup.run(sourceEventListener);
     }
 
@@ -348,7 +359,8 @@ public class KafkaSource extends Source {
         }
     }
 
-    private static Properties createConsumerConfig(String zkServerList, String groupId, String optionalConfigs) {
+    private static Properties createConsumerConfig(String zkServerList, String groupId, String optionalConfigs,
+            boolean isBinaryMessage) {
         Properties props = new Properties();
         props.put(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS, zkServerList);
         props.put(ADAPTOR_SUBSCRIBER_GROUP_ID, groupId);
@@ -359,7 +371,12 @@ public class KafkaSource extends Source {
         props.put("enable.auto.commit", "false");
         props.put("auto.offset.reset", "earliest");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+
+        if (!isBinaryMessage) {
+            props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        } else {
+            props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
+        }
 
         if (optionalConfigs != null && optionalConfigs.isEmpty()) {
             String[] optionalProperties = optionalConfigs.split(HEADER_SEPARATOR);
