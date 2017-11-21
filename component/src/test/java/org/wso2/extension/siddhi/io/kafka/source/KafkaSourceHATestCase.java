@@ -53,6 +53,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Class implementing the Test cases for KafkaSourceHA Test Cases.
+ */
 public class KafkaSourceHATestCase {
     private static final Logger log = Logger.getLogger(KafkaSourceHATestCase.class);
     private static ExecutorService executorService;

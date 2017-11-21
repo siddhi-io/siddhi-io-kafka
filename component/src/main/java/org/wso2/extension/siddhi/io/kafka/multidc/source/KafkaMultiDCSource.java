@@ -50,8 +50,8 @@ import java.util.UUID;
         description = "The Kafka Multi Data Center(DC) Source receives records from the same topic in brokers " +
                 "deployed in two different kafka cluster. It will filter out all duplicate messages and try to ensure" +
                 "that the events are received in the correct order by using sequence numbers. events are received in" +
-                " format such as `text`, `XML` and `JSON`.The Kafka Source will create the default partition  " +
-                "'0' for a given topic, if the topic is not already been created in the Kafka cluster.",
+                " format such as `text`, `XML` JSON` and `Binary`.The Kafka Source will create the default partition" +
+                " '0' for a given topic, if the topic is not already been created in the Kafka cluster.",
         parameters = {
                 @Parameter(name = "bootstrap.servers",
                         description = "This should contain the kafka server list which the kafka source should be "
@@ -67,7 +67,7 @@ import java.util.UUID;
                         optional = true,
                         defaultValue = "0"),
                 @Parameter(name = "is.binary.message",
-                        description = "To receive the binary event via KafkaMultiDCSource, it is needed to set "
+                        description = "To receive the binary events via KafkaMultiDCSource, it is needed to set "
                                 + "this parameter value to `true`.",
                         type = {DataType.BOOL},
                         optional = true,
@@ -115,7 +115,7 @@ public class KafkaMultiDCSource extends Source {
         this.eventListener = sourceEventListener;
         String serverList = optionHolder.validateAndGetStaticValue(KafkaSource
             .ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS);
-        boolean isBinaryMessage = Boolean.getBoolean(
+        boolean isBinaryMessage = Boolean.parseBoolean(
                 optionHolder.validateAndGetStaticValue(KafkaSource.IS_BINARY_MESSAGE, "false"));
         bootstrapServers = serverList.split(",");
         if (bootstrapServers.length != 2) {

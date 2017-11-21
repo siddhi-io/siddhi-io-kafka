@@ -37,6 +37,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Class implementing the Test cases for Sequenced Messaging.
+ */
 public class KafkaMultiDCSourceTestCases {
     static final Logger LOG = Logger.getLogger(KafkaMultiDCSourceTestCases.class);
     private static ExecutorService executorService;
@@ -125,6 +128,141 @@ public class KafkaMultiDCSourceTestCases {
             "from FooStream select symbol, price, volume insert into BarStream;\n";
 
         SiddhiManager siddhiManager = new SiddhiManager();
+        SiddhiAppRuntime siddhiAppRuntimeSink = siddhiManager.createSiddhiAppRuntime(sinkApp);
+        InputHandler fooStream = siddhiAppRuntimeSink.getInputHandler("BarStream");
+        siddhiAppRuntimeSink.start();
+        Thread.sleep(4000);
+        fooStream.send(new Object[]{"WSO2", 55.6f, 100L});
+        fooStream.send(new Object[]{"WSO2", 75.6f, 102L});
+        fooStream.send(new Object[]{"WSO2", 57.6f, 103L});
+        Thread.sleep(4000);
+
+        Assert.assertTrue(count == 3);
+    }
+
+    @Test(description = "Test the scenario: MultiDC sink and source with binary mapper")
+    public void testMultiDCSourceWithBothBrokersRunningUsingBinaryMapper() throws InterruptedException {
+        LOG.info("Creating test for publishing events for static topic without a partition");
+        String topics[] = new String[]{"myTopic2"};
+        KafkaTestUtil.createTopic(KafkaTestUtil.ZK_SERVER_CON_STRING, topics, 1);
+        KafkaTestUtil.createTopic(KafkaTestUtil.ZK_SERVER2_CON_STRING, topics, 1);
+        Thread.sleep(4000);
+        receivedEventNameList = new ArrayList<>(3);
+        receivedValueList = new ArrayList<>(3);
+
+        SiddhiManager sourceOneSiddhiManager = new SiddhiManager();
+        SiddhiAppRuntime sourceOneApp = sourceOneSiddhiManager.createSiddhiAppRuntime(
+                "@App:name('SourceOneSiddhiApp') " +
+                        "define stream BarStream2 (symbol string, price float, volume long); " +
+                        "@info(name = 'query1') " +
+                        "@source(type='kafkaMultiDC', " +
+                        "topic='myTopic2', " +
+                        "partition='0', " +
+                        "is.binary.message='true'," +
+                        "bootstrap.servers='localhost:9092,localhost:9093'," +
+                        "@map(type='binary'))" +
+                        "Define stream FooStream2 (symbol string, price float, volume long);" +
+                        "from FooStream2 select symbol, price, volume insert into BarStream2;");
+
+        sourceOneApp.addCallback("BarStream2", new StreamCallback() {
+            @Override
+            public synchronized void receive(Event[] events) {
+                for (Event event : events) {
+                    LOG.info(event);
+                    eventArrived = true;
+                    count++;
+                    receivedEventNameList.add(event.getData(0).toString());
+                    receivedValueList.add((long) event.getData(2));
+                }
+            }
+        });
+        sourceOneApp.start();
+        Thread.sleep(4000);
+
+
+        String sinkApp = "@App:name('SinkSiddhiApp') \n"
+                + "define stream FooStream (symbol string, price float, volume long); \n"
+                + "@info(name = 'query1') \n"
+                + "@sink("
+                + "type='kafkaMultiDC', "
+                + "topic='myTopic2', "
+                + "is.binary.message='true',"
+                + "partition='0',"
+                + "bootstrap.servers='localhost:9092,localhost:9093', "
+                + "@map(type='binary'))" +
+                "Define stream BarStream (symbol string, price float, volume long);\n" +
+                "from FooStream select symbol, price, volume insert into BarStream;\n";
+
+        SiddhiManager siddhiManager = new SiddhiManager();
+
+        SiddhiAppRuntime siddhiAppRuntimeSink = siddhiManager.createSiddhiAppRuntime(sinkApp);
+        InputHandler fooStream = siddhiAppRuntimeSink.getInputHandler("BarStream");
+        siddhiAppRuntimeSink.start();
+        Thread.sleep(4000);
+        fooStream.send(new Object[]{"WSO2", 55.6f, 100L});
+        fooStream.send(new Object[]{"WSO2", 75.6f, 102L});
+        fooStream.send(new Object[]{"WSO2", 57.6f, 103L});
+        Thread.sleep(4000);
+
+        Assert.assertTrue(count == 3);
+    }
+
+    @Test(description = "Test the scenario: Send and Received event via multiDC sink and source as byte stream "
+            + "using xml mapper")
+    public void testMultiDCSourceWithBothBrokersRunningUsingXmlMapper() throws InterruptedException {
+        LOG.info("Creating test for publishing events for static topic without a partition");
+        String topics[] = new String[]{"myTopic3"};
+        KafkaTestUtil.createTopic(KafkaTestUtil.ZK_SERVER_CON_STRING, topics, 1);
+        KafkaTestUtil.createTopic(KafkaTestUtil.ZK_SERVER2_CON_STRING, topics, 1);
+        Thread.sleep(4000);
+        receivedEventNameList = new ArrayList<>(3);
+        receivedValueList = new ArrayList<>(3);
+
+        SiddhiManager sourceOneSiddhiManager = new SiddhiManager();
+        SiddhiAppRuntime sourceOneApp = sourceOneSiddhiManager.createSiddhiAppRuntime(
+                "@App:name('SourceOneSiddhiApp') " +
+                        "define stream BarStream2 (symbol string, price float, volume long); " +
+                        "@info(name = 'query1') " +
+                        "@source(type='kafkaMultiDC', " +
+                        "topic='myTopic3', " +
+                        "partition='0', " +
+                        "is.binary.message='true'," +
+                        "bootstrap.servers='localhost:9092,localhost:9093'," +
+                        "@map(type='xml'))" +
+                        "Define stream FooStream2 (symbol string, price float, volume long);" +
+                        "from FooStream2 select symbol, price, volume insert into BarStream2;");
+
+        sourceOneApp.addCallback("BarStream2", new StreamCallback() {
+            @Override
+            public synchronized void receive(Event[] events) {
+                for (Event event : events) {
+                    LOG.info(event);
+                    eventArrived = true;
+                    count++;
+                    receivedEventNameList.add(event.getData(0).toString());
+                    receivedValueList.add((long) event.getData(2));
+                }
+            }
+        });
+        sourceOneApp.start();
+        Thread.sleep(4000);
+
+
+        String sinkApp = "@App:name('SinkSiddhiApp') \n"
+                + "define stream FooStream (symbol string, price float, volume long); \n"
+                + "@info(name = 'query1') \n"
+                + "@sink("
+                + "type='kafkaMultiDC', "
+                + "topic='myTopic3', "
+                + "is.binary.message='true',"
+                + "partition='0',"
+                + "bootstrap.servers='localhost:9092,localhost:9093', "
+                + "@map(type='xml'))" +
+                "Define stream BarStream (symbol string, price float, volume long);\n" +
+                "from FooStream select symbol, price, volume insert into BarStream;\n";
+
+        SiddhiManager siddhiManager = new SiddhiManager();
+
         SiddhiAppRuntime siddhiAppRuntimeSink = siddhiManager.createSiddhiAppRuntime(sinkApp);
         InputHandler fooStream = siddhiAppRuntimeSink.getInputHandler("BarStream");
         siddhiAppRuntimeSink.start();

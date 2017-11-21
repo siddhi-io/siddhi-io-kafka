@@ -37,6 +37,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Class implementing the Test cases for KafkaMultiDCSink.
+ */
 public class KafkaMultiDCSinkTestCases {
     static final Logger LOG = Logger.getLogger(KafkaMultiDCSinkTestCases.class);
     private static ExecutorService executorService;

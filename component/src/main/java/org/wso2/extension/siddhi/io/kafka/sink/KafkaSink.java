@@ -35,6 +35,7 @@ import org.wso2.siddhi.core.util.transport.Option;
 import org.wso2.siddhi.core.util.transport.OptionHolder;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.HashMap;
@@ -49,7 +50,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         name = "kafka",
         namespace = "sink",
         description = "A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka " +
-                "cluster. The events can be published in the `TEXT` `XML` or `JSON` format.\n" +
+                "cluster. The events can be published in the `TEXT` `XML` `JSON` or `Binary` format.\n" +
                 "If the topic is not already created in the Kafka cluster, the Kafka sink creates the default " +
                 "partition for the given topic. The publishing topic and partition can be a dynamic value taken " +
                 "from the Siddhi event.\n" +
@@ -85,7 +86,7 @@ import java.util.concurrent.atomic.AtomicInteger;
                            optional = true,
                            defaultValue = "null"),
                 @Parameter(name = "is.binary.message",
-                        description = "To send the binary event via kafka sink, it is needed to set "
+                        description = "To send the binary events via kafka sink, it is needed to set "
                                 + "this parameter value to `true`.",
                         type = {DataType.BOOL},
                         optional = false,
@@ -205,16 +206,33 @@ public class KafkaSink extends Sink {
         Object payloadToSend;
 
         try {
+            //If the received payload is String.
             if (payload instanceof String) {
-                if (isSequenced) {
+
+                // If it is required to send the message as string message with sequence numbers.
+                if (isSequenced && !isBinaryMessage) {
                     StringBuilder strPayload = new StringBuilder();
                     strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR).append(lastSentSequenceNo)
                             .append(SEQ_NO_HEADER_DELIMITER).append(payload.toString());
                     payloadToSend = strPayload.toString();
                     lastSentSequenceNo.incrementAndGet();
-                } else {
+
+                 // If it is required to send the message as string message without sequence numbers.
+                } else if (!isSequenced && !isBinaryMessage) {
                     payloadToSend = payload.toString();
+
+                // If it is required to send the message as binary message with sequence numbers.
+                } else if (isSequenced && isBinaryMessage) {
+                    byte[] byteEvents = payload.toString().getBytes("UTF-8");
+                    payloadToSend = getSequencedBinaryPayloadToSend(byteEvents);
+                    lastSentSequenceNo.incrementAndGet();
+
+                 // If it is required to send the message as binary message without sequence numbers.
+                } else {
+                    payloadToSend = payload.toString().getBytes("UTF-8");
                 }
+
+            //if the received payload to send is binary.
             } else {
                 byte[] byteEvents = ((ByteBuffer) payload).array();
                 if (isSequenced) {
@@ -230,9 +248,8 @@ public class KafkaSink extends Sink {
             } else {
                 producer.send(new ProducerRecord<>(topic, Integer.parseInt(partitionNo), key, payloadToSend));
             }
-        } catch (Exception e) {
-            LOG.error(String.format("Failed to publish the message to [topic] %s [partition-no] %s. Error: %s",
-                    topic, partitionNo, e.getMessage()), e);
+        } catch (UnsupportedEncodingException e) {
+            LOG.error("Error while converting the received string payload to byte[].", e);
         }
     }
 

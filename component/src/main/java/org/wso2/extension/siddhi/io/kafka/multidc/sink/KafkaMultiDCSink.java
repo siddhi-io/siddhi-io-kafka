@@ -35,6 +35,8 @@ import org.wso2.siddhi.core.util.transport.OptionHolder;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
 import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -47,7 +49,7 @@ import java.util.Properties;
         name = "kafkaMultiDC",
         namespace = "sink",
         description = "A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka " +
-                "cluster. The events can be published in the `TEXT` `XML` or `JSON` format.\n" +
+                "cluster. The events can be published in the `TEXT` `XML` `JSON` or `Binary` format.\n" +
                 "If the topic is not already created in the Kafka cluster, the Kafka sink creates the default " +
                 "partition for the given topic. The publishing topic and partition can be a dynamic value taken " +
                 "from the Siddhi event.\n" +
@@ -84,7 +86,7 @@ import java.util.Properties;
                         optional = true,
                         defaultValue = "0"),
                 @Parameter(name = "is.binary.message",
-                        description = "To send the binary event via kafkaMultiDCSink, it is needed to set "
+                        description = "To send the binary events via kafkaMultiDCSink, it is needed to set "
                                 + "this parameter value to `true`.",
                         type = {DataType.BOOL},
                         optional = false,
@@ -170,24 +172,31 @@ public class KafkaMultiDCSink extends KafkaSink {
     public void publish(Object payload, DynamicOptions transportOptions) throws ConnectionUnavailableException {
         String key = keyOption.getValue(transportOptions);
         Object payloadToSend = null;
+        try {
+            if (payload instanceof String) {
 
-        if (payload instanceof String) {
-            if (isSequenced) {
-                StringBuilder strPayload = new StringBuilder();
-                strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR).append(lastSentSequenceNo)
-                        .append(SEQ_NO_HEADER_DELIMITER).append(payload.toString());
-                payloadToSend = strPayload.toString();
-                lastSentSequenceNo.incrementAndGet();
+                // If it is required to send the message as string message.
+                if (!isBinaryMessage) {
+                    StringBuilder strPayload = new StringBuilder();
+                    strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR).append(lastSentSequenceNo)
+                            .append(SEQ_NO_HEADER_DELIMITER).append(payload.toString());
+                    payloadToSend = strPayload.toString();
+                    lastSentSequenceNo.incrementAndGet();
+
+                    // If it is required to send 'xml`, 'json' or 'test' mapping payload as a byte stream through kafka.
+                } else {
+                    byte[] byteEvents = payload.toString().getBytes("UTF-8");
+                    payloadToSend = getSequencedBinaryPayloadToSend(byteEvents);
+                    lastSentSequenceNo.incrementAndGet();
+                }
+                //if the received payload to send is binary.
             } else {
-                payloadToSend = payload.toString();
+                byte[] byteEvents = ((ByteBuffer) payload).array();
+                    payloadToSend = getSequencedBinaryPayloadToSend(byteEvents);
+                    lastSentSequenceNo.incrementAndGet();
             }
-        } else {
-            if (isSequenced) {
-                payloadToSend = getSequencedBinaryPayloadToSend((byte[]) payload);
-                lastSentSequenceNo.incrementAndGet();
-            } else {
-                payloadToSend = payload;
-            }
+        } catch (UnsupportedEncodingException e) {
+            LOG.error("Error while converting the received string payload to byte[].", e);
         }
 
         for (Producer producer : producers) {

@@ -49,7 +49,7 @@ import java.util.concurrent.ScheduledExecutorService;
         name = "kafka",
         namespace = "source",
         description = "A Kafka source receives events to be processed by WSO2 SP from a topic with a partition " +
-                "for a Kafka cluster. The events received can be in the `TEXT` `XML` or `JSON` format.\n" +
+                "for a Kafka cluster. The events received can be in the `TEXT` `XML` `JSON` or `Binary` format.\n" +
                 "If the topic is not already created in the Kafka cluster, the Kafka sink creates the default " +
                 "partition for the given topic.",
         parameters = {
@@ -89,7 +89,7 @@ import java.util.concurrent.ScheduledExecutorService;
                         optional = true,
                         defaultValue = "false"),
                 @Parameter(name = "is.binary.message",
-                        description = "To receive the binary event via kafka source, it is needed to set "
+                        description = "To receive the binary events via kafka source, it is needed to set "
                                 + "this parameter value to `true`.",
                         type = {DataType.BOOL},
                         optional = true,

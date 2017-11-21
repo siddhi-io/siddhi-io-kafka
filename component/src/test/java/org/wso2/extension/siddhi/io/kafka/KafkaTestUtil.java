@@ -37,6 +37,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+/**
+ * Class defining the Constant for Kafka Test cases.
+ */
 public class KafkaTestUtil {
     private static final Logger log = Logger.getLogger(KafkaTestUtil.class);
     private static TestingServer zkTestServer;
@@ -217,7 +220,7 @@ public class KafkaTestUtil {
         props.put("retries", 0);
         props.put("batch.size", 16384);
         props.put("linger.ms", 1);
-        props.put("buffer.memory", 33554432);
+        props.put("buffer.memory", 33559000);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         Producer<String, String> producer = new KafkaProducer<String, String>(props);

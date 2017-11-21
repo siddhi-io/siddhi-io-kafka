@@ -36,6 +36,9 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class implementing the Test cases for Kafka Sink.
+ */
 public class KafkaSinkTestCase {
     static final Logger LOG = Logger.getLogger(KafkaSinkTestCase.class);
     private volatile int count;
