@@ -28,7 +28,7 @@
             <!--<class name="org.wso2.extension.siddhi.io.kafka.SequencedMessagingTestCase" />-->
             <!--<class name="org.wso2.extension.siddhi.io.kafka.multidc.KafkaMultiDCSinkTestCases"/>-->
             <!--<class name="org.wso2.extension.siddhi.io.kafka.multidc.KafkaMultiDCSourceTestCases"/>-->
-            <!--<class name="org.wso2.extension.siddhi.io.kafka.multidc.KafkaMultiDCSourceSynchronizerTestCases"/>-->
+            <class name="org.wso2.extension.siddhi.io.kafka.multidc.KafkaMultiDCSourceSynchronizerTestCases"/>
             <!--TODO uncomment when the text mapper is released -->
             <!--<class name="org.wso2.extension.siddhi.io.kafka.source.KafkaSourceHATestCase"/>-->
         </classes>
