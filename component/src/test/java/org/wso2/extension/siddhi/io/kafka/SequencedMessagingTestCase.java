@@ -28,6 +28,7 @@ import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
+import org.wso2.siddhi.core.util.EventPrinter;
 import org.wso2.siddhi.core.util.persistence.InMemoryPersistenceStore;
 
 import java.rmi.RemoteException;
@@ -37,7 +38,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * Created by sajith on 8/21/17.
+ * Class implementing the Test cases for Sequenced Messaging.
  */
 public class SequencedMessagingTestCase {
     static final Logger LOG = Logger.getLogger(SequencedMessagingTestCase.class);
@@ -71,6 +72,198 @@ public class SequencedMessagingTestCase {
     }
 
     @Test
+    public void basicKafkaTestUsingBinaryMessage() throws InterruptedException {
+        LOG.info("Test to verify recovering process of a Siddhi node on a failure when Kafka is the event source");
+        String topics[] = new String[]{"ExternalTopic-0", "IntermediateTopic-0"};
+        KafkaTestUtil.createTopic(topics, 1);
+        SiddhiManager siddhiManager = new SiddhiManager();
+        siddhiManager.setPersistenceStore(new InMemoryPersistenceStore());
+
+        final String externalDataRelayQuery = "@App:name('ExternalDataRelayApp1') " +
+                "@info(name = 'ExternalEventRelayQuery') " +
+                "@sink(type='kafka', topic='IntermediateTopic-0', bootstrap.servers='localhost:9092', " +
+                "partition.no='0', sequence.id='ExternalDataRelayApp', is.binary.message='true', "
+                + "@map(type='binary')) " +
+                "define stream BarStream (symbol string, count long); " +
+
+                "@source(type='kafka', topic.list='ExternalTopic-0', group.id='test1', " +
+                "threading.option='topic.wise', bootstrap.servers='localhost:9092', " +
+                "partition.no.list='0', @map(type='xml'))" +
+
+                "Define stream FooStream (symbol string, price float, volume long); " +
+
+                "from FooStream select symbol, count() as count insert into BarStream;";
+
+        final String dataReceiveQuery = "@App:name('DataReceiveApp2') " +
+                "define stream BarStream1 (symbol string, count long); " +
+
+                "@info(name = 'DataReceiveQuery') " +
+                "@source(type='kafka', topic.list='IntermediateTopic-0', group.id='test1', " +
+                "threading.option='topic.wise', seq.enabled='true', bootstrap.servers='localhost:9092', " +
+                "partition.no.list='0', is.binary.message='true', @map(type='binary')) " +
+                "Define stream FooStream1 (symbol string, count long);" +
+
+                "from FooStream1 select * insert into BarStream1;";
+
+        SiddhiAppRuntime externalDataRelayApp = siddhiManager.createSiddhiAppRuntime(externalDataRelayQuery);
+        SiddhiAppRuntime dataReceiveApp = siddhiManager.createSiddhiAppRuntime(dataReceiveQuery);
+
+        dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
+            @Override
+            public synchronized void receive(Event[] events) {
+                LOG.info(events);
+                count += events.length;
+            }
+        });
+
+        // Start the apps
+        externalDataRelayApp.start();
+        dataReceiveApp.start();
+
+        Thread.sleep(2000);
+
+        // start publishing events to External Kafka topic
+        Future eventSender = executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                KafkaTestUtil.kafkaPublisher(
+                        new String[]{"ExternalTopic-0"}, 1, 10, 100, false, null, true);
+            }
+        });
+
+        while (!eventSender.isDone()) {
+            Thread.sleep(100);
+        }
+        LOG.info("Finished publishing 5 events to the external topic.");
+
+        // waits till the checkpointing task is done
+        while (!externalDataRelayApp.persist().getFuture().isDone()) {
+            Thread.sleep(100);
+        }
+        LOG.info("Finished persisting the state of external event relay siddhi app");
+
+        // Send more events after persisting the state
+        eventSender = executorService.submit((Runnable) () -> KafkaTestUtil.kafkaPublisher(
+                new String[]{"ExternalTopic-0"}, 1, 5, 400, false, null, true));
+        while (!eventSender.isDone()) {
+            Thread.sleep(100);
+        }
+
+        // Shutting down the external relay app to mimic a node failure and starting it again like a restart
+        LOG.info("Restarting the external relay Siddhi App to mimic a node failure and a restart");
+        externalDataRelayApp.shutdown();
+        externalDataRelayApp = siddhiManager.createSiddhiAppRuntime(externalDataRelayQuery);
+        externalDataRelayApp.start();
+
+        // Restore the state from last snapshot that was taken before shutdown
+        externalDataRelayApp.restoreLastRevision();
+        Thread.sleep(4000);
+
+        Assert.assertEquals(count, 15);
+
+        KafkaTestUtil.deleteTopic(topics);
+        Thread.sleep(4000);
+        externalDataRelayApp.shutdown();
+        dataReceiveApp.shutdown();
+    }
+
+    @Test(dependsOnMethods = "basicKafkaTestUsingBinaryMessage")
+    public void basicKafkaTestUsingBinaryMessageWithXmlMapper() throws InterruptedException {
+        LOG.info("Test to verify recovering process of a Siddhi node on a failure when Kafka is the event source");
+        String topics[] = new String[]{"ExternalTopic-xml", "IntermediateTopic-xml"};
+        KafkaTestUtil.createTopic(topics, 1);
+        SiddhiManager siddhiManager = new SiddhiManager();
+        siddhiManager.setPersistenceStore(new InMemoryPersistenceStore());
+
+        final String externalDataRelayQuery = "@App:name('ExternalDataRelayApp1') " +
+                "@info(name = 'ExternalEventRelayQuery') " +
+                "@sink(type='kafka', topic='IntermediateTopic-xml', bootstrap.servers='localhost:9092', " +
+                "partition.no='0', sequence.id='ExternalDataRelayApp', is.binary.message='true', "
+                + "@map(type='xml')) " +
+                "define stream BarStream (symbol string, count long); " +
+
+                "@source(type='kafka', topic.list='ExternalTopic-xml', group.id='test1', " +
+                "threading.option='topic.wise', bootstrap.servers='localhost:9092', " +
+                "partition.no.list='0', @map(type='xml'))" +
+
+                "Define stream FooStream (symbol string, price float, volume long); " +
+
+                "from FooStream select symbol, count() as count insert into BarStream;";
+
+        final String dataReceiveQuery = "@App:name('DataReceiveApp2') " +
+                "define stream BarStream1 (symbol string, count long); " +
+
+                "@info(name = 'DataReceiveQuery') " +
+                "@source(type='kafka', topic.list='IntermediateTopic-xml', group.id='test1', " +
+                "threading.option='topic.wise', seq.enabled='true', bootstrap.servers='localhost:9092', " +
+                "partition.no.list='0', is.binary.message='true', @map(type='xml')) " +
+                "Define stream FooStream1 (symbol string, count long);" +
+
+                "from FooStream1 select * insert into BarStream1;";
+
+        SiddhiAppRuntime externalDataRelayApp = siddhiManager.createSiddhiAppRuntime(externalDataRelayQuery);
+        SiddhiAppRuntime dataReceiveApp = siddhiManager.createSiddhiAppRuntime(dataReceiveQuery);
+
+        dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
+            @Override
+            public synchronized void receive(Event[] events) {
+                LOG.info(events);
+                count += events.length;
+            }
+        });
+
+        // Start the apps
+        externalDataRelayApp.start();
+        dataReceiveApp.start();
+
+        Thread.sleep(2000);
+
+        // start publishing events to External Kafka topic
+        Future eventSender = executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                KafkaTestUtil.kafkaPublisher(
+                        new String[]{"ExternalTopic-xml"}, 1, 10, 100, false, null, true);
+            }
+        });
+
+        while (!eventSender.isDone()) {
+            Thread.sleep(100);
+        }
+        LOG.info("Finished publishing 5 events to the external topic.");
+
+        // waits till the checkpointing task is done
+        while (!externalDataRelayApp.persist().getFuture().isDone()) {
+            Thread.sleep(100);
+        }
+        LOG.info("Finished persisting the state of external event relay siddhi app");
+
+        // Send more events after persisting the state
+        eventSender = executorService.submit((Runnable) () -> KafkaTestUtil.kafkaPublisher(
+                new String[]{"ExternalTopic-xml"}, 1, 5, 400, false, null, true));
+        while (!eventSender.isDone()) {
+            Thread.sleep(100);
+        }
+
+        // Shutting down the external relay app to mimic a node failure and starting it again like a restart
+        LOG.info("Restarting the external relay Siddhi App to mimic a node failure and a restart");
+        externalDataRelayApp.shutdown();
+        externalDataRelayApp = siddhiManager.createSiddhiAppRuntime(externalDataRelayQuery);
+        externalDataRelayApp.start();
+
+        // Restore the state from last snapshot that was taken before shutdown
+        externalDataRelayApp.restoreLastRevision();
+        Thread.sleep(4000);
+
+        Assert.assertEquals(count, 15);
+
+        KafkaTestUtil.deleteTopic(topics);
+        Thread.sleep(4000);
+        externalDataRelayApp.shutdown();
+        dataReceiveApp.shutdown();
+    }
+
+    @Test(dependsOnMethods = "basicKafkaTestUsingBinaryMessageWithXmlMapper")
     public void basicTest() throws InterruptedException {
         LOG.info("Test to verify recovering process of a Siddhi node on a failure when Kafka is the event source");
         String topics[] = new String[]{"ExternalTopic-1", "IntermediateTopic-1"};
@@ -87,7 +280,6 @@ public class SequencedMessagingTestCase {
                 "@source(type='kafka', topic.list='ExternalTopic-1', group.id='test1', " +
                 "threading.option='topic.wise', bootstrap.servers='localhost:9092', " +
                 "partition.no.list='0', @map(type='xml'))" +
-
                 "Define stream FooStream (symbol string, price float, volume long); " +
 
                 "from FooStream select symbol, count() as count insert into BarStream;";
@@ -109,6 +301,7 @@ public class SequencedMessagingTestCase {
         dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
             @Override
             public synchronized void receive(Event[] events) {
+                EventPrinter.print(events);
                 count += events.length;
             }
         });
@@ -202,6 +395,7 @@ public class SequencedMessagingTestCase {
         dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
             @Override
             public synchronized void receive(Event[] events) {
+                EventPrinter.print(events);
                 count += events.length;
             }
         });
@@ -303,6 +497,7 @@ public class SequencedMessagingTestCase {
         dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
             @Override
             public synchronized void receive(Event[] events) {
+                EventPrinter.print(events);
                 count += events.length;
             }
         });
@@ -420,6 +615,7 @@ public class SequencedMessagingTestCase {
         dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
             @Override
             public synchronized void receive(Event[] events) {
+                EventPrinter.print(events);
                 count += events.length;
             }
         });
@@ -537,6 +733,7 @@ public class SequencedMessagingTestCase {
         dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
             @Override
             public synchronized void receive(Event[] events) {
+                EventPrinter.print(events);
                 count += events.length;
             }
         });
@@ -642,6 +839,7 @@ public class SequencedMessagingTestCase {
         dataReceiveApp.addCallback("BarStream1", new StreamCallback() {
             @Override
             public synchronized void receive(Event[] events) {
+                EventPrinter.print(events);
                 count += events.length;
             }
         });

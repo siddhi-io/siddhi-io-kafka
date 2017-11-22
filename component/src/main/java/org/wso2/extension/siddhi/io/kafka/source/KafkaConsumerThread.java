@@ -27,6 +27,8 @@ import org.apache.log4j.Logger;
 import org.wso2.extension.siddhi.io.kafka.sink.KafkaSink;
 import org.wso2.siddhi.core.stream.input.source.SourceEventListener;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -55,16 +57,18 @@ public class KafkaConsumerThread implements Runnable {
     private Map<SequenceKey, Integer> lastReceivedSeqNoMap = null;
     private String consumerThreadId;
     private boolean isPartitionWiseThreading = false;
+    private boolean isBinaryMessage = false;
 
     KafkaConsumerThread(SourceEventListener sourceEventListener, String topics[], String partitions[],
                         Properties props, Map<String, Map<Integer, Long>> topicOffsetMap,
-                        boolean isPartitionWiseThreading) {
+                        boolean isPartitionWiseThreading, boolean isBinaryMessage) {
         this.consumer = new KafkaConsumer<>(props);
         this.sourceEventListener = sourceEventListener;
         this.topicOffsetMap = topicOffsetMap;
         this.topics = topics;
         this.partitions = partitions;
         this.isPartitionWiseThreading = isPartitionWiseThreading;
+        this.isBinaryMessage = isBinaryMessage;
         this.consumerThreadId = buildId();
         if (null != partitions) {
             for (String topic : topics) {
@@ -144,23 +148,37 @@ public class KafkaConsumerThread implements Runnable {
                     consumerLock.unlock();
                 }
                 if (null != records) {
-
                     for (ConsumerRecord record : records) {
                         int partition = record.partition();
-                        String event = record.value().toString();
+                        Object event = record.value();
+                        Object eventBody = null;
+                        String header = null;
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("Event received in Kafka Event Adaptor: " + event + ", offSet: " + record.offset()
-                                    + ", key: " + record.key() + ", topic: " + record.topic()
-                                    + ", partition: " + partition);
+                            LOG.debug("Event received in Kafka Event Adaptor with offSet: " + record.offset()
+                                    + ", key: " + record.key() + ", topic: " + record.topic() +
+                                    ", partition: " + partition);
                         }
                         topicOffsetMap.get(record.topic()).put(record.partition(), record.offset());
 
                         if (lastReceivedSeqNoMap == null) {
                             sourceEventListener.onEvent(event, new String[0]);
                         } else {
-                            int headerStartingIndex = event.indexOf(KafkaSink.SEQ_NO_HEADER_DELIMITER);
-                            if (headerStartingIndex > 0) {
-                                String header = event.substring(0, headerStartingIndex);
+                            if (isBinaryMessage) {
+                                byte[] byteEvents = (byte[]) event;
+                                int stringSize = ByteBuffer.wrap(byteEvents).getInt();
+                                header = new String(byteEvents, 4, stringSize - 1, Charset.defaultCharset());
+                                eventBody = Arrays.copyOfRange(byteEvents, stringSize + 4,
+                                        byteEvents.length);
+                            } else {
+                                String stringEvent = event.toString();
+                                int headerStartingIndex = stringEvent.indexOf(KafkaSink.SEQ_NO_HEADER_DELIMITER);
+                                eventBody = stringEvent.substring(headerStartingIndex + 1);
+                                if (headerStartingIndex > 0) {
+                                    header = stringEvent.substring(0, headerStartingIndex);
+                                }
+                            }
+
+                            if (null != header && !header.isEmpty()) {
                                 String[] headerElements = header.split(KafkaSink.SEQ_NO_HEADER_FIELD_SEPERATOR);
                                 String sequenceId = headerElements[0];
                                 Integer seqNo = Integer.parseInt(headerElements[1]);
@@ -173,24 +191,24 @@ public class KafkaConsumerThread implements Runnable {
 
                                 if (lastReceivedSeqNo < seqNo) {
                                     lastReceivedSeqNoMap.put(sequenceKey, seqNo);
-                                    String eventBody = event.substring(headerStartingIndex + 1);
                                     sourceEventListener.onEvent(eventBody, new String[0]);
                                     if (LOG.isDebugEnabled()) {
-                                        LOG.debug("Last Received SeqNo Updated to:" + seqNo + " for " +
-                                            "SeqKey:[" + sequenceKey.toString() + "] in Kafka consumer thread:"
-                                            + consumerThreadId);
+                                        LOG.debug("Last Received SeqNo Updated to:" + seqNo + " for " + "SeqKey:["
+                                                + sequenceKey.toString() + "] in Kafka consumer thread:"
+                                                + consumerThreadId);
                                     }
                                 } else {
                                     if (LOG.isDebugEnabled()) {
-                                    LOG.debug("Duplicate Message arrived at Kafka Consumer Thread:" +
-                                            consumerThreadId + ". SeqKey:[" + sequenceKey.toString() + "]"
-                                            + ", Latest SeqNo:" + lastReceivedSeqNo +
-                                            ", this message SeqNo:" + seqNo + ". Ignoring the message.");
+                                        LOG.debug("Duplicate Message arrived at Kafka Consumer Thread:"
+                                                + consumerThreadId + ". SeqKey:[" + sequenceKey.toString() + "]"
+                                                + ", Latest SeqNo:" + lastReceivedSeqNo
+                                                + ", this message SeqNo:" + seqNo + ". Ignoring the message.");
                                     }
                                 }
+
                             } else {
-                                LOG.warn("'Sequenced' option is set to true in Kafka source configuration. " +
-                                        "But this message does not contain the sequence number in consumer thread :"
+                                LOG.warn("'Sequenced' option is set to true in Kafka source configuration. "
+                                        + "But this message does not contain the sequence number in consumer thread :"
                                         + consumerThreadId + ". Dropping the message");
                             }
                         }

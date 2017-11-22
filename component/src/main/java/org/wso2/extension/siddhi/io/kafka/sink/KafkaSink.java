@@ -35,6 +35,9 @@ import org.wso2.siddhi.core.util.transport.Option;
 import org.wso2.siddhi.core.util.transport.OptionHolder;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -47,7 +50,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         name = "kafka",
         namespace = "sink",
         description = "A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka " +
-                "cluster. The events can be published in the `TEXT` `XML` or `JSON` format.\n" +
+                "cluster. The events can be published in the `TEXT` `XML` `JSON` or `Binary` format.\n" +
                 "If the topic is not already created in the Kafka cluster, the Kafka sink creates the default " +
                 "partition for the given topic. The publishing topic and partition can be a dynamic value taken " +
                 "from the Siddhi event.\n" +
@@ -82,6 +85,12 @@ import java.util.concurrent.atomic.AtomicInteger;
                            type = {DataType.STRING},
                            optional = true,
                            defaultValue = "null"),
+                @Parameter(name = "is.binary.message",
+                        description = "To send the binary events via kafka sink, it is needed to set "
+                                + "this parameter value to `true`.",
+                        type = {DataType.BOOL},
+                        optional = false,
+                        defaultValue = "null"),
                 @Parameter(name = "optional.configuration",
                            description = "This parameter contains all the other possible configurations that the " +
                                    "producer is created with. \n" +
@@ -125,7 +134,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 )
 public class KafkaSink extends Sink {
 
-    private Producer<String, String>  producer;
+    private Producer<String, Object>  producer;
     protected Option topicOption = null;
     protected String bootstrapServers;
     protected String optionalConfigs;
@@ -133,6 +142,7 @@ public class KafkaSink extends Sink {
     protected Boolean isSequenced = false;
     protected AtomicInteger lastSentSequenceNo = new AtomicInteger(0);
     protected String sequenceId = null;
+    protected Boolean isBinaryMessage;
 
     public static final String LAST_SENT_SEQ_NO_PERSIST_KEY = "lastSentSequenceNo";
     public static final String SEQ_NO_HEADER_DELIMITER = "~";
@@ -147,6 +157,7 @@ public class KafkaSink extends Sink {
     protected static final String ENTRY_SEPARATOR = ":";
     protected static final String KAFKA_PARTITION_NO = "partition.no";
     protected static final String SEQ_ID = "sequence.id";
+    protected static final String IS_BINARY_MESSAGE = "is.binary.message";
 
     private static final Logger LOG = Logger.getLogger(KafkaSink.class);
 
@@ -158,6 +169,8 @@ public class KafkaSink extends Sink {
         topicOption = optionHolder.validateAndGetOption(KAFKA_PUBLISH_TOPIC);
         partitionOption = optionHolder.getOrCreateOption(KAFKA_PARTITION_NO, null);
         sequenceId = optionHolder.validateAndGetStaticValue(SEQ_ID, null);
+        isBinaryMessage = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(IS_BINARY_MESSAGE,
+                "false"));
         isSequenced = sequenceId != null;
         keyOption = optionHolder.getOrCreateOption(KAFKA_MESSAGE_KEY, null);
     }
@@ -172,7 +185,12 @@ public class KafkaSink extends Sink {
         props.put("linger.ms", 1);
         props.put("buffer.memory", 33554432);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+
+        if (!isBinaryMessage) {
+            props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        } else {
+            props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
+        }
 
         readOptionalConfigs(props, optionalConfigs);
 
@@ -185,17 +203,44 @@ public class KafkaSink extends Sink {
         String topic = topicOption.getValue(transportOptions);
         String partitionNo = partitionOption.getValue(transportOptions);
         String key = keyOption.getValue(transportOptions);
+        Object payloadToSend;
+
         try {
-            String payloadToSend;
-            if (isSequenced) {
-                StringBuilder strPayload = new StringBuilder();
-                strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR).append(lastSentSequenceNo)
-                        .append(SEQ_NO_HEADER_DELIMITER)
-                        .append(payload.toString());
-                payloadToSend = strPayload.toString();
-                lastSentSequenceNo.incrementAndGet();
+            //If the received payload is String.
+            if (payload instanceof String) {
+
+                // If it is required to send the message as string message with sequence numbers.
+                if (isSequenced && !isBinaryMessage) {
+                    StringBuilder strPayload = new StringBuilder();
+                    strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR).append(lastSentSequenceNo)
+                            .append(SEQ_NO_HEADER_DELIMITER).append(payload.toString());
+                    payloadToSend = strPayload.toString();
+                    lastSentSequenceNo.incrementAndGet();
+
+                 // If it is required to send the message as string message without sequence numbers.
+                } else if (!isSequenced && !isBinaryMessage) {
+                    payloadToSend = payload.toString();
+
+                // If it is required to send the message as binary message with sequence numbers.
+                } else if (isSequenced && isBinaryMessage) {
+                    byte[] byteEvents = payload.toString().getBytes("UTF-8");
+                    payloadToSend = getSequencedBinaryPayloadToSend(byteEvents);
+                    lastSentSequenceNo.incrementAndGet();
+
+                 // If it is required to send the message as binary message without sequence numbers.
+                } else {
+                    payloadToSend = payload.toString().getBytes("UTF-8");
+                }
+
+            //if the received payload to send is binary.
             } else {
-                payloadToSend = payload.toString();
+                byte[] byteEvents = ((ByteBuffer) payload).array();
+                if (isSequenced) {
+                    payloadToSend = getSequencedBinaryPayloadToSend(byteEvents);
+                    lastSentSequenceNo.incrementAndGet();
+                } else {
+                    payloadToSend = byteEvents;
+                }
             }
 
             if (null == partitionNo) {
@@ -203,9 +248,8 @@ public class KafkaSink extends Sink {
             } else {
                 producer.send(new ProducerRecord<>(topic, Integer.parseInt(partitionNo), key, payloadToSend));
             }
-        } catch (Exception e) {
-            LOG.error(String.format("Failed to publish the message to [topic] %s [partition-no] %s. Error: %s",
-                    topic, partitionNo, e.getMessage()), e);
+        } catch (UnsupportedEncodingException e) {
+            LOG.error("Error while converting the received string payload to byte[].", e);
         }
     }
 
@@ -224,7 +268,7 @@ public class KafkaSink extends Sink {
 
     @Override
     public Class[] getSupportedInputEventClasses() {
-        return new Class[]{String.class};
+        return new Class[]{String.class, ByteBuffer.class};
     }
 
     @Override
@@ -267,5 +311,18 @@ public class KafkaSink extends Sink {
                 }
             }
         }
+    }
+
+    public byte[] getSequencedBinaryPayloadToSend(byte[] payload) {
+        StringBuilder strPayload = new StringBuilder();
+        strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR).append(lastSentSequenceNo)
+                .append(SEQ_NO_HEADER_DELIMITER);
+        int headerSize = strPayload.toString().length();
+        int bufferSize = headerSize + 4 + payload.length;
+        ByteBuffer byteBuffer = ByteBuffer.wrap(new byte[bufferSize]);
+        byteBuffer.putInt(headerSize);
+        byteBuffer.put(strPayload.toString().getBytes(Charset.defaultCharset()));
+        byteBuffer.put(payload);
+        return byteBuffer.array();
     }
 }

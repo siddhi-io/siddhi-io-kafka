@@ -34,6 +34,9 @@ import org.wso2.siddhi.core.util.transport.OptionHolder;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
 import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -47,8 +50,8 @@ import java.util.UUID;
         description = "The Kafka Multi Data Center(DC) Source receives records from the same topic in brokers " +
                 "deployed in two different kafka cluster. It will filter out all duplicate messages and try to ensure" +
                 "that the events are received in the correct order by using sequence numbers. events are received in" +
-                " format such as `text`, `XML` and `JSON`.The Kafka Source will create the default partition  " +
-                "'0' for a given topic, if the topic is not already been created in the Kafka cluster.",
+                " format such as `text`, `XML` JSON` and `Binary`.The Kafka Source will create the default partition" +
+                " '0' for a given topic, if the topic is not already been created in the Kafka cluster.",
         parameters = {
                 @Parameter(name = "bootstrap.servers",
                         description = "This should contain the kafka server list which the kafka source should be "
@@ -63,6 +66,12 @@ import java.util.UUID;
                         type = {DataType.INT},
                         optional = true,
                         defaultValue = "0"),
+                @Parameter(name = "is.binary.message",
+                        description = "To receive the binary events via KafkaMultiDCSource, it is needed to set "
+                                + "this parameter value to `true`.",
+                        type = {DataType.BOOL},
+                        optional = true,
+                        defaultValue = "false"),
                 @Parameter(name = "optional.configuration",
                         description = "This may contain all the other possible configurations which the consumer "
                                 + "should be created with."
@@ -106,22 +115,24 @@ public class KafkaMultiDCSource extends Source {
         this.eventListener = sourceEventListener;
         String serverList = optionHolder.validateAndGetStaticValue(KafkaSource
             .ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS);
+        boolean isBinaryMessage = Boolean.parseBoolean(
+                optionHolder.validateAndGetStaticValue(KafkaSource.IS_BINARY_MESSAGE, "false"));
         bootstrapServers = serverList.split(",");
         if (bootstrapServers.length != 2) {
-            //TODO : add more contect
             throw new SiddhiAppValidationException("There should be two servers listed in " +
-                    "'bootstrap.servers' configuration");
+                    "'bootstrap.servers' configuration to ensure fault tolerant kafka messaging.");
         }
-        synchronizer = new SourceSynchronizer(sourceEventListener, bootstrapServers, 1000, 10);
+        synchronizer = new SourceSynchronizer(sourceEventListener, bootstrapServers, 1000,
+                10);
         LOG.info("Initializing kafka source for bootstrap server :" + bootstrapServers[0]);
-        Interceptor interceptor = new Interceptor(bootstrapServers[0], synchronizer);
+        Interceptor interceptor = new Interceptor(bootstrapServers[0], synchronizer, isBinaryMessage);
         OptionHolder options = createOptionHolders(bootstrapServers[0], optionHolder);
         KafkaSource source = new KafkaSource();
         source.init(interceptor, options, strings, configReader, siddhiAppContext);
         sources.put(bootstrapServers[0], source);
 
         LOG.info("Initializing kafka source for bootstrap server :" + bootstrapServers[1]);
-        interceptor = new Interceptor(bootstrapServers[1], synchronizer);
+        interceptor = new Interceptor(bootstrapServers[1], synchronizer, isBinaryMessage);
         options = createOptionHolders(bootstrapServers[1], optionHolder);
         source = new KafkaSource();
         source.init(interceptor, options, strings, configReader, siddhiAppContext);
@@ -131,7 +142,7 @@ public class KafkaMultiDCSource extends Source {
 
     @Override
     public Class[] getOutputEventClasses() {
-        return new Class[]{String.class};
+        return new Class[]{String.class, byte[].class};
     }
 
     @Override
@@ -214,6 +225,10 @@ public class KafkaMultiDCSource extends Source {
                 KafkaSource.ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES, null);
         options.put(KafkaSource.ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES, optionalConfigs);
 
+        String isBinaryMessage = originalOptionHolder.validateAndGetStaticValue(KafkaSource.IS_BINARY_MESSAGE,
+                "false");
+        options.put(KafkaSource.IS_BINARY_MESSAGE, isBinaryMessage);
+
         Extension extension = KafkaSource.class.getAnnotation(org.wso2.siddhi.annotation.Extension.class);
 
         OptionHolder holder = new OptionHolder(eventListener.getStreamDefinition(), options, new HashMap<>(),
@@ -228,27 +243,45 @@ class Interceptor implements SourceEventListener {
     private static final Logger LOG = Logger.getLogger(Interceptor.class);
     private String sourceId;
     private SourceSynchronizer synchronizer;
+    private boolean isBinaryMessage;
 
-    public Interceptor(String sourceId, SourceSynchronizer synchronizer) {
+    public Interceptor(String sourceId, SourceSynchronizer synchronizer, boolean isBinaryMessage) {
         this.sourceId = sourceId;
         this.synchronizer = synchronizer;
+        this.isBinaryMessage = isBinaryMessage;
     }
     
     @Override
     public void onEvent(Object event, String[] strings) {
-        String eventString = (String) event;
-        int headerStartingIndex = eventString.indexOf(KafkaSink.SEQ_NO_HEADER_DELIMITER);
-        if (headerStartingIndex > 0) {
-            String eventBody = eventString.substring(headerStartingIndex + 1);
-            String header = eventString.substring(0, headerStartingIndex);
 
-            String[] headerElements = header.split(KafkaSink.SEQ_NO_HEADER_FIELD_SEPERATOR);
-            Integer seqNo = Integer.parseInt(headerElements[1]);
-            synchronizer.onEvent(sourceId, seqNo, eventBody, strings);
+        if (!isBinaryMessage) {
+            String eventString = (String) event;
+            int headerStartingIndex = eventString.indexOf(KafkaSink.SEQ_NO_HEADER_DELIMITER);
+            if (headerStartingIndex > 0) {
+                String eventBody = eventString.substring(headerStartingIndex + 1);
+                String header = eventString.substring(0, headerStartingIndex);
+
+                String[] headerElements = header.split(KafkaSink.SEQ_NO_HEADER_FIELD_SEPERATOR);
+                Integer seqNo = Integer.parseInt(headerElements[1]);
+                synchronizer.onEvent(sourceId, seqNo, eventBody, strings);
+            } else {
+                LOG.warn("Sequence number is not contained in the message. Dropping the message :" + eventString);
+            }
         } else {
-            LOG.warn("Sequence number is not contained in the message. Dropping the message :"
-                + eventString);
+            byte[] byteEvents = (byte[]) event;
+            int stringSize = ByteBuffer.wrap(byteEvents).getInt();
+            String header = new String(byteEvents, 4, stringSize - 1, Charset.defaultCharset());
+            if (!header.isEmpty()) {
+                String[] headerElements = header.split(KafkaSink.SEQ_NO_HEADER_FIELD_SEPERATOR);
+                Integer seqNo = Integer.parseInt(headerElements[1]);
+                byte[] eventBody = Arrays.copyOfRange(byteEvents, stringSize + 4,
+                        byteEvents.length);
+                synchronizer.onEvent(sourceId, seqNo, eventBody, strings);
+            } else {
+                LOG.warn("Sequence number is not contained in the message. Dropping the message");
+            }
         }
+
     }
 
     @Override

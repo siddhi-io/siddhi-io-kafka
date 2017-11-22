@@ -36,7 +36,9 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Class implementing the Test cases for Kafka Source.
+ */
 public class KafkaSourceTestCase {
     private static final Logger log = Logger.getLogger(KafkaSourceTestCase.class);
     private volatile int count;

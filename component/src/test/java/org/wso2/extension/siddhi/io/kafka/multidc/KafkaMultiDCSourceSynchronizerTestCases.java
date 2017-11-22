@@ -29,6 +29,9 @@ import org.wso2.siddhi.query.api.definition.StreamDefinition;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class implementing the Test cases for KafkaMultiDCSource Synchronize Test Case.
+ */
 public class KafkaMultiDCSourceSynchronizerTestCases {
     private static final Logger LOG = Logger.getLogger(KafkaMultiDCSourceSynchronizerTestCases.class);
 

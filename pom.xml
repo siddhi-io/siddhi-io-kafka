@@ -53,12 +53,12 @@
         <zookeeper.version>3.4.0</zookeeper.version>
         <commons-io.version>2.5</commons-io.version>
         <kafka.client.version>0.9.0.0</kafka.client.version>
-        <xml.mapper.version>4.0.6</xml.mapper.version>
-        <text.mapper.version>1.0.7</text.mapper.version>
+        <xml.mapper.version>4.0.7</xml.mapper.version>
+        <text.mapper.version>1.0.8</text.mapper.version>
+        <binary.mapper.version>1.0.6</binary.mapper.version>
         <jacoco.version>0.7.9</jacoco.version>
 
         <mavan.findbugsplugin.exclude.file>findbugs-exclude.xml</mavan.findbugsplugin.exclude.file>
-        <mavan.checkstyle.suppression.file>checkstyle-suppressions.xml</mavan.checkstyle.suppression.file>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -154,6 +154,12 @@
                 <groupId>org.wso2.extension.siddhi.map.text</groupId>
                 <artifactId>siddhi-map-text</artifactId>
                 <version>${text.mapper.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.extension.siddhi.map.binary</groupId>
+                <artifactId>siddhi-map-binary</artifactId>
+                <version>${binary.mapper.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
