@@ -28,6 +28,7 @@ import org.wso2.extension.siddhi.io.kafka.KafkaTestUtil;
 import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
+import org.wso2.siddhi.core.exception.CannotRestoreSiddhiAppStateException;
 import org.wso2.siddhi.core.stream.input.source.Source;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
 import org.wso2.siddhi.core.util.EventPrinter;
@@ -152,7 +153,8 @@ public class KafkaSourceHATestCase {
     }
 
     @Test (dependsOnMethods = "testAKafkaPauseAndResume")
-    public void testRecoveryOnFailureOfSingleNodeWithKafka() throws InterruptedException {
+    public void testRecoveryOnFailureOfSingleNodeWithKafka() throws InterruptedException,
+                                                                    CannotRestoreSiddhiAppStateException {
         try {
             log.info("Test to verify recovering process of a Siddhi node on a failure when Kafka is the event source");
             String topics[] = new String[]{"kafka_topic4"};
@@ -242,7 +244,8 @@ public class KafkaSourceHATestCase {
     }
 
     @Test (dependsOnMethods = "testRecoveryOnFailureOfSingleNodeWithKafka")
-    public void testRecoveryOnFailureOfMultipleNodeWithKafka() throws InterruptedException {
+    public void testRecoveryOnFailureOfMultipleNodeWithKafka() throws InterruptedException,
+                                                                      CannotRestoreSiddhiAppStateException {
         try {
             log.info("Test to verify recovering process of multiple Siddhi nodes on a failure when Kafka is the event"
                     + " source");
