@@ -15,6 +15,7 @@ google_analytics:
 pages:
 - Welcome to WSO2 Siddhi IO Kafka: index.md
 - API Docs:
+  - 4.1.0: api/4.1.0.md
   - 4.0.17: api/4.0.17.md
   - 4.0.16: api/4.0.16.md
   - 4.0.15: api/4.0.15.md

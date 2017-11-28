@@ -1,4 +1,4 @@
-# API Docs - v4.1.0-SNAPSHOT
+# API Docs - v4.1.0
 
 ## Sink
 
