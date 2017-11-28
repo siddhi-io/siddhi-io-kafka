@@ -28,7 +28,7 @@
 
     <groupId>org.wso2.extension.siddhi.io.kafka</groupId>
     <artifactId>siddhi-io-kafka-parent</artifactId>
-    <version>4.0.18-SNAPSHOT</version>
+    <version>4.1.0-SNAPSHOT</version>
     <name>Siddhi IO Kafka Extension Parent</name>
 
     <profiles>
@@ -48,11 +48,11 @@
         <log4j.version>1.2.17.wso2v1</log4j.version>
         <testng.version>6.8</testng.version>
         <commons.logging.version>1.1.1</commons.logging.version>
-        <kafka_2.10.version>0.9.0.1</kafka_2.10.version>
+        <kafka_2.11.version>0.10.0.0</kafka_2.11.version>
         <curator-test.version>2.7.1</curator-test.version>
         <zookeeper.version>3.4.0</zookeeper.version>
         <commons-io.version>2.5</commons-io.version>
-        <kafka.client.version>0.9.0.0</kafka.client.version>
+        <kafka.client.version>0.10.0.0</kafka.client.version>
         <xml.mapper.version>4.0.8</xml.mapper.version>
         <text.mapper.version>1.0.9</text.mapper.version>
         <binary.mapper.version>1.0.7</binary.mapper.version>
@@ -123,8 +123,8 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka_2.10</artifactId>
-                <version>${kafka_2.10.version}</version>
+                <artifactId>kafka_2.11</artifactId>
+                <version>${kafka_2.11.version}</version>
             </dependency>
 
             <!-- Testing purposes -->

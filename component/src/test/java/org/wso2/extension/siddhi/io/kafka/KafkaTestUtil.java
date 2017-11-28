@@ -19,6 +19,7 @@
 package org.wso2.extension.siddhi.io.kafka;
 
 import kafka.admin.AdminUtils;
+import kafka.admin.RackAwareMode;
 import kafka.common.TopicExistsException;
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaServerStartable;
@@ -51,7 +52,6 @@ public class KafkaTestUtil {
     public static final String ZK_SERVER_CON_STRING = "localhost:2181";
     public static final String ZK_SERVER2_CON_STRING = "localhost:2182";
     private static final long CLEANER_BUFFER_SIZE = 2 * 1024 * 1024L;
-
 
 
     public static void cleanLogDir() {
@@ -169,7 +169,6 @@ public class KafkaTestUtil {
     }
 
 
-
     public static void createTopic(String topics[], int numOfPartitions) {
         createTopic(ZK_SERVER_CON_STRING, topics, numOfPartitions);
     }
@@ -180,7 +179,8 @@ public class KafkaTestUtil {
         ZkUtils zkUtils = new ZkUtils(zkClient, zkConnection, false);
         for (String topic : topics) {
             try {
-                AdminUtils.createTopic(zkUtils, topic, numOfPartitions, 1, new Properties());
+                AdminUtils.createTopic(zkUtils, topic, numOfPartitions, 1, new Properties(),
+                                       RackAwareMode.Enforced$.MODULE$);
             } catch (TopicExistsException e) {
                 log.warn("topic exists for: " + topic);
             }
@@ -189,10 +189,10 @@ public class KafkaTestUtil {
     }
 
     public static void deleteTopic(String topics[]) {
-       deleteTopic("localhost:2181", topics);
+        deleteTopic("localhost:2181", topics);
     }
 
-    public static void deleteTopic(String connectionString,  String topics[]) {
+    public static void deleteTopic(String connectionString, String topics[]) {
         ZkClient zkClient = new ZkClient(connectionString, 30000, 30000, ZKStringSerializer$.MODULE$);
         ZkConnection zkConnection = new ZkConnection(connectionString);
         ZkUtils zkUtils = new ZkUtils(zkClient, zkConnection, false);
