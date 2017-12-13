@@ -263,8 +263,8 @@ public class KafkaSourceTestCase {
         }
     }
 
-    // no exceptions will be thrown, since the retry method is available
-    @Test(dependsOnMethods = "testKafkaSingleTopicWithSpecificSubscribeSource")
+    @Test(expectedExceptions = SiddhiAppValidationException.class,
+          dependsOnMethods = "testKafkaSingleTopicWithSpecificSubscribeSource")
     public void testKafkaSpecificSubscribeForUnavailablePartitionSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");

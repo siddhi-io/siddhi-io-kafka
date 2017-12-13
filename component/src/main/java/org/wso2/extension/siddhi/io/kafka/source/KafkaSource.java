@@ -195,6 +195,17 @@ public class KafkaSource extends Source {
             throw new SiddhiAppValidationException("Threading option is selected as 'partition.wise' but there are no"
                                                            + " partitions given");
         }
+        checkTopicsAvailableInCluster();
+        checkPartitionsAvailableForTheTopicsInCluster();
+        if (seqEnabled && consumerLastReceivedSeqNoMap == null) {
+            consumerLastReceivedSeqNoMap = new HashMap<>();
+        }
+
+        consumerKafkaGroup = new ConsumerKafkaGroup(topics, partitions,
+                                                    KafkaSource.createConsumerConfig(bootstrapServers, groupID,
+                                                                                     optionalConfigs, isBinaryMessage),
+                                                    topicOffsetMap, consumerLastReceivedSeqNoMap, threadingOption,
+                                                    executorService, isBinaryMessage);
     }
 
     @Override
@@ -204,17 +215,6 @@ public class KafkaSource extends Source {
 
     @Override
     public void connect(ConnectionCallback connectionCallback) throws ConnectionUnavailableException {
-        checkTopicsAvailableInCluster();
-        checkPartitionsAvailableForTheTopicsInCluster();
-
-        if (seqEnabled && consumerLastReceivedSeqNoMap == null) {
-            consumerLastReceivedSeqNoMap = new HashMap<>();
-        }
-
-        consumerKafkaGroup = new ConsumerKafkaGroup(topics, partitions,
-                                                    KafkaSource.createConsumerConfig(bootstrapServers, groupID,
-                                                    optionalConfigs, isBinaryMessage), topicOffsetMap,
-                consumerLastReceivedSeqNoMap, threadingOption, executorService, isBinaryMessage);
         consumerKafkaGroup.run(sourceEventListener);
     }
 
@@ -272,7 +272,7 @@ public class KafkaSource extends Source {
         consumerKafkaGroup.restore(topicOffsetMap);
     }
 
-    private void checkTopicsAvailableInCluster() throws ConnectionUnavailableException {
+    private void checkTopicsAvailableInCluster() throws SiddhiAppValidationException {
         Properties props = new Properties();
         props.put("bootstrap.servers", bootstrapServers);
         props.put("group.id", "test-consumer-group");
@@ -308,7 +308,7 @@ public class KafkaSource extends Source {
                 String errorMessage = "Topic/s " + invalidTopics + " aren't available. Topics wont created since there "
                         + "are partition numbers defined in the query.";
                 LOG.error(errorMessage);
-                throw new ConnectionUnavailableException("Topic/s " + invalidTopics + " aren't available. "
+                throw new SiddhiAppValidationException("Topic/s " + invalidTopics + " aren't available. "
                                                                  + "Topics wont created since there "
                                                                  + "are partition numbers defined in the query.");
             } else if (!topicsAvailable) {
@@ -317,12 +317,12 @@ public class KafkaSource extends Source {
             }
         } catch (NullPointerException ex) {
             //calling super class logs the exception and retry
-            throw new ConnectionUnavailableException("Exception when connecting to kafka servers: "
+            throw new SiddhiAppValidationException("Exception when connecting to kafka servers: "
                                                              + sourceEventListener.getStreamDefinition().getId(), ex);
         }
     }
 
-    private void checkPartitionsAvailableForTheTopicsInCluster() throws ConnectionUnavailableException {
+    private void checkPartitionsAvailableForTheTopicsInCluster() throws SiddhiAppValidationException {
         //checking whether the defined partitions are available in the defined topic
         Properties configProperties = new Properties();
         configProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
@@ -360,7 +360,7 @@ public class KafkaSource extends Source {
                     }
                 }
                 if (!partitionsAvailable) {
-                    throw new ConnectionUnavailableException(
+                    throw new SiddhiAppValidationException(
                             "Partition number/s " + invalidPartitions + " aren't available for "
                                     + "the topic: " + topic);
                 }
