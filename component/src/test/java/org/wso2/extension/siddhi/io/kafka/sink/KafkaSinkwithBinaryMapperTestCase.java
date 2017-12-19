@@ -74,7 +74,6 @@ public class KafkaSinkwithBinaryMapperTestCase {
         LOG.info("Creating test for publishing events using binary mapper.");
         String topics[] = new String[]{"single_topic"};
         KafkaTestUtil.createTopic(topics, 1);
-        Thread.sleep(4000);
         receivedEventNameList = new ArrayList<>(3);
         receivedValueList = new ArrayList<>(3);
         try {
@@ -103,7 +102,6 @@ public class KafkaSinkwithBinaryMapperTestCase {
                 }
             });
             siddhiAppRuntimeSource.start();
-            Thread.sleep(4000);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream FooStream (symbol string, price float, volume long); " +
@@ -115,11 +113,10 @@ public class KafkaSinkwithBinaryMapperTestCase {
                             "from FooStream select symbol, price, volume insert into BarStream;");
             InputHandler fooStream = siddhiAppRuntime.getInputHandler("FooStream");
             siddhiAppRuntime.start();
-            Thread.sleep(4000);
             fooStream.send(new Object[]{"single_topic", 55.6f, 100L});
             fooStream.send(new Object[]{"single_topic2", 75.6f, 102L});
             fooStream.send(new Object[]{"single_topic3", 57.6f, 103L});
-            Thread.sleep(4000);
+            Thread.sleep(2000);
             List<String> expectedNames = new ArrayList<>(2);
             expectedNames.add("single_topic");
             expectedNames.add("single_topic2");
@@ -133,7 +130,6 @@ public class KafkaSinkwithBinaryMapperTestCase {
             AssertJUnit.assertEquals("Kafka Sink published the expected events", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(3, count);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
             siddhiAppRuntimeSource.shutdown();
         } catch (ZkTimeoutException ex) {

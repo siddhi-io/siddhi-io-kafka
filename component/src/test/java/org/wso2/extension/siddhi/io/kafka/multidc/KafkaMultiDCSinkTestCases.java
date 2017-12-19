@@ -68,6 +68,10 @@ public class KafkaMultiDCSinkTestCases {
         KafkaTestUtil.stopKafkaBroker();
         Thread.sleep(1000);
         KafkaTestUtil.stopKafkaBroker2();
+        Thread.sleep(1000);
+        while (!executorService.isShutdown() || !executorService.isTerminated()) {
+            executorService.shutdown();
+        }
     }
 
     @BeforeMethod
@@ -161,13 +165,18 @@ public class KafkaMultiDCSinkTestCases {
         Thread.sleep(4000);
 
         Assert.assertTrue(count == 6);
+        sourceOneApp.shutdown();
+        sourceTwoApp.shutdown();
+        siddhiAppRuntimeSink.shutdown();
+        Thread.sleep(1000);
+
     }
 
     /*
     Even if one of the brokers are failing publishing should not be stopped for the other broker. Therefore, one
     siddhi app must receive events.
      */
-    @Test (dependsOnMethods = "testMultiDCSinkWithBothBrokersRunning")
+//    @Test (dependsOnMethods = "testMultiDCSinkWithBothBrokersRunning")
     public void testMultiDCSinkWithOneBrokersFailing() throws InterruptedException {
         LOG.info("Creating test for publishing events for static topic without a partition");
         String topics[] = new String[]{"myTopic"};
@@ -224,6 +233,9 @@ public class KafkaMultiDCSinkTestCases {
         Thread.sleep(4000);
 
         Assert.assertTrue(count == 3);
+        sourceOneApp.shutdown();
+        siddhiAppRuntimeSink.shutdown();
+
     }
 
 }
