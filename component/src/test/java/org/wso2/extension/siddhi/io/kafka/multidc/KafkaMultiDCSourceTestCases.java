@@ -68,6 +68,10 @@ public class KafkaMultiDCSourceTestCases {
         KafkaTestUtil.stopKafkaBroker();
         Thread.sleep(1000);
         KafkaTestUtil.stopKafkaBroker2();
+        Thread.sleep(1000);
+        while (!executorService.isShutdown() || !executorService.isTerminated()) {
+            executorService.shutdown();
+        }
     }
 
     @BeforeMethod

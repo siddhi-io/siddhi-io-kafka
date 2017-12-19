@@ -62,8 +62,12 @@ public class SequencedMessagingTestCase {
     }
 
     @AfterClass
-    public static void stopKafkaBroker() {
+    public static void stopKafkaBroker() throws InterruptedException {
         KafkaTestUtil.stopKafkaBroker();
+        while (!executorService.isShutdown() || !executorService.isTerminated()) {
+            executorService.shutdown();
+        }
+        Thread.sleep(100);
     }
 
     @BeforeMethod
@@ -121,8 +125,6 @@ public class SequencedMessagingTestCase {
         externalDataRelayApp.start();
         dataReceiveApp.start();
 
-        Thread.sleep(2000);
-
         // start publishing events to External Kafka topic
         Future eventSender = executorService.submit(new Runnable() {
             @Override
@@ -145,7 +147,7 @@ public class SequencedMessagingTestCase {
 
         // Send more events after persisting the state
         eventSender = executorService.submit((Runnable) () -> KafkaTestUtil.kafkaPublisher(
-                new String[]{"ExternalTopic-0"}, 1, 5, 400, false, null, true));
+                new String[]{"ExternalTopic-0"}, 1, 5, 100, false, null, true));
         while (!eventSender.isDone()) {
             Thread.sleep(100);
         }
@@ -158,14 +160,14 @@ public class SequencedMessagingTestCase {
 
         // Restore the state from last snapshot that was taken before shutdown
         externalDataRelayApp.restoreLastRevision();
-        Thread.sleep(4000);
+        Thread.sleep(500);
 
         Assert.assertEquals(count, 15);
 
         KafkaTestUtil.deleteTopic(topics);
-        Thread.sleep(4000);
         externalDataRelayApp.shutdown();
         dataReceiveApp.shutdown();
+        Thread.sleep(2000);
     }
 
     @Test(dependsOnMethods = "basicKafkaTestUsingBinaryMessage")
@@ -218,8 +220,6 @@ public class SequencedMessagingTestCase {
         externalDataRelayApp.start();
         dataReceiveApp.start();
 
-        Thread.sleep(2000);
-
         // start publishing events to External Kafka topic
         Future eventSender = executorService.submit(new Runnable() {
             @Override
@@ -242,7 +242,7 @@ public class SequencedMessagingTestCase {
 
         // Send more events after persisting the state
         eventSender = executorService.submit((Runnable) () -> KafkaTestUtil.kafkaPublisher(
-                new String[]{"ExternalTopic-xml"}, 1, 5, 400, false, null, true));
+                new String[]{"ExternalTopic-xml"}, 1, 5, 100, false, null, true));
         while (!eventSender.isDone()) {
             Thread.sleep(100);
         }
@@ -255,14 +255,14 @@ public class SequencedMessagingTestCase {
 
         // Restore the state from last snapshot that was taken before shutdown
         externalDataRelayApp.restoreLastRevision();
-        Thread.sleep(4000);
+        Thread.sleep(500);
 
         Assert.assertEquals(count, 15);
 
         KafkaTestUtil.deleteTopic(topics);
-        Thread.sleep(4000);
         externalDataRelayApp.shutdown();
         dataReceiveApp.shutdown();
+        Thread.sleep(2000);
     }
 
     @Test(dependsOnMethods = "basicKafkaTestUsingBinaryMessageWithXmlMapper")
@@ -312,8 +312,6 @@ public class SequencedMessagingTestCase {
         externalDataRelayApp.start();
         dataReceiveApp.start();
 
-        Thread.sleep(2000);
-
         // start publishing events to External Kafka topic
         Future eventSender = executorService.submit(new Runnable() {
             @Override
@@ -349,14 +347,14 @@ public class SequencedMessagingTestCase {
 
         // Restore the state from last snapshot that was taken before shutdown
         externalDataRelayApp.restoreLastRevision();
-        Thread.sleep(5000);
+        Thread.sleep(500);
 
         Assert.assertEquals(count, 15);
 
         KafkaTestUtil.deleteTopic(topics);
-        Thread.sleep(4000);
         externalDataRelayApp.shutdown();
         dataReceiveApp.shutdown();
+        Thread.sleep(2000);
     }
 
     @Test(dependsOnMethods = "basicTest")
@@ -413,7 +411,7 @@ public class SequencedMessagingTestCase {
         });
 
         while (!eventSender.isDone()) {
-            Thread.sleep(200);
+            Thread.sleep(100);
         }
         LOG.info("Finished publishing 10 events to the external topic.");
 
@@ -422,7 +420,6 @@ public class SequencedMessagingTestCase {
         LOG.info("Starting the Siddhi Apps");
         externalDataRelayApp.start();
         dataReceiveApp.start();
-        Thread.sleep(2000);
 
         Future perisistor = externalDataRelayApp.persist().getFuture();
         // waits till the checkpointing task is done
@@ -452,14 +449,14 @@ public class SequencedMessagingTestCase {
 
         // Restore the state from last snapshot that was taken before shutdown
         externalDataRelayApp.restoreLastRevision();
-        Thread.sleep(5000);
+        Thread.sleep(1000);
 
         Assert.assertEquals(count, 15);
 
         KafkaTestUtil.deleteTopic(new String[]{"ExternalTopic-2", "IntermediateTopic-2"});
-        Thread.sleep(4000);
         externalDataRelayApp.shutdown();
         dataReceiveApp.shutdown();
+        Thread.sleep(2000);
     }
 
     @Test(dependsOnMethods = "testWithMultiplePartitionsSingleTopic")
@@ -516,7 +513,7 @@ public class SequencedMessagingTestCase {
         });
 
         while (!eventSender.isDone()) {
-            Thread.sleep(200);
+            Thread.sleep(100);
         }
         LOG.info("Finished publishing 10 events to the external topic.");
 
@@ -525,7 +522,6 @@ public class SequencedMessagingTestCase {
         LOG.info("Starting the Siddhi Apps");
         externalDataRelayApp.start();
         dataReceiveApp.start();
-        Thread.sleep(10000);
 
         Future perisistor = externalDataRelayApp.persist().getFuture();
         // waits till the checkpointing task is done
@@ -545,7 +541,6 @@ public class SequencedMessagingTestCase {
         while (!eventSender.isDone()) {
             Thread.sleep(100);
         }
-        Thread.sleep(5000);
 
         // Shutting down the external relay app to mimic a node failure and starting it again like a restart so that
         // after the restart it will replay the last published 5 messages as it's not being persisted.
@@ -553,18 +548,17 @@ public class SequencedMessagingTestCase {
         externalDataRelayApp.shutdown();
         externalDataRelayApp = siddhiManager.createSiddhiAppRuntime(externalDataRelayQuery);
         externalDataRelayApp.start();
-        Thread.sleep(5000);
 
         // Restore the state from last snapshot that was taken before shutdown
         externalDataRelayApp.restoreLastRevision();
-        Thread.sleep(5000);
+        Thread.sleep(1000);
 
         Assert.assertEquals(count, 15);
 
         KafkaTestUtil.deleteTopic(new String[]{"ExternalTopic-3", "IntermediateTopic-3"});
-        Thread.sleep(4000);
         externalDataRelayApp.shutdown();
         dataReceiveApp.shutdown();
+        Thread.sleep(2000);
     }
 
     @Test(dependsOnMethods = "testWithMultiplePartitionsSingleTopicWithPartitionWiseThreading")
@@ -635,7 +629,7 @@ public class SequencedMessagingTestCase {
         });
 
         while (!eventSender.isDone()) {
-            Thread.sleep(200);
+            Thread.sleep(100);
         }
 
         LOG.info("Finished publishing 10 events to the external topic.");
@@ -645,7 +639,6 @@ public class SequencedMessagingTestCase {
         LOG.info("Starting the Siddhi Apps");
         externalDataRelayApp.start();
         dataReceiveApp.start();
-        Thread.sleep(10000);
 
         Future perisistor = externalDataRelayApp.persist().getFuture();
         // waits till the checkpointing task is done
@@ -673,17 +666,16 @@ public class SequencedMessagingTestCase {
         externalDataRelayApp.shutdown();
         externalDataRelayApp = siddhiManager.createSiddhiAppRuntime(externalDataRelayQuery);
         externalDataRelayApp.start();
-        Thread.sleep(10000);
         // Restore the state from last snapshot that was taken before shutdown
         externalDataRelayApp.restoreLastRevision();
-        Thread.sleep(5000);
+        Thread.sleep(2000);
 
         Assert.assertEquals(count, 30);
 
         KafkaTestUtil.deleteTopic(new String[]{"ExternalTopic-4", "SecondExternalTopic-4" , "IntermediateTopic-4"});
-        Thread.sleep(4000);
         externalDataRelayApp.shutdown();
         dataReceiveApp.shutdown();
+        Thread.sleep(2000);
     }
 
     @Test(dependsOnMethods = "testWithMultipleSeqIdsAndMultiplePartitionsWithTopicWiseThreading")
@@ -754,7 +746,7 @@ public class SequencedMessagingTestCase {
         });
 
         while (!eventSender.isDone()) {
-            Thread.sleep(200);
+            Thread.sleep(100);
         }
 
         LOG.info("Finished publishing 10 events to the external topic.");
@@ -764,7 +756,6 @@ public class SequencedMessagingTestCase {
         LOG.info("Starting the Siddhi Apps");
         externalDataRelayApp.start();
         dataReceiveApp.start();
-        Thread.sleep(10000);
 
         Future perisistor = externalDataRelayApp.persist().getFuture();
         // waits till the check pointing task is done
@@ -792,18 +783,17 @@ public class SequencedMessagingTestCase {
         externalDataRelayApp.shutdown();
         externalDataRelayApp = siddhiManager.createSiddhiAppRuntime(externalDataRelayQuery);
         externalDataRelayApp.start();
-        Thread.sleep(10000);
 
         // Restore the state from last snapshot that was taken before shutdown
         externalDataRelayApp.restoreLastRevision();
-        Thread.sleep(5000);
+        Thread.sleep(2000);
 
         Assert.assertEquals(count, 30);
 
         KafkaTestUtil.deleteTopic(new String[]{"ExternalTopic-5", "SecondExternalTopic-5" , "IntermediateTopic-5"});
-        Thread.sleep(4000);
         externalDataRelayApp.shutdown();
         dataReceiveApp.shutdown();
+        Thread.sleep(2000);
     }
 
     @Test(dependsOnMethods = "testWithMultipleSeqIdsSinglePartitionWithTopicWiseThreading")
@@ -854,8 +844,6 @@ public class SequencedMessagingTestCase {
         externalDataRelayApp.start();
         dataReceiveApp.start();
 
-        Thread.sleep(2000);
-
         // start publishing events to External Kafka topic
         Future eventSender = executorService.submit(new Runnable() {
             @Override
@@ -873,9 +861,9 @@ public class SequencedMessagingTestCase {
         Assert.assertEquals(count, 0);
 
         KafkaTestUtil.deleteTopic(topics);
-        Thread.sleep(4000);
         externalDataRelayApp.shutdown();
         dataReceiveApp.shutdown();
+        Thread.sleep(2000);
     }
 
 }

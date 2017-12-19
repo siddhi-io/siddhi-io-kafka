@@ -58,8 +58,9 @@ public class KafkaSourceTestCase {
     }
 
     @AfterClass
-    public static void stopKafkaBroker() {
+    public static void stopKafkaBroker() throws InterruptedException {
         KafkaTestUtil.stopKafkaBroker();
+        Thread.sleep(1000);
     }
 
     @BeforeMethod
@@ -76,7 +77,6 @@ public class KafkaSourceTestCase {
             receivedEventNameList = new ArrayList<>(2);
             receivedValueList = new ArrayList<>(2);
             KafkaTestUtil.createTopic(topics, 1);
-            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
@@ -100,9 +100,8 @@ public class KafkaSourceTestCase {
                 }
             });
             siddhiAppRuntime.start();
-            Thread.sleep(2000);
             KafkaTestUtil.kafkaPublisher(topics, 1, 2, false, null, true);
-            Thread.sleep(1000);
+            Thread.sleep(100);
             List<String> expectedNames = new ArrayList<>(2);
             expectedNames.add("single_topic");
             expectedNames.add("single_topic");
@@ -114,7 +113,6 @@ public class KafkaSourceTestCase {
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(2, count);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
             log.warn("No zookeeper may not be available.", ex);
@@ -155,7 +153,6 @@ public class KafkaSourceTestCase {
             receivedEventNameList = new ArrayList<>(4);
             receivedValueList = new ArrayList<>(4);
             KafkaTestUtil.createTopic(topics, 1);
-            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
@@ -180,9 +177,8 @@ public class KafkaSourceTestCase {
                 }
             });
             siddhiAppRuntime.start();
-            Thread.sleep(2000);
             KafkaTestUtil.kafkaPublisher(topics, 1, 2, false, null, true);
-            Thread.sleep(1000);
+            Thread.sleep(100);
             List<String> expectedNames = new ArrayList<>(2);
             expectedNames.add("multiple_topic1");
             expectedNames.add("multiple_topic1");
@@ -198,7 +194,6 @@ public class KafkaSourceTestCase {
                                      receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
             log.warn("No zookeeper may not be available.", ex);
@@ -216,7 +211,6 @@ public class KafkaSourceTestCase {
             receivedEventNameList = new ArrayList<>(4);
             receivedValueList = new ArrayList<>(4);
             KafkaTestUtil.createTopic(topics, 1);
-            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
@@ -244,9 +238,8 @@ public class KafkaSourceTestCase {
                 }
             });
             siddhiAppRuntime.start();
-            Thread.sleep(2000);
             KafkaTestUtil.kafkaPublisher(topics, 1, 1, true, null, true);
-            Thread.sleep(1000);
+            Thread.sleep(100);
             List<String> expectedNames = new ArrayList<>(2);
             expectedNames.add("topic_with_one_partition");
             List<Long> expectedValues = new ArrayList<>(2);
@@ -256,7 +249,6 @@ public class KafkaSourceTestCase {
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(1, count);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
             log.warn("No zookeeper may not be available.", ex);
@@ -272,7 +264,6 @@ public class KafkaSourceTestCase {
             log.info("-------------------------------------------------------------------------------------------");
             String topics[] = new String[]{"topic_without_some_partition"};
             KafkaTestUtil.createTopic(topics, 2);
-            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
@@ -286,9 +277,7 @@ public class KafkaSourceTestCase {
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
             siddhiAppRuntime.start();
-            Thread.sleep(2000);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
             log.warn("No zookeeper may not be available.", ex);
@@ -307,7 +296,6 @@ public class KafkaSourceTestCase {
             receivedEventNameList = new ArrayList<>(4);
             receivedValueList = new ArrayList<>(4);
             KafkaTestUtil.createTopic(topics, 2);
-            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
@@ -335,9 +323,8 @@ public class KafkaSourceTestCase {
                 }
             });
             siddhiAppRuntime.start();
-            Thread.sleep(2000);
             KafkaTestUtil.kafkaPublisher(topics, 2, 2, false, null, true);
-            Thread.sleep(1000);
+            Thread.sleep(100);
             List<String> expectedNames = new ArrayList<>(2);
             expectedNames.add("multiple_topic1_two_par_one_sub");
             expectedNames.add("multiple_topic2_two_par_one_sub");
@@ -349,7 +336,6 @@ public class KafkaSourceTestCase {
                                      receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
             log.warn("No zookeeper may not be available.", ex);
@@ -368,7 +354,7 @@ public class KafkaSourceTestCase {
             receivedEventNameList = new ArrayList<>(4);
             receivedValueList = new ArrayList<>(4);
             KafkaTestUtil.createTopic(topics, 2);
-            Thread.sleep(4000);
+            Thread.sleep(1000);
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
@@ -396,9 +382,8 @@ public class KafkaSourceTestCase {
                 }
             });
             siddhiAppRuntime.start();
-            Thread.sleep(2000);
             KafkaTestUtil.kafkaPublisher(topics, 2, 2, false, null, true);
-            Thread.sleep(1000);
+            Thread.sleep(100);
             List<String> expectedNames = new ArrayList<>(2);
             expectedNames.add("multiple_topic1_two_par_all_sub");
             expectedNames.add("multiple_topic1_two_par_all_sub");
@@ -414,7 +399,6 @@ public class KafkaSourceTestCase {
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(4, count);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
             log.warn("No zookeeper may not be available.", ex);
@@ -430,7 +414,6 @@ public class KafkaSourceTestCase {
             log.info("-------------------------------------------------------------------------------------------");
             String topics[] = new String[]{"no_bootstrap_server_topic"};
             KafkaTestUtil.createTopic(topics, 2);
-            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
@@ -442,9 +425,7 @@ public class KafkaSourceTestCase {
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
             siddhiAppRuntime.start();
-            Thread.sleep(2000);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
             log.warn("No zookeeper may not be available.", ex);
@@ -461,7 +442,6 @@ public class KafkaSourceTestCase {
             receivedEventNameList = new ArrayList<>(2);
             receivedValueList = new ArrayList<>(2);
             KafkaTestUtil.createTopic(topics, 1);
-            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
 
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
@@ -489,9 +469,8 @@ public class KafkaSourceTestCase {
                 }
             });
             siddhiAppRuntime.start();
-            Thread.sleep(2000);
             KafkaTestUtil.kafkaPublisher(topics, 1, 2, false, null, true);
-            Thread.sleep(1000);
+            Thread.sleep(300);
             List<String> expectedNames = new ArrayList<>(2);
             expectedNames.add("multiple_topic1");
             expectedNames.add("multiple_topic1");
@@ -507,7 +486,6 @@ public class KafkaSourceTestCase {
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(4, count);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
             log.warn("No zookeeper may not be available.", ex);
@@ -524,7 +502,7 @@ public class KafkaSourceTestCase {
             receivedEventNameList = new ArrayList<>(2);
             receivedValueList = new ArrayList<>(2);
             KafkaTestUtil.createTopic(topics, 2);
-            Thread.sleep(4000);
+            Thread.sleep(100);
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
@@ -552,9 +530,8 @@ public class KafkaSourceTestCase {
                 }
             });
             siddhiAppRuntime.start();
-            Thread.sleep(2000);
             KafkaTestUtil.kafkaPublisher(topics, 2, 2, false, null, true);
-            Thread.sleep(1000);
+            Thread.sleep(100);
             List<String> expectedNames = new ArrayList<>(2);
             expectedNames.add("multiple_topic1_2par");
             expectedNames.add("multiple_topic1_2par");
@@ -570,7 +547,6 @@ public class KafkaSourceTestCase {
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(4, count);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
             log.warn("No zookeeper may not be available.", ex);
@@ -586,7 +562,6 @@ public class KafkaSourceTestCase {
             log.info("-------------------------------------------------------------------------------------------");
             String topics[] = new String[]{"no_threading_option_topic"};
             KafkaTestUtil.createTopic(topics, 2);
-            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
@@ -598,9 +573,7 @@ public class KafkaSourceTestCase {
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
             siddhiAppRuntime.start();
-            Thread.sleep(2000);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
             log.warn("No zookeeper may not be available.", ex);
@@ -616,7 +589,6 @@ public class KafkaSourceTestCase {
             log.info("-------------------------------------------------------------------------------------------");
             String topics[] = new String[]{"single_topic_without_groupid"};
             KafkaTestUtil.createTopic(topics, 1);
-            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
 
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
@@ -631,7 +603,6 @@ public class KafkaSourceTestCase {
                             "from FooStream select symbol, price, volume insert into BarStream;");
 
             siddhiAppRuntime.start();
-            Thread.sleep(2000);
             KafkaTestUtil.deleteTopic(topics);
             Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
@@ -712,7 +683,6 @@ public class KafkaSourceTestCase {
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(2, count);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
             log.warn("No zookeeper may not be available.", ex);
@@ -729,7 +699,6 @@ public class KafkaSourceTestCase {
             receivedEventNameList = new ArrayList<>(2);
             receivedValueList = new ArrayList<>(2);
             KafkaTestUtil.createTopic(topics, 1);
-            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
@@ -778,9 +747,8 @@ public class KafkaSourceTestCase {
                 }
             });
             siddhiAppRuntime.start();
-            Thread.sleep(2000);
             KafkaTestUtil.kafkaPublisher(topics, 1, 1, false, null, true);
-            Thread.sleep(1000);
+            Thread.sleep(100);
             List<String> expectedNames = new ArrayList<>(2);
             expectedNames.add("single_topic_same_group_ids");
             List<Long> expectedValues = new ArrayList<>(2);
@@ -790,7 +758,6 @@ public class KafkaSourceTestCase {
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(1, count);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
             log.warn("No zookeeper may not be available.", ex);
@@ -830,9 +797,8 @@ public class KafkaSourceTestCase {
                 }
             });
             siddhiAppRuntime.start();
-            Thread.sleep(2000);
             KafkaTestUtil.kafkaPublisher(topics, 1, 1, false, null, true);
-            Thread.sleep(1000);
+            Thread.sleep(100);
             List<String> expectedNames = new ArrayList<>(2);
             expectedNames.add("non_existing_topic1");
             List<Long> expectedValues = new ArrayList<>(2);
@@ -842,7 +808,6 @@ public class KafkaSourceTestCase {
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             KafkaTestUtil.deleteTopic(topics);
             AssertJUnit.assertEquals(1, count);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
             log.warn("No zookeeper may not be available.", ex);
@@ -858,7 +823,6 @@ public class KafkaSourceTestCase {
         receivedValueList = new ArrayList<>(4);
         String topics[] = new String[]{"kafka_topic", "kafka_topic2"};
         KafkaTestUtil.createTopic(topics, 2);
-        Thread.sleep(4000);
         SiddhiManager siddhiManager = new SiddhiManager();
         SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                 "@App:name('TestExecutionPlan') " +
@@ -884,9 +848,8 @@ public class KafkaSourceTestCase {
             }
         });
         siddhiAppRuntime.start();
-        Thread.sleep(2000);
         KafkaTestUtil.kafkaPublisher(topics, 2, 2, false, null, true);
-        Thread.sleep(1000);
+        Thread.sleep(100);
         AssertJUnit.assertEquals(4, count);
         AssertJUnit.assertTrue(eventArrived);
         List<String> expectedNames = new ArrayList<>(2);
@@ -916,7 +879,7 @@ public class KafkaSourceTestCase {
             receivedEventNameList = new ArrayList<>(4);
             receivedValueList = new ArrayList<>(4);
             KafkaTestUtil.createTopic(topics, 2);
-            Thread.sleep(4000);
+            Thread.sleep(100);
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
@@ -942,9 +905,8 @@ public class KafkaSourceTestCase {
                 }
             });
             siddhiAppRuntime.start();
-            Thread.sleep(2000);
             KafkaTestUtil.kafkaPublisher(topics, 2, 2, false, null, true);
-            Thread.sleep(1000);
+            Thread.sleep(100);
             AssertJUnit.assertEquals(4, count);
             AssertJUnit.assertTrue(eventArrived);
             List<String> expectedNames = new ArrayList<>(4);
@@ -958,7 +920,6 @@ public class KafkaSourceTestCase {
             expectedValues.add(0L);
             expectedValues.add(1L);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
             log.warn("No zookeeper may not be available.", ex);
@@ -1039,7 +1000,6 @@ public class KafkaSourceTestCase {
             receivedEventNameList = new ArrayList<>(4);
             receivedValueList = new ArrayList<>(4);
             KafkaTestUtil.createTopic(topics, 4);
-            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
@@ -1067,9 +1027,8 @@ public class KafkaSourceTestCase {
                 }
             });
             siddhiAppRuntime.start();
-            Thread.sleep(2000);
             KafkaTestUtil.kafkaPublisher(topics, 4, 4, true, null, true);
-            Thread.sleep(1000);
+            Thread.sleep(100);
             List<String> expectedNames = new ArrayList<>(2);
             expectedNames.add("kafka_topic_888");
             expectedNames.add("kafka_topic_888");
@@ -1084,7 +1043,6 @@ public class KafkaSourceTestCase {
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames, receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
             log.warn("No zookeeper may not be available.", ex);
@@ -1103,7 +1061,6 @@ public class KafkaSourceTestCase {
             receivedValueList = new ArrayList<>(4);
             List<String> retrivedAppNames = new ArrayList<>(4);
             KafkaTestUtil.createTopic(topics, 4);
-            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
@@ -1217,9 +1174,8 @@ public class KafkaSourceTestCase {
             siddhiAppRuntime2.start();
             siddhiAppRuntime3.start();
             siddhiAppRuntime4.start();
-            Thread.sleep(4000);
             KafkaTestUtil.kafkaPublisher(topics, 4, 4, true, null, true);
-            Thread.sleep(4000);
+            Thread.sleep(100);
             List<String> expectedNames = new ArrayList<>(2);
             expectedNames.add("kafka_topic_999");
             expectedNames.add("kafka_topic_999");
@@ -1240,7 +1196,6 @@ public class KafkaSourceTestCase {
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames, receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
             log.warn("No zookeeper may not be available.", ex);
