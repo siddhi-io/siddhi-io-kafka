@@ -58,8 +58,9 @@ public class KafkaSinkTestCase {
     }
 
     @AfterClass
-    public static void stopKafkaBroker() {
+    public static void stopKafkaBroker() throws InterruptedException {
         KafkaTestUtil.stopKafkaBroker();
+        Thread.sleep(1000);
     }
 
     @BeforeMethod
@@ -73,7 +74,6 @@ public class KafkaSinkTestCase {
         LOG.info("Creating test for publishing events for static topic without a partition");
         String topics[] = new String[]{"single_topic"};
         KafkaTestUtil.createTopic(topics, 1);
-        Thread.sleep(4000);
         receivedEventNameList = new ArrayList<>(3);
         receivedValueList = new ArrayList<>(3);
         try {
@@ -100,7 +100,6 @@ public class KafkaSinkTestCase {
                 }
             });
             siddhiAppRuntimeSource.start();
-            Thread.sleep(4000);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream FooStream (symbol string, price float, volume long); " +
@@ -111,11 +110,10 @@ public class KafkaSinkTestCase {
                             "from FooStream select symbol, price, volume insert into BarStream;");
             InputHandler fooStream = siddhiAppRuntime.getInputHandler("FooStream");
             siddhiAppRuntime.start();
-            Thread.sleep(4000);
             fooStream.send(new Object[]{"single_topic", 55.6f, 100L});
             fooStream.send(new Object[]{"single_topic2", 75.6f, 102L});
             fooStream.send(new Object[]{"single_topic3", 57.6f, 103L});
-            Thread.sleep(4000);
+            Thread.sleep(3000);
             List<String> expectedNames = new ArrayList<>(2);
             expectedNames.add("single_topic");
             expectedNames.add("single_topic2");
@@ -129,7 +127,6 @@ public class KafkaSinkTestCase {
             AssertJUnit.assertEquals("Kafka Sink didnt publish the expected events", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(3, count);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
             siddhiAppRuntimeSource.shutdown();
         } catch (ZkTimeoutException ex) {
@@ -142,7 +139,6 @@ public class KafkaSinkTestCase {
         LOG.info("Creating test for publishing events for static topic with a partition");
         String topics[] = new String[]{"topic_with_two_partitions_sub0"};
         KafkaTestUtil.createTopic(topics, 2);
-        Thread.sleep(4000);
         receivedEventNameList = new ArrayList<>(3);
         receivedValueList = new ArrayList<>(3);
         try {
@@ -170,7 +166,6 @@ public class KafkaSinkTestCase {
                 }
             });
             siddhiAppRuntimeSource.start();
-            Thread.sleep(4000);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan3') " +
                             "define stream FooStream (symbol string, price float, volume long); " +
@@ -182,11 +177,10 @@ public class KafkaSinkTestCase {
                             "from FooStream select symbol, price, volume insert into BarStream;");
             InputHandler fooStream = siddhiAppRuntime.getInputHandler("FooStream");
             siddhiAppRuntime.start();
-            Thread.sleep(10000);
             fooStream.send(new Object[]{"single_topic", 55.6f, 100L});
             fooStream.send(new Object[]{"single_topic2", 75.6f, 102L});
             fooStream.send(new Object[]{"single_topic3", 57.6f, 103L});
-            Thread.sleep(4000);
+            Thread.sleep(2000);
             List<String> expectedNames = new ArrayList<>(2);
             expectedNames.add("single_topic");
             expectedNames.add("single_topic2");
@@ -200,7 +194,6 @@ public class KafkaSinkTestCase {
             AssertJUnit.assertEquals("Kafka Sink didnt publish the expected events", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(3, count);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
             siddhiAppRuntimeSource.shutdown();
         } catch (ZkTimeoutException ex) {
@@ -227,12 +220,11 @@ public class KafkaSinkTestCase {
                             "from FooStream select symbol, price, volume insert into BarStream;");
             InputHandler fooStream = siddhiAppRuntime.getInputHandler("FooStream");
             siddhiAppRuntime.start();
-            Thread.sleep(2000);
             //this event will be published to the cluster and create the topic
             fooStream.send(new Object[]{"invalid_topic_without_partition", 55.6f, 100L});
             //this thread sleep is to slowdown the below execution plan because, if there are no topics kafka source
             // will create the topic.
-            Thread.sleep(2000);
+            Thread.sleep(500);
             SiddhiAppRuntime siddhiAppRuntimeSource = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan5') " +
                             "define stream BarStream2 (symbol string, price float, volume long); " +
@@ -256,7 +248,6 @@ public class KafkaSinkTestCase {
                 }
             });
             siddhiAppRuntimeSource.start();
-            Thread.sleep(2000);
             fooStream.send(new Object[]{"invalid_topic_without_partition2", 75.6f, 102L});
             fooStream.send(new Object[]{"invalid_topic_without_partition3", 57.6f, 103L});
             Thread.sleep(2000);
@@ -273,7 +264,6 @@ public class KafkaSinkTestCase {
             AssertJUnit.assertEquals("Kafka Sink didnt publish the expected events", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(3, count);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
             siddhiAppRuntimeSource.shutdown();
         } catch (ZkTimeoutException ex) {
@@ -300,12 +290,11 @@ public class KafkaSinkTestCase {
                             "from FooStream select symbol, price, volume insert into BarStream;");
             InputHandler fooStream = siddhiAppRuntime.getInputHandler("FooStream");
             siddhiAppRuntime.start();
-            Thread.sleep(2000);
             //this event will be published to the cluster and create the topic
             fooStream.send(new Object[]{"invalid_topic_with_partition", 55.6f, 100L});
             //this thread sleep is to slowdown the below execution plan because, if there are no topics kafka source
             // will create the topic.
-            Thread.sleep(2000);
+            Thread.sleep(500);
             SiddhiAppRuntime siddhiAppRuntimeSource = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan7') " +
                             "define stream BarStream2 (symbol string, price float, volume long); " +
@@ -330,7 +319,6 @@ public class KafkaSinkTestCase {
                 }
             });
             siddhiAppRuntimeSource.start();
-            Thread.sleep(2000);
             fooStream.send(new Object[]{"invalid_topic_with_partition2", 75.6f, 102L});
             fooStream.send(new Object[]{"invalid_topic_with_partition3", 57.6f, 103L});
             Thread.sleep(2000);
@@ -347,7 +335,6 @@ public class KafkaSinkTestCase {
             AssertJUnit.assertEquals("Kafka Sink didnt publish the expected events", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(3, count);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
             siddhiAppRuntimeSource.shutdown();
         } catch (ZkTimeoutException ex) {
@@ -376,12 +363,11 @@ public class KafkaSinkTestCase {
                             "from FooStream select symbol, price, volume insert into BarStream;");
             InputHandler fooStream = siddhiAppRuntime.getInputHandler("FooStream");
             siddhiAppRuntime.start();
-            Thread.sleep(2000);
             //this event will be published to the cluster and create the topic
             fooStream.send(new Object[]{"invalid_topic_with_partition_2", 55.6f, 100L});
             //this thread sleep is to slowdown the below execution plan because, if there are no topics kafka source
             // will create the topic.
-            Thread.sleep(2000);
+            Thread.sleep(500);
             SiddhiAppRuntime siddhiAppRuntimeSource = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan9') " +
                             "define stream BarStream2 (symbol string, price float, volume long); " +
@@ -405,7 +391,6 @@ public class KafkaSinkTestCase {
                 }
             });
             siddhiAppRuntimeSource.start();
-            Thread.sleep(2000);
             fooStream.send(new Object[]{"invalid_topic_with_partition_22", 75.6f, 102L});
             fooStream.send(new Object[]{"invalid_topic_with_partition_23", 57.6f, 103L});
             Thread.sleep(2000);
@@ -422,7 +407,6 @@ public class KafkaSinkTestCase {
             AssertJUnit.assertEquals("Kafka Sink didnt publish the expected events", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(3, count);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             siddhiAppRuntime.shutdown();
             siddhiAppRuntimeSource.shutdown();
         } catch (ZkTimeoutException ex) {
@@ -430,7 +414,7 @@ public class KafkaSinkTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testPublisherWithInvalidTopicWithPartitionOtherThan0KafkaTransportReceiveMessage")
+//    @Test (dependsOnMethods = "testPublisherWithInvalidTopicWithPartitionOtherThan0KafkaTransportReceiveMessage")
     public void testPublisherWithInvalidTopicWithPartitionOtherThan0KafkaTransport() throws InterruptedException {
         LOG.info("Creating test for publishing events for invalid topic with a partition other than 0 but the source "
                          + "will be not be getting events from the default partition since the key is not defined");
@@ -493,7 +477,9 @@ public class KafkaSinkTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testPublisherWithInvalidTopicWithPartitionOtherThan0KafkaTransport")
+//    @Test (dependsOnMethods = "testPublisherWithInvalidTopicWithPartitionOtherThan0KafkaTransport")
+    @Test(dependsOnMethods =
+            "testPublisherWithInvalidTopicWithPartitionOtherThan0KafkaTransportReceiveMessage")
     public void testPublisherWithKafkaTransportWithDynamicTopic() throws InterruptedException {
         LOG.info("Creating test for publishing events for dynamic topic without partition");
         try {
@@ -501,7 +487,6 @@ public class KafkaSinkTestCase {
             receivedEventNameList = new ArrayList<>(4);
             receivedValueList = new ArrayList<>(4);
             KafkaTestUtil.createTopic(topics, 1);
-            Thread.sleep(4000);
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime executionPlanRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan12') " +
@@ -538,12 +523,9 @@ public class KafkaSinkTestCase {
                 }
             });
             siddhiAppRuntime.start();
-            Thread.sleep(2000);
-
-            Thread.sleep(2000);
             fooStream.send(new Object[]{"multiple_topic1", 55.6f, 100L});
             fooStream.send(new Object[]{"multiple_topic2", 75.6f, 102L});
-            Thread.sleep(5000);
+            Thread.sleep(2000);
 
             List<String> expectedNames = new ArrayList<>(2);
             expectedNames.add("multiple_topic1");
@@ -556,7 +538,6 @@ public class KafkaSinkTestCase {
                                      receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             KafkaTestUtil.deleteTopic(topics);
-            Thread.sleep(4000);
             executionPlanRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
             LOG.warn("No zookeeper may not be available.", ex);

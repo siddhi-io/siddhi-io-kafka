@@ -155,11 +155,11 @@ public class KafkaTestUtil {
                 kafkaServer.shutdown();
                 kafkaServer.awaitShutdown();
             }
-            Thread.sleep(5000);
+            Thread.sleep(500);
             if (zkTestServer != null) {
                 zkTestServer.stop();
             }
-            Thread.sleep(5000);
+            Thread.sleep(500);
             cleanLogDir();
         } catch (InterruptedException e) {
             log.error(e.getMessage(), e);
@@ -252,6 +252,12 @@ public class KafkaTestUtil {
                 }
             }
         }
+        producer.flush();
         producer.close();
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            log.error("Thread sleep failed", e);
+        }
     }
 }
