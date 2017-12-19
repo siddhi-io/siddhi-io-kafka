@@ -16,7 +16,7 @@
     
     
       
-        <title>4.0.13 - Siddhi-IO-Kafka</title>
+        <title>4.1.3 - Siddhi-IO-Kafka</title>
       
     
     
@@ -84,7 +84,7 @@
                 </span>
               
             
-            4.0.13
+            4.1.3
           
         </span>
       </div>
@@ -181,11 +181,94 @@
           
           
 
+  
 
-  <li class="md-nav__item">
-    <a href="../4.1.3/" title="4.1.3" class="md-nav__link">
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="toc">
+        4.1.3
+      </label>
+    
+    <a href="./" title="4.1.3" class="md-nav__link md-nav__link--active">
       4.1.3
     </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#sink" title="Sink" class="md-nav__link">
+    Sink
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kafka-sink" title="kafka (Sink)" class="md-nav__link">
+    kafka (Sink)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kafkamultidc-sink" title="kafkaMultiDC (Sink)" class="md-nav__link">
+    kafkaMultiDC (Sink)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#source" title="Source" class="md-nav__link">
+    Source
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kafka-source" title="kafka (Source)" class="md-nav__link">
+    kafka (Source)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kafkamultidc-source" title="kafkaMultiDC (Source)" class="md-nav__link">
+    kafkaMultiDC (Source)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+    </ul>
+  
+</nav>
+    
   </li>
 
         
@@ -277,94 +360,11 @@
           
           
 
-  
 
-
-  <li class="md-nav__item md-nav__item--active">
-    
-    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="toc">
-    
-      
-    
-    
-      <label class="md-nav__link md-nav__link--active" for="toc">
-        4.0.13
-      </label>
-    
-    <a href="./" title="4.0.13" class="md-nav__link md-nav__link--active">
+  <li class="md-nav__item">
+    <a href="../4.0.13/" title="4.0.13" class="md-nav__link">
       4.0.13
     </a>
-    
-      
-<nav class="md-nav md-nav--secondary">
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="toc">Table of contents</label>
-    <ul class="md-nav__list" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#sink" title="Sink" class="md-nav__link">
-    Sink
-  </a>
-  
-    <nav class="md-nav">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#kafka-sink" title="kafka (Sink)" class="md-nav__link">
-    kafka (Sink)
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#kafkamultidc-sink" title="kafkaMultiDC (Sink)" class="md-nav__link">
-    kafkaMultiDC (Sink)
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#source" title="Source" class="md-nav__link">
-    Source
-  </a>
-  
-    <nav class="md-nav">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#kafka-source" title="kafka (Source)" class="md-nav__link">
-    kafka (Source)
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#kafkamultidc-source" title="kafkaMultiDC (Source)" class="md-nav__link">
-    kafkaMultiDC (Source)
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-      
-      
-    </ul>
-  
-</nav>
-    
   </li>
 
         
@@ -558,13 +558,13 @@
               
                 
                 
-                <h1 id="api-docs-v4013">API Docs - v4.0.13</h1>
+                <h1 id="api-docs-v413">API Docs - v4.1.3</h1>
 <h2 id="sink">Sink</h2>
 <h3 id="kafka-sink">kafka <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sink">(Sink)</a></em></h3>
-<p style="word-wrap: break-word">A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> or <code>JSON</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.<br>To configure a sink to use the Kafka transport, the <code>type</code> parameter should have <code>kafka</code> as its value.</p>
+<p style="word-wrap: break-word">A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.<br>To configure a sink to use the Kafka transport, the <code>type</code> parameter should have <code>kafka</code> as its value.</p>
 
 <p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
-<pre><code>@sink(type=&quot;kafka&quot;, bootstrap.servers=&quot;&lt;STRING&gt;&quot;, topic=&quot;&lt;STRING&gt;&quot;, partition.no=&quot;&lt;INT&gt;&quot;, sequence.id=&quot;&lt;STRING&gt;&quot;, key=&quot;&lt;STRING&gt;&quot;, optional.configuration=&quot;&lt;STRING&gt;&quot;, @map(...)))
+<pre><code>@sink(type=&quot;kafka&quot;, bootstrap.servers=&quot;&lt;STRING&gt;&quot;, topic=&quot;&lt;STRING&gt;&quot;, partition.no=&quot;&lt;INT&gt;&quot;, sequence.id=&quot;&lt;STRING&gt;&quot;, key=&quot;&lt;STRING&gt;&quot;, is.binary.message=&quot;&lt;BOOL&gt;&quot;, optional.configuration=&quot;&lt;STRING&gt;&quot;, @map(...)))
 </code></pre>
 
 <p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
@@ -618,6 +618,14 @@
         <td style="vertical-align: top">No</td>
     </tr>
     <tr>
+        <td style="vertical-align: top">is.binary.message</td>
+        <td style="vertical-align: top; word-wrap: break-word">To send the binary events via kafka sink, it is needed to set this parameter value to <code>true</code>.</td>
+        <td style="vertical-align: top">null</td>
+        <td style="vertical-align: top">BOOL</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
         <td style="vertical-align: top">optional.configuration</td>
         <td style="vertical-align: top; word-wrap: break-word">This parameter contains all the other possible configurations that the producer is created with. <br>e.g., <code>producer.type:async,batch.size:200</code></td>
         <td style="vertical-align: top">null</td>
@@ -661,10 +669,10 @@ from FooStream select symbol, price, volume insert into BarStream;
 <p style="word-wrap: break-word">This query publishes dynamic topic and partitions that are taken from the Siddhi event. The value for <code>partition.no</code> is taken from the <code>volume</code> attribute, and the topic value is taken from the <code>symbol</code> attribute.</p>
 
 <h3 id="kafkamultidc-sink">kafkaMultiDC <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sink">(Sink)</a></em></h3>
-<p style="word-wrap: break-word">A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> or <code>JSON</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.<br>To configure a sink to publish events via the Kafka transport, and using two Kafka brokers to publish events to the same topic, the <code>type</code> parameter must have <code>kafkaMultiDC</code> as its value.</p>
+<p style="word-wrap: break-word">A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.<br>To configure a sink to publish events via the Kafka transport, and using two Kafka brokers to publish events to the same topic, the <code>type</code> parameter must have <code>kafkaMultiDC</code> as its value.</p>
 
 <p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
-<pre><code>@sink(type=&quot;kafkaMultiDC&quot;, bootstrap.servers=&quot;&lt;STRING&gt;&quot;, topic=&quot;&lt;STRING&gt;&quot;, sequence.id=&quot;&lt;STRING&gt;&quot;, key=&quot;&lt;STRING&gt;&quot;, partition.no=&quot;&lt;INT&gt;&quot;, optional.configuration=&quot;&lt;STRING&gt;&quot;, @map(...)))
+<pre><code>@sink(type=&quot;kafkaMultiDC&quot;, bootstrap.servers=&quot;&lt;STRING&gt;&quot;, topic=&quot;&lt;STRING&gt;&quot;, sequence.id=&quot;&lt;STRING&gt;&quot;, key=&quot;&lt;STRING&gt;&quot;, partition.no=&quot;&lt;INT&gt;&quot;, is.binary.message=&quot;&lt;BOOL&gt;&quot;, optional.configuration=&quot;&lt;STRING&gt;&quot;, @map(...)))
 </code></pre>
 
 <p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
@@ -718,6 +726,14 @@ from FooStream select symbol, price, volume insert into BarStream;
         <td style="vertical-align: top">No</td>
     </tr>
     <tr>
+        <td style="vertical-align: top">is.binary.message</td>
+        <td style="vertical-align: top; word-wrap: break-word">To send the binary events via kafkaMultiDCSink, it is needed to set this parameter value to <code>true</code>.</td>
+        <td style="vertical-align: top">null</td>
+        <td style="vertical-align: top">BOOL</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
         <td style="vertical-align: top">optional.configuration</td>
         <td style="vertical-align: top; word-wrap: break-word">This parameter contains all the other possible configurations that the producer is created with. <br>e.g., <code>producer.type:async,batch.size:200</code></td>
         <td style="vertical-align: top">null</td>
@@ -740,10 +756,10 @@ from FooStream select symbol, price, volume insert into BarStream;
 
 <h2 id="source">Source</h2>
 <h3 id="kafka-source">kafka <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#source">(Source)</a></em></h3>
-<p style="word-wrap: break-word">A Kafka source receives events to be processed by WSO2 SP from a topic with a partition for a Kafka cluster. The events received can be in the <code>TEXT</code> <code>XML</code> or <code>JSON</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic.</p>
+<p style="word-wrap: break-word">A Kafka source receives events to be processed by WSO2 SP from a topic with a partition for a Kafka cluster. The events received can be in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic.</p>
 
 <p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
-<pre><code>@source(type=&quot;kafka&quot;, bootstrap.servers=&quot;&lt;STRING&gt;&quot;, topic.list=&quot;&lt;STRING&gt;&quot;, group.id=&quot;&lt;STRING&gt;&quot;, threading.option=&quot;&lt;STRING&gt;&quot;, partition.no.list=&quot;&lt;STRING&gt;&quot;, seq.enabled=&quot;&lt;BOOL&gt;&quot;, optional.configuration=&quot;&lt;STRING&gt;&quot;, @map(...)))
+<pre><code>@source(type=&quot;kafka&quot;, bootstrap.servers=&quot;&lt;STRING&gt;&quot;, topic.list=&quot;&lt;STRING&gt;&quot;, group.id=&quot;&lt;STRING&gt;&quot;, threading.option=&quot;&lt;STRING&gt;&quot;, partition.no.list=&quot;&lt;STRING&gt;&quot;, seq.enabled=&quot;&lt;BOOL&gt;&quot;, is.binary.message=&quot;&lt;BOOL&gt;&quot;, optional.configuration=&quot;&lt;STRING&gt;&quot;, @map(...)))
 </code></pre>
 
 <p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
@@ -805,6 +821,14 @@ from FooStream select symbol, price, volume insert into BarStream;
         <td style="vertical-align: top">No</td>
     </tr>
     <tr>
+        <td style="vertical-align: top">is.binary.message</td>
+        <td style="vertical-align: top; word-wrap: break-word">To receive the binary events via kafka source, it is needed to set this parameter value to <code>true</code>.</td>
+        <td style="vertical-align: top">false</td>
+        <td style="vertical-align: top">BOOL</td>
+        <td style="vertical-align: top">Yes</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
         <td style="vertical-align: top">optional.configuration</td>
         <td style="vertical-align: top; word-wrap: break-word">This parameter contains all the other possible configurations that the consumer is created with. <br>e.g., <code>ssl.keystore.type:JKS,batch.size:200</code>.</td>
         <td style="vertical-align: top">null</td>
@@ -852,10 +876,10 @@ from FooStream select symbol, price, volume insert into BarStream;
 <p style="word-wrap: break-word">This Kafka source configuration listens to the <code>kafka_topic</code> topic for the default partition because no <code>partition.no.list</code> is defined. Only one thread is created for the topic. The events are received in the XML format, mapped to a Siddhi event, and sent to a stream named <code>FooStream</code>.</p>
 
 <h3 id="kafkamultidc-source">kafkaMultiDC <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#source">(Source)</a></em></h3>
-<p style="word-wrap: break-word">The Kafka Multi Data Center(DC) Source receives records from the same topic in brokers deployed in two different kafka cluster. It will filter out all duplicate messages and try to ensurethat the events are received in the correct order by using sequence numbers. events are received in format such as <code>text</code>, <code>XML</code> and <code>JSON</code>.The Kafka Source will create the default partition  '0' for a given topic, if the topic is not already been created in the Kafka cluster.</p>
+<p style="word-wrap: break-word">The Kafka Multi Data Center(DC) Source receives records from the same topic in brokers deployed in two different kafka cluster. It will filter out all duplicate messages and try to ensurethat the events are received in the correct order by using sequence numbers. events are received in format such as <code>text</code>, <code>XML</code> JSON<code> and </code>Binary`.The Kafka Source will create the default partition '0' for a given topic, if the topic is not already been created in the Kafka cluster.</p>
 
 <p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
-<pre><code>@source(type=&quot;kafkaMultiDC&quot;, bootstrap.servers=&quot;&lt;STRING&gt;&quot;, topic=&quot;&lt;STRING&gt;&quot;, partition.no=&quot;&lt;INT&gt;&quot;, optional.configuration=&quot;&lt;STRING&gt;&quot;, @map(...)))
+<pre><code>@source(type=&quot;kafkaMultiDC&quot;, bootstrap.servers=&quot;&lt;STRING&gt;&quot;, topic=&quot;&lt;STRING&gt;&quot;, partition.no=&quot;&lt;INT&gt;&quot;, is.binary.message=&quot;&lt;BOOL&gt;&quot;, optional.configuration=&quot;&lt;STRING&gt;&quot;, @map(...)))
 </code></pre>
 
 <p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
@@ -889,6 +913,14 @@ from FooStream select symbol, price, volume insert into BarStream;
         <td style="vertical-align: top; word-wrap: break-word">The partition number for the given topic</td>
         <td style="vertical-align: top">0</td>
         <td style="vertical-align: top">INT</td>
+        <td style="vertical-align: top">Yes</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">is.binary.message</td>
+        <td style="vertical-align: top; word-wrap: break-word">To receive the binary events via KafkaMultiDCSource, it is needed to set this parameter value to <code>true</code>.</td>
+        <td style="vertical-align: top">false</td>
+        <td style="vertical-align: top">BOOL</td>
         <td style="vertical-align: top">Yes</td>
         <td style="vertical-align: top">No</td>
     </tr>
@@ -931,7 +963,7 @@ from FooStream select symbol, price, volume insert into BarStream;
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href="../4.0.14/" title="4.0.14" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href="../.." title="Welcome to WSO2 Siddhi IO Kafka" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -940,19 +972,19 @@ from FooStream select symbol, price, volume insert into BarStream;
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                4.0.14
+                Welcome to WSO2 Siddhi IO Kafka
               </span>
             </div>
           </a>
         
         
-          <a href="../4.0.12/" title="4.0.12" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="../4.1.2/" title="4.1.2" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                4.0.12
+                4.1.2
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">
