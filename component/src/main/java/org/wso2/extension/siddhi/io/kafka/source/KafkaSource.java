@@ -265,6 +265,7 @@ public class KafkaSource extends Source {
     @Override
     public void restoreState(Map<String, Object> state) {
         this.topicOffsetMap = (Map<String, Map<Integer, Long>>) state.get(TOPIC_OFFSET_MAP);
+        consumerKafkaGroup.setTopicOffsetMap(topicOffsetMap);
         if (seqEnabled) {
             this.consumerLastReceivedSeqNoMap =
                     (Map<String, Map<SequenceKey, Integer>>) state.get(LAST_RECEIVED_SEQ_NO_KEY);
