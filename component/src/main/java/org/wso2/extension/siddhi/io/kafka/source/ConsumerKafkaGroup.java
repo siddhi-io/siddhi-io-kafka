@@ -57,6 +57,9 @@ public class ConsumerKafkaGroup {
         this.isBinaryMessage = isBinaryMessage;
     }
 
+    public void setTopicOffsetMap(Map<String, Map<Integer, Long>> topicOffsetMap) {
+        this.topicOffsetMap = topicOffsetMap;
+    }
     void pause() {
         kafkaConsumerThreadList.forEach(KafkaConsumerThread::pause);
     }
