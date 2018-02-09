@@ -274,16 +274,10 @@ public class KafkaSource extends Source {
     }
 
     private void checkTopicsAvailableInCluster() throws SiddhiAppValidationException {
-        Properties props = new Properties();
-        props.put("bootstrap.servers", bootstrapServers);
+        Properties props = KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
+                                                            isBinaryMessage);
         props.put("group.id", "test-consumer-group");
-        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        if (!isBinaryMessage) {
-            props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        } else {
-            props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
-        }
-        KafkaConsumer<String, String> consumer = new KafkaConsumer<String, String>(props);
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
         try {
             Map<String, List<PartitionInfo>> testTopicList = consumer.listTopics();
             boolean topicsAvailable = true;
@@ -325,17 +319,7 @@ public class KafkaSource extends Source {
 
     private void checkPartitionsAvailableForTheTopicsInCluster() throws SiddhiAppValidationException {
         //checking whether the defined partitions are available in the defined topic
-        Properties configProperties = new Properties();
-        configProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        configProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-                             "org.apache.kafka.common.serialization.ByteArraySerializer");
-        if (!isBinaryMessage) {
-            configProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                    "org.apache.kafka.common.serialization.StringSerializer");
-        } else {
-            configProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                    "org.apache.kafka.common.serialization.ByteArraySerializer");
-        }
+        Properties configProperties = createProducerConfig(bootstrapServers, optionalConfigs, isBinaryMessage);
         org.apache.kafka.clients.producer.Producer producer = new KafkaProducer(configProperties);
         boolean partitionsAvailable = true;
         StringBuilder invalidPartitions = new StringBuilder("");
@@ -388,7 +372,7 @@ public class KafkaSource extends Source {
             props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
         }
 
-        if (optionalConfigs != null && optionalConfigs.isEmpty()) {
+        if (optionalConfigs != null && !optionalConfigs.isEmpty()) {
             String[] optionalProperties = optionalConfigs.split(HEADER_SEPARATOR);
             if (optionalProperties.length > 0) {
                 for (String header : optionalProperties) {
@@ -402,5 +386,34 @@ public class KafkaSource extends Source {
             }
         }
         return props;
+    }
+
+    private static Properties createProducerConfig(String zkServerList, String optionalConfigs,
+                                                   boolean isBinaryMessage) {
+        Properties configProperties = new Properties();
+        configProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, zkServerList);
+        configProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+                             "org.apache.kafka.common.serialization.ByteArraySerializer");
+        if (optionalConfigs != null && !optionalConfigs.isEmpty()) {
+            String[] optionalProperties = optionalConfigs.split(HEADER_SEPARATOR);
+            if (optionalProperties.length > 0) {
+                for (String header : optionalProperties) {
+                    try {
+                        String[] configPropertyWithValue = header.split(ENTRY_SEPARATOR, 2);
+                        configProperties.put(configPropertyWithValue[0], configPropertyWithValue[1]);
+                    } catch (Exception e) {
+                        LOG.warn("Optional property '" + header + "' is not defined in the correct format.", e);
+                    }
+                }
+            }
+        }
+        if (!isBinaryMessage) {
+            configProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                                 "org.apache.kafka.common.serialization.StringSerializer");
+        } else {
+            configProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                                 "org.apache.kafka.common.serialization.ByteArraySerializer");
+        }
+        return configProperties;
     }
 }
