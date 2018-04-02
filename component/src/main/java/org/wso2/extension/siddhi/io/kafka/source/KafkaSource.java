@@ -43,7 +43,7 @@ import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
- * This class implements a Kafka source to receives events from a kafka cluster.
+ * This class implements a Kafka source to receive events from a kafka cluster.
  */
 @Extension(
         name = "kafka",
@@ -222,7 +222,7 @@ public class KafkaSource extends Source {
     public void disconnect() {
         if (consumerKafkaGroup != null) {
             consumerKafkaGroup.shutdown();
-            LOG.info("Kafka Adapter disconnected for topic/s" +
+            LOG.info("Kafka Adapter disconnected for topic(s): " +
                               optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_TOPIC));
         }
     }
@@ -236,7 +236,7 @@ public class KafkaSource extends Source {
     public void pause() {
         if (consumerKafkaGroup != null) {
             consumerKafkaGroup.pause();
-                LOG.info("Kafka Adapter paused for topic/s" + optionHolder.validateAndGetStaticValue
+                LOG.info("Kafka Adapter paused for topic(s): " + optionHolder.validateAndGetStaticValue
                         (ADAPTOR_SUBSCRIBER_TOPIC));
         }
     }
@@ -246,7 +246,7 @@ public class KafkaSource extends Source {
         if (consumerKafkaGroup != null) {
             consumerKafkaGroup.resume();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Kafka Adapter resumed for topic/s" + optionHolder.validateAndGetStaticValue
+                LOG.debug("Kafka Adapter resumed for topic(s): " + optionHolder.validateAndGetStaticValue
                         (ADAPTOR_SUBSCRIBER_TOPIC));
             }
         }
@@ -300,14 +300,14 @@ public class KafkaSource extends Source {
                 }
             }
             if (null != partitions && !(partitions.length == 1 && partitions[0].equals("0")) && !topicsAvailable) {
-                String errorMessage = "Topic/s " + invalidTopics + " aren't available. Topics wont created since there "
-                        + "are partition numbers defined in the query.";
+                String errorMessage = "Topic(s) " + invalidTopics + " aren't available. Topics won't be created "
+                        + "since there are partition numbers defined in the query.";
                 LOG.error(errorMessage);
-                throw new SiddhiAppValidationException("Topic/s " + invalidTopics + " aren't available. "
-                                                                 + "Topics wont created since there "
+                throw new SiddhiAppValidationException("Topic(s) " + invalidTopics + " aren't available. "
+                                                                 + "Topics won't be created since there "
                                                                  + "are partition numbers defined in the query.");
             } else if (!topicsAvailable) {
-                LOG.warn("Topic/s " + invalidTopics + " aren't available. "
+                LOG.warn("Topic(s) " + invalidTopics + " aren't available. "
                                  + "These Topics will be created with the default partition.");
             }
         } catch (NullPointerException ex) {
@@ -346,7 +346,7 @@ public class KafkaSource extends Source {
                 }
                 if (!partitionsAvailable) {
                     throw new SiddhiAppValidationException(
-                            "Partition number/s " + invalidPartitions + " aren't available for "
+                            "Partition number(s) " + invalidPartitions + " aren't available for "
                                     + "the topic: " + topic);
                 }
             }

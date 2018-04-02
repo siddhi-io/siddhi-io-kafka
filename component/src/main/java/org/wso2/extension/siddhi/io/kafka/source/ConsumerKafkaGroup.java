@@ -83,7 +83,7 @@ public class ConsumerKafkaGroup {
                         new KafkaConsumerThread(sourceEventListener, topics, partitions, props, topicOffsetMap,
                                 false, isBinaryMessage);
                 kafkaConsumerThreadList.add(kafkaConsumerThread);
-                LOG.info("Kafka Consumer thread starting to listen on topic/s: " + Arrays.toString(topics) +
+                LOG.info("Kafka Consumer thread starting to listen on topic(s): " + Arrays.toString(topics) +
                         " with partition/s: " + Arrays.toString(partitions));
             } else if (KafkaSource.TOPIC_WISE.equals(threadingOption)) {
                 for (String topic : topics) {
@@ -118,7 +118,7 @@ public class ConsumerKafkaGroup {
                 executorService.submit(consumerThread);
             }
         } catch (Throwable t) {
-            LOG.error("Error while creating KafkaConsumerThread for topic/s: " + Arrays.toString(topics), t);
+            LOG.error("Error while creating KafkaConsumerThread for topic(s): " + Arrays.toString(topics), t);
         }
     }
 
