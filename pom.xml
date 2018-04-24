@@ -54,7 +54,7 @@
         <commons-io.version>2.5</commons-io.version>
         <kafka.client.version>0.10.0.0</kafka.client.version>
         <xml.mapper.version>4.0.11</xml.mapper.version>
-        <text.mapper.version>1.0.12</text.mapper.version>
+        <text.mapper.version>1.0.14</text.mapper.version>
         <binary.mapper.version>1.0.10</binary.mapper.version>
         <jacoco.version>0.7.9</jacoco.version>
 

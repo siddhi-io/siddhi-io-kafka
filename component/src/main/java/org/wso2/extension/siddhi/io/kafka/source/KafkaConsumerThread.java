@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -58,6 +59,8 @@ public class KafkaConsumerThread implements Runnable {
     private String consumerThreadId;
     private boolean isPartitionWiseThreading = false;
     private boolean isBinaryMessage = false;
+    private ReentrantLock lock;
+    private Condition condition;
 
     KafkaConsumerThread(SourceEventListener sourceEventListener, String topics[], String partitions[],
                         Properties props, Map<String, Map<Integer, Long>> topicOffsetMap,
@@ -70,6 +73,8 @@ public class KafkaConsumerThread implements Runnable {
         this.isPartitionWiseThreading = isPartitionWiseThreading;
         this.isBinaryMessage = isBinaryMessage;
         this.consumerThreadId = buildId();
+        lock = new ReentrantLock();
+        condition = lock.newCondition();
         if (null != partitions) {
             for (String topic : topics) {
                 if (null == topicOffsetMap.get(topic)) {
@@ -102,6 +107,12 @@ public class KafkaConsumerThread implements Runnable {
     void resume() {
         restore(topicOffsetMap);
         paused = false;
+        try {
+            lock.lock();
+            condition.signalAll();
+        } finally {
+            lock.unlock();
+        }
     }
 
     void restore(Map<String, Map<Integer, Long>> topicOffsetMap) {
@@ -132,7 +143,16 @@ public class KafkaConsumerThread implements Runnable {
     public void run() {
         final Lock consumerLock = this.consumerLock;
         while (!inactive) {
-            while (!paused) {
+                if (paused) {
+                    lock.lock();
+                    try {
+                        condition.await();
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                    } finally {
+                        lock.unlock();
+                    }
+                }
                 // The time, in milliseconds, spent waiting in poll if data is not available. If 0, returns
                 // immediately with any records that are available now. Must not be negative
                 ConsumerRecords<byte[], byte[]> records = null;
@@ -224,7 +244,6 @@ public class KafkaConsumerThread implements Runnable {
                         consumerLock.unlock();
                     }
                 }
-            }
         }
     }
 
