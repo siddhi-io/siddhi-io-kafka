@@ -22,13 +22,13 @@
 <suite name="Siddhi-Execution-Kafka_Test-Suite" parallel="false" thread-count="1">
     <test name="siddhi-execution-kafka-unit-tests" preserve-order="true">
         <classes>
-            <!--<class name="org.wso2.extension.siddhi.io.kafka.SequencedMessagingTestCase" />-->
-            <!--<class name="org.wso2.extension.siddhi.io.kafka.sink.KafkaSinkTestCase" />-->
-            <!--<class name="org.wso2.extension.siddhi.io.kafka.source.KafkaSourceTestCase" />-->
-            <!--<class name="org.wso2.extension.siddhi.io.kafka.sink.KafkaSinkwithBinaryMapperTestCase" />-->
+            <class name="org.wso2.extension.siddhi.io.kafka.SequencedMessagingTestCase" />
+            <class name="org.wso2.extension.siddhi.io.kafka.sink.KafkaSinkTestCase" />
+            <class name="org.wso2.extension.siddhi.io.kafka.source.KafkaSourceTestCase" />
+            <class name="org.wso2.extension.siddhi.io.kafka.sink.KafkaSinkwithBinaryMapperTestCase" />
 
-            <!--<class name="org.wso2.extension.siddhi.io.kafka.multidc.KafkaMultiDCSinkTestCases"/>-->
-            <!--<class name="org.wso2.extension.siddhi.io.kafka.multidc.KafkaMultiDCSourceTestCases"/>-->
+            <class name="org.wso2.extension.siddhi.io.kafka.multidc.KafkaMultiDCSinkTestCases"/>
+            <class name="org.wso2.extension.siddhi.io.kafka.multidc.KafkaMultiDCSourceTestCases"/>
             <class name="org.wso2.extension.siddhi.io.kafka.multidc.KafkaMultiDCSourceSynchronizerTestCases"/>
             <!--TODO uncomment when the text mapper is released -->
             <!--<class name="org.wso2.extension.siddhi.io.kafka.source.KafkaSourceHATestCase"/>-->
