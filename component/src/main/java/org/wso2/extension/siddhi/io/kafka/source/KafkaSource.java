@@ -36,11 +36,13 @@ import org.wso2.siddhi.core.util.transport.OptionHolder;
 import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
+
 
 /**
  * This class implements a Kafka source to receive events from a kafka cluster.
@@ -94,6 +96,16 @@ import java.util.concurrent.ScheduledExecutorService;
                         type = {DataType.BOOL},
                         optional = true,
                         defaultValue = "false"),
+                @Parameter(name = "topic.offset.map",
+                        description = "This parameter contains reading offsets for each topic and partition. " +
+                                "The parameter should be given in the format <topic>=<offset>," +
+                                "<topic>=<offset>,. If the offset is not defined for a certain topic " +
+                                " it will read messages from the beginning. \n"  +
+                                "e.g., stocks=100,trades=50 will read from 101th message of stocks topic and from " +
+                                "51st message of trades topic",
+                        type = {DataType.STRING},
+                        optional = true,
+                        defaultValue = "null"),
                 @Parameter(name = "optional.configuration",
                            description = "This parameter contains all the other possible configurations that the " +
                                    "consumer is created with. \n" +
@@ -172,6 +184,8 @@ public class KafkaSource extends Source {
     private boolean seqEnabled = false;
     private Map<String, Map<SequenceKey, Integer>> consumerLastReceivedSeqNoMap = null;
     private boolean isBinaryMessage;
+    private String topicOffsetMapConfig;
+    private boolean isRestored = false;
 
 
     @Override
@@ -191,6 +205,7 @@ public class KafkaSource extends Source {
         optionalConfigs = optionHolder.validateAndGetStaticValue(ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES, null);
         isBinaryMessage = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(IS_BINARY_MESSAGE,
                 "false"));
+        topicOffsetMapConfig = optionHolder.validateAndGetStaticValue(TOPIC_OFFSET_MAP, null);
         if (PARTITION_WISE.equals(threadingOption) && null == partitions) {
             throw new SiddhiAppValidationException("Threading option is selected as 'partition.wise' but there are no"
                                                            + " partitions given");
@@ -215,6 +230,14 @@ public class KafkaSource extends Source {
 
     @Override
     public void connect(ConnectionCallback connectionCallback) throws ConnectionUnavailableException {
+        // If state does not contain the topic offset map try to read it from the config
+        if (!isRestored && topicOffsetMapConfig != null) {
+            topicOffsetMap = readTopicOffsetsConfig(topicOffsetMapConfig);
+            if (topicOffsetMap != null) {
+                consumerKafkaGroup.setTopicOffsetMap(topicOffsetMap);
+                consumerKafkaGroup.restore(topicOffsetMap);
+            }
+        }
         consumerKafkaGroup.run(sourceEventListener);
     }
 
@@ -264,13 +287,41 @@ public class KafkaSource extends Source {
 
     @Override
     public void restoreState(Map<String, Object> state) {
+        isRestored = true;
         this.topicOffsetMap = (Map<String, Map<Integer, Long>>) state.get(TOPIC_OFFSET_MAP);
         consumerKafkaGroup.setTopicOffsetMap(topicOffsetMap);
+        consumerKafkaGroup.restore(topicOffsetMap);
+
         if (seqEnabled) {
             this.consumerLastReceivedSeqNoMap =
                     (Map<String, Map<SequenceKey, Integer>>) state.get(LAST_RECEIVED_SEQ_NO_KEY);
         }
-        consumerKafkaGroup.restore(topicOffsetMap);
+    }
+
+    private  Map<String, Map<Integer, Long>> readTopicOffsetsConfig(String topicOffsetsConfig) {
+        Map<String, Map<Integer, Long>> perTopicPerPartitionOffset = new HashMap<>();
+        String[] topicOffsets = topicOffsetsConfig.split(",");
+        for (String entry : topicOffsets) {
+            String[] topicOffset = entry.split("=");
+            if (topicOffset.length != 2) {
+                LOG.error("Topic offset should be given in <topic>=<offset>,.. format. ");
+                return null;
+            }
+
+            boolean isTopicListed = Arrays.stream(topics).anyMatch(topic -> topic.equals(topicOffset[0]));
+            if (!isTopicListed) {
+                LOG.error("Topic " + topicOffset[0] + " not listed in topic.list config");
+                return null;
+            }
+
+            Map<Integer, Long> partitionOffset = new HashMap<>();
+            Arrays.stream(partitions).forEach(partition -> {
+                partitionOffset.put(Integer.parseInt(partition), Long.parseLong(topicOffset[1]));
+            });
+
+            perTopicPerPartitionOffset.put(topicOffset[0], partitionOffset);
+        }
+        return perTopicPerPartitionOffset;
     }
 
     private void checkTopicsAvailableInCluster() throws SiddhiAppValidationException {

@@ -1,4 +1,4 @@
-# API Docs - v4.1.7
+# API Docs - v4.1.8-SNAPSHOT
 
 ## Sink
 
@@ -210,7 +210,7 @@ from FooStream select symbol, price, volume insert into BarStream;
 
 <span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span>
 ```
-@source(type="kafka", bootstrap.servers="<STRING>", topic.list="<STRING>", group.id="<STRING>", threading.option="<STRING>", partition.no.list="<STRING>", seq.enabled="<BOOL>", is.binary.message="<BOOL>", optional.configuration="<STRING>", @map(...)))
+@source(type="kafka", bootstrap.servers="<STRING>", topic.list="<STRING>", group.id="<STRING>", threading.option="<STRING>", partition.no.list="<STRING>", seq.enabled="<BOOL>", is.binary.message="<BOOL>", topic.offset.map="<STRING>", optional.configuration="<STRING>", @map(...)))
 ```
 
 <span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
@@ -276,6 +276,14 @@ from FooStream select symbol, price, volume insert into BarStream;
         <td style="vertical-align: top; word-wrap: break-word">To receive the binary events via kafka source, it is needed to set this parameter value to <code>true</code>.</td>
         <td style="vertical-align: top">false</td>
         <td style="vertical-align: top">BOOL</td>
+        <td style="vertical-align: top">Yes</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">topic.offset.map</td>
+        <td style="vertical-align: top; word-wrap: break-word">This parameter contains reading offsets for each topic and partition. The parameter should be given in the format &lt;topic&gt;=&lt;offset&gt;,&lt;topic&gt;=&lt;offset&gt;,. If the offset is not defined for a certain topic  it will read messages from the beginning. <br>e.g., stocks=100,trades=50 will read from 101th message of stocks topic and from 51st message of trades topic</td>
+        <td style="vertical-align: top">null</td>
+        <td style="vertical-align: top">STRING</td>
         <td style="vertical-align: top">Yes</td>
         <td style="vertical-align: top">No</td>
     </tr>
