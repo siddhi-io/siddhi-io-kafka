@@ -16,7 +16,7 @@
     
     
       
-        <title>4.1.3 - Siddhi-IO-Kafka</title>
+        <title>4.1.8 - Siddhi-IO-Kafka</title>
       
     
     
@@ -84,7 +84,7 @@
                 </span>
               
             
-            4.1.3
+            4.1.8
           
         </span>
       </div>
@@ -181,66 +181,6 @@
           
           
 
-
-  <li class="md-nav__item">
-    <a href="../4.1.8/" title="4.1.8" class="md-nav__link">
-      4.1.8
-    </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../4.1.7/" title="4.1.7" class="md-nav__link">
-      4.1.7
-    </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../4.1.6/" title="4.1.6" class="md-nav__link">
-      4.1.6
-    </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../4.1.5/" title="4.1.5" class="md-nav__link">
-      4.1.5
-    </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../4.1.4/" title="4.1.4" class="md-nav__link">
-      4.1.4
-    </a>
-  </li>
-
-        
-          
-          
-          
-
   
 
 
@@ -252,11 +192,11 @@
     
     
       <label class="md-nav__link md-nav__link--active" for="toc">
-        4.1.3
+        4.1.8
       </label>
     
-    <a href="./" title="4.1.3" class="md-nav__link md-nav__link--active">
-      4.1.3
+    <a href="./" title="4.1.8" class="md-nav__link md-nav__link--active">
+      4.1.8
     </a>
     
       
@@ -329,6 +269,66 @@
   
 </nav>
     
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../4.1.7/" title="4.1.7" class="md-nav__link">
+      4.1.7
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../4.1.6/" title="4.1.6" class="md-nav__link">
+      4.1.6
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../4.1.5/" title="4.1.5" class="md-nav__link">
+      4.1.5
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../4.1.4/" title="4.1.4" class="md-nav__link">
+      4.1.4
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../4.1.3/" title="4.1.3" class="md-nav__link">
+      4.1.3
+    </a>
   </li>
 
         
@@ -618,7 +618,7 @@
               
                 
                 
-                <h1 id="api-docs-v413">API Docs - v4.1.3</h1>
+                <h1 id="api-docs-v418">API Docs - v4.1.8</h1>
 <h2 id="sink">Sink</h2>
 <h3 id="kafka-sink">kafka <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sink">(Sink)</a></em></h3>
 <p style="word-wrap: break-word">A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.<br>To configure a sink to use the Kafka transport, the <code>type</code> parameter should have <code>kafka</code> as its value.</p>
@@ -819,7 +819,7 @@ from FooStream select symbol, price, volume insert into BarStream;
 <p style="word-wrap: break-word">A Kafka source receives events to be processed by WSO2 SP from a topic with a partition for a Kafka cluster. The events received can be in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic.</p>
 
 <p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
-<pre><code>@source(type=&quot;kafka&quot;, bootstrap.servers=&quot;&lt;STRING&gt;&quot;, topic.list=&quot;&lt;STRING&gt;&quot;, group.id=&quot;&lt;STRING&gt;&quot;, threading.option=&quot;&lt;STRING&gt;&quot;, partition.no.list=&quot;&lt;STRING&gt;&quot;, seq.enabled=&quot;&lt;BOOL&gt;&quot;, is.binary.message=&quot;&lt;BOOL&gt;&quot;, optional.configuration=&quot;&lt;STRING&gt;&quot;, @map(...)))
+<pre><code>@source(type=&quot;kafka&quot;, bootstrap.servers=&quot;&lt;STRING&gt;&quot;, topic.list=&quot;&lt;STRING&gt;&quot;, group.id=&quot;&lt;STRING&gt;&quot;, threading.option=&quot;&lt;STRING&gt;&quot;, partition.no.list=&quot;&lt;STRING&gt;&quot;, seq.enabled=&quot;&lt;BOOL&gt;&quot;, is.binary.message=&quot;&lt;BOOL&gt;&quot;, topic.offset.map=&quot;&lt;STRING&gt;&quot;, optional.configuration=&quot;&lt;STRING&gt;&quot;, @map(...)))
 </code></pre>
 
 <p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
@@ -885,6 +885,14 @@ from FooStream select symbol, price, volume insert into BarStream;
         <td style="vertical-align: top; word-wrap: break-word">To receive the binary events via kafka source, it is needed to set this parameter value to <code>true</code>.</td>
         <td style="vertical-align: top">false</td>
         <td style="vertical-align: top">BOOL</td>
+        <td style="vertical-align: top">Yes</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">topic.offset.map</td>
+        <td style="vertical-align: top; word-wrap: break-word">This parameter contains reading offsets for each topic and partition. The parameter should be given in the format &lt;topic&gt;=&lt;offset&gt;,&lt;topic&gt;=&lt;offset&gt;,. If the offset is not defined for a certain topic  it will read messages from the beginning. <br>e.g., stocks=100,trades=50 will read from 101th message of stocks topic and from 51st message of trades topic</td>
+        <td style="vertical-align: top">null</td>
+        <td style="vertical-align: top">STRING</td>
         <td style="vertical-align: top">Yes</td>
         <td style="vertical-align: top">No</td>
     </tr>
@@ -1023,7 +1031,7 @@ from FooStream select symbol, price, volume insert into BarStream;
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href="../4.1.4/" title="4.1.4" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href="../.." title="Welcome to WSO2 Siddhi IO Kafka" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -1032,19 +1040,19 @@ from FooStream select symbol, price, volume insert into BarStream;
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                4.1.4
+                Welcome to WSO2 Siddhi IO Kafka
               </span>
             </div>
           </a>
         
         
-          <a href="../4.1.2/" title="4.1.2" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="../4.1.7/" title="4.1.7" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                4.1.2
+                4.1.7
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">
