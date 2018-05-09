@@ -28,7 +28,7 @@
 
     <groupId>org.wso2.extension.siddhi.io.kafka</groupId>
     <artifactId>siddhi-io-kafka-parent</artifactId>
-    <version>4.1.8-SNAPSHOT</version>
+    <version>4.1.9-SNAPSHOT</version>
     <name>Siddhi IO Kafka Extension Parent</name>
 
     <profiles>
