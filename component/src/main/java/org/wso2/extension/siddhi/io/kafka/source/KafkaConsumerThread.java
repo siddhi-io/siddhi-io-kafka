@@ -244,6 +244,11 @@ public class KafkaConsumerThread implements Runnable {
                         consumerLock.unlock();
                     }
                 }
+            try { //To avoid thread spin
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
