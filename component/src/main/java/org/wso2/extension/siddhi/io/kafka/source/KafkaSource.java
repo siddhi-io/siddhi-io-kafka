@@ -29,8 +29,10 @@ import org.wso2.siddhi.annotation.Parameter;
 import org.wso2.siddhi.annotation.util.DataType;
 import org.wso2.siddhi.core.config.SiddhiAppContext;
 import org.wso2.siddhi.core.exception.ConnectionUnavailableException;
+import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
 import org.wso2.siddhi.core.stream.input.source.Source;
 import org.wso2.siddhi.core.stream.input.source.SourceEventListener;
+import org.wso2.siddhi.core.util.SiddhiConstants;
 import org.wso2.siddhi.core.util.config.ConfigReader;
 import org.wso2.siddhi.core.util.transport.OptionHolder;
 import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
@@ -186,11 +188,13 @@ public class KafkaSource extends Source {
     private boolean isBinaryMessage;
     private String topicOffsetMapConfig;
     private boolean isRestored = false;
+    private SiddhiAppContext siddhiAppContext;
 
 
     @Override
     public void init(SourceEventListener sourceEventListener, OptionHolder optionHolder, String[] strings,
                                ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
+        this.siddhiAppContext = siddhiAppContext;
         this.sourceEventListener = sourceEventListener;
         this.optionHolder = optionHolder;
         this.executorService = siddhiAppContext.getScheduledExecutorService();
@@ -358,8 +362,15 @@ public class KafkaSource extends Source {
                                                                  + "Topics won't be created since there "
                                                                  + "are partition numbers defined in the query.");
             } else if (!topicsAvailable) {
-                LOG.warn("Topic(s) " + invalidTopics + " aren't available. "
-                                 + "These Topics will be created with the default partition.");
+                if (siddhiAppContext.isTransportChannelCreationEnabled()) {
+                    LOG.warn("Topic(s) " + invalidTopics + " aren't available. "
+                            + "These Topics will be created with the default partition.");
+                } else {
+                    throw new SiddhiAppCreationException("Topic(s) " + invalidTopics + " creation failed. " +
+                            "User has disabled topic creation by setting " +
+                            SiddhiConstants.TRANSPORT_CHANNEL_CREATION_IDENTIFIER +
+                            " property to false. Hence Siddhi App deployment will be aborted.");
+                }
             }
         } catch (NullPointerException ex) {
             //calling super class logs the exception and retry

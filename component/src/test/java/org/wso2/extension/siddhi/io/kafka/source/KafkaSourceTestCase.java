@@ -29,6 +29,7 @@ import org.wso2.extension.siddhi.io.kafka.KafkaTestUtil;
 import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
+import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
 import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
@@ -79,7 +80,7 @@ public class KafkaSourceTestCase {
             KafkaTestUtil.createTopic(topics, 1);
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
-                    "@App:name('TestExecutionPlan') " +
+                    "@App:name('TestExecutionPlan') @App:transportChannelCreationEnabled('false')" +
                             "define stream BarStream (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
                             "@source(type='kafka', topic.list='single_topic', group.id='test_single_topic', " +
@@ -119,8 +120,25 @@ public class KafkaSourceTestCase {
         }
     }
 
+    @Test(expectedExceptions = SiddhiAppCreationException.class, dependsOnMethods = "testKafkaSingleTopicSource")
+    public void testTransportCreationDisabledProperty() {
+        receivedEventNameList = new ArrayList<>(2);
+        receivedValueList = new ArrayList<>(2);
+        SiddhiManager siddhiManager = new SiddhiManager();
+        siddhiManager.createSiddhiAppRuntime(
+                "@App:name('TestExecutionPlan') @App:transportChannelCreationEnabled('false')" +
+                        "define stream BarStream (symbol string, price float, volume long); " +
+                        "@info(name = 'query1') " +
+                        "@source(type='kafka', topic.list='single_topic', group.id='test_single_topic', " +
+                        "threading.option='single.thread', bootstrap.servers='localhost:9092'," +
+                        "@map(type='xml'))" +
+                        "Define stream FooStream (symbol string, price float, volume long);" +
+                        "from FooStream select symbol, price, volume insert into BarStream;");
+
+    }
+
     @Test(expectedExceptions = SiddhiAppValidationException.class,
-          dependsOnMethods = "testKafkaSingleTopicSource")
+          dependsOnMethods = "testTransportCreationDisabledProperty")
     public void testKafkaWithoutTopicSource() {
         try {
             log.info("-------------------------------------------------------------------------------------------");
