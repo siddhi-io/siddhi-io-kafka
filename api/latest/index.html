@@ -183,6 +183,18 @@
 
 
   <li class="md-nav__item">
+    <a href="../4.1.10/" title="4.1.10" class="md-nav__link">
+      4.1.10
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
     <a href="../4.1.9/" title="4.1.9" class="md-nav__link">
       4.1.9
     </a>
@@ -630,7 +642,7 @@
               
                 
                 
-                <h1 id="api-docs-v419">API Docs - v4.1.9</h1>
+                <h1 id="api-docs-v4110">API Docs - v4.1.10</h1>
 <h2 id="sink">Sink</h2>
 <h3 id="kafka-sink">kafka <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sink">(Sink)</a></em></h3>
 <p style="word-wrap: break-word">A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.<br>To configure a sink to use the Kafka transport, the <code>type</code> parameter should have <code>kafka</code> as its value.</p>
@@ -846,7 +858,7 @@ from FooStream select symbol, price, volume insert into BarStream;
     </tr>
     <tr>
         <td style="vertical-align: top">bootstrap.servers</td>
-        <td style="vertical-align: top; word-wrap: break-word">This specifies the list of Kafka servers to which the Kafka source must listen. This list should beprovided as a set of comma-separated values.<br>e.g., <code>localhost:9092,localhost:9093</code></td>
+        <td style="vertical-align: top; word-wrap: break-word">This specifies the list of Kafka servers to which the Kafka source must listen. This list can be provided as a set of comma-separated values.<br>e.g., <code>localhost:9092,localhost:9093</code></td>
         <td style="vertical-align: top"></td>
         <td style="vertical-align: top">STRING</td>
         <td style="vertical-align: top">No</td>
@@ -854,7 +866,7 @@ from FooStream select symbol, price, volume insert into BarStream;
     </tr>
     <tr>
         <td style="vertical-align: top">topic.list</td>
-        <td style="vertical-align: top; word-wrap: break-word">This specifies the list of topics to which the source must listen. This list should be provided as a set of comma-separated values.<br>e.g., <code>topic_one,topic_two</code></td>
+        <td style="vertical-align: top; word-wrap: break-word">This specifies the list of topics to which the source must listen. This list can be provided as a set of comma-separated values.<br>e.g., <code>topic_one,topic_two</code></td>
         <td style="vertical-align: top"></td>
         <td style="vertical-align: top">STRING</td>
         <td style="vertical-align: top">No</td>
@@ -870,7 +882,7 @@ from FooStream select symbol, price, volume insert into BarStream;
     </tr>
     <tr>
         <td style="vertical-align: top">threading.option</td>
-        <td style="vertical-align: top; word-wrap: break-word"> This specifies whether the Kafka source is to be run on a single thread, or in multiple threads based on a condition. Possible values are as follows:<br><code>single.thread</code>: To run the Kafka source on a single thread.<br><code>topic-wise</code>: To use  separate thread per topic.<br><code>partition.wise</code>: To use a separate thread per partition.</td>
+        <td style="vertical-align: top; word-wrap: break-word"> This specifies whether the Kafka source is to be run on a single thread, or in multiple threads based on a condition. Possible values are as follows:<br><code>single.thread</code>: To run the Kafka source on a single thread.<br><code>topic-wise</code>: To use a separate thread per topic.<br><code>partition.wise</code>: To use a separate thread per partition.</td>
         <td style="vertical-align: top"></td>
         <td style="vertical-align: top">STRING</td>
         <td style="vertical-align: top">No</td>
@@ -894,7 +906,7 @@ from FooStream select symbol, price, volume insert into BarStream;
     </tr>
     <tr>
         <td style="vertical-align: top">is.binary.message</td>
-        <td style="vertical-align: top; word-wrap: break-word">To receive the binary events via kafka source, it is needed to set this parameter value to <code>true</code>.</td>
+        <td style="vertical-align: top; word-wrap: break-word">To receive binary events via the Kafka source, this parameter needs to be set to <code>true</code>.</td>
         <td style="vertical-align: top">false</td>
         <td style="vertical-align: top">BOOL</td>
         <td style="vertical-align: top">Yes</td>
@@ -902,7 +914,7 @@ from FooStream select symbol, price, volume insert into BarStream;
     </tr>
     <tr>
         <td style="vertical-align: top">topic.offset.map</td>
-        <td style="vertical-align: top; word-wrap: break-word">This parameter contains reading offsets for each topic and partition. The parameter should be given in the format &lt;topic&gt;=&lt;offset&gt;,&lt;topic&gt;=&lt;offset&gt;,. If the offset is not defined for a certain topic  it will read messages from the beginning. <br>e.g., stocks=100,trades=50 will read from 101th message of stocks topic and from 51st message of trades topic</td>
+        <td style="vertical-align: top; word-wrap: break-word">This parameter specifies reading offsets for each topic and partition. The value for this parameter is specified in the following format: <br>&nbsp;<code>&lt;topic&gt;=&lt;offset&gt;,&lt;topic&gt;=&lt;offset&gt;,</code><br>&nbsp;&nbsp;When an offset is defined for a topic, the Kafka source skips reading the message with the number specified as the offset as well as all the messages sent previous to that message. If the offset is not defined for a specific topic it reads messages from the beginning. <br>e.g., <code>stocks=100,trades=50</code> reads from the 101th message of the <code>stocks</code> topic, and from the 51st message of the <code>trades</code> topic.</td>
         <td style="vertical-align: top">null</td>
         <td style="vertical-align: top">STRING</td>
         <td style="vertical-align: top">Yes</td>
