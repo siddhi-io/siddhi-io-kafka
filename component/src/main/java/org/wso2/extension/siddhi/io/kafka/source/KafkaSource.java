@@ -59,12 +59,12 @@ import java.util.concurrent.ScheduledExecutorService;
         parameters = {
                 @Parameter(name = "bootstrap.servers",
                            description = "This specifies the list of Kafka servers to which the Kafka source " +
-                                   "must listen. This list should beprovided as a set of comma-separated values.\n" +
+                                   "must listen. This list can be provided as a set of comma-separated values.\n" +
                                    "e.g., `localhost:9092,localhost:9093`",
                            type = {DataType.STRING}),
                 @Parameter(name = "topic.list",
                            description = "This specifies the list of topics to which the source must listen. This " +
-                                   "list should be provided as a set of comma-separated values.\n" +
+                                   "list can be provided as a set of comma-separated values.\n" +
                                    "e.g., `topic_one,topic_two`",
                            type = {DataType.STRING}),
                 @Parameter(name = "group.id",
@@ -76,7 +76,7 @@ import java.util.concurrent.ScheduledExecutorService;
                            description = " This specifies whether the Kafka source is to be run on a single thread," +
                                    " or in multiple threads based on a condition. Possible values are as follows:\n" +
                                    "`single.thread`: To run the Kafka source on a single thread.\n" +
-                                   "`topic-wise`: To use  separate thread per topic.\n" +
+                                   "`topic-wise`: To use a separate thread per topic.\n" +
                                    "`partition.wise`: To use a separate thread per partition.",
                            type = {DataType.STRING}),
                 @Parameter(name = "partition.no.list",
@@ -93,18 +93,21 @@ import java.util.concurrent.ScheduledExecutorService;
                         optional = true,
                         defaultValue = "false"),
                 @Parameter(name = "is.binary.message",
-                        description = "To receive the binary events via kafka source, it is needed to set "
-                                + "this parameter value to `true`.",
+                        description = "To receive binary events via the Kafka source, this parameter needs to be set "
+                                + "to `true`.",
                         type = {DataType.BOOL},
                         optional = true,
                         defaultValue = "false"),
                 @Parameter(name = "topic.offset.map",
-                        description = "This parameter contains reading offsets for each topic and partition. " +
-                                "The parameter should be given in the format <topic>=<offset>," +
-                                "<topic>=<offset>,. If the offset is not defined for a certain topic " +
-                                " it will read messages from the beginning. \n"  +
-                                "e.g., stocks=100,trades=50 will read from 101th message of stocks topic and from " +
-                                "51st message of trades topic",
+                        description = "This parameter specifies reading offsets for each topic and partition. " +
+                                "The value for this parameter is specified in the following format: \n " +
+                                "`<topic>=<offset>,<topic>=<offset>,`\n " +
+                                " When an offset is defined for a topic, the Kafka source skips reading the " +
+                                "message with the number specified as the offset as well as all the messages sent" +
+                                " previous to that message. If the offset is not defined for a specific topic it " +
+                                "reads messages from the beginning. \n"  +
+                                "e.g., `stocks=100,trades=50` reads from the 101th message of the `stocks` topic, and" +
+                                " from the 51st message of the `trades` topic.",
                         type = {DataType.STRING},
                         optional = true,
                         defaultValue = "null"),
