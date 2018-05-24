@@ -78,6 +78,7 @@ public class KafkaSourceTestCase {
             receivedEventNameList = new ArrayList<>(2);
             receivedValueList = new ArrayList<>(2);
             KafkaTestUtil.createTopic(topics, 1);
+            Thread.sleep(1000);
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') @App:transportChannelCreationEnabled('false')" +
