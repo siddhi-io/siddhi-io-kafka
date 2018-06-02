@@ -31,12 +31,15 @@ Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/si
 **Using the extension in <a target="_blank" href="https://github.com/wso2/product-sp">WSO2 Stream Processor</a>**
 
 ***Prerequisites for using the feature***
+
  - Download and install Kafka and Zookeeper.
  - Start the Apache ZooKeeper server with the following command: `bin/zookeeper-server-start.sh config/zookeeper.properties`.
  - Start the Kafka server with the following command:  `bin/kafka-server-start.sh config/server.properties`
  - Convert and copy the Kafka client jars from the <KAFKA_HOME>/libs directory to the <SP_HOME>/libs directory as follows.
+  
    - Create a directory (SOURCE_DIRECTORY) in a preferred location in your machine and copy the following JARs to it from the
    <KAFKA_HOME>/libs directory.
+     
      - kafka_2.11-0.9.0.1.jar
      - kafka-clients-0.9.0.1.jar
      - metrics-core-2.2.0.jar
@@ -44,6 +47,7 @@ Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/si
      - scala-parser-combinators_2.11-1.0.4.jar
      - zkclient-0.7.jar
      - zookeeper-3.4.6.jar
+     
    - Create another directory (DESTINATION_DIRECTORY) in a preferred location in your machine.
    - To convert all the Kafka jars you copied into the <SOURCE_DIRECTORY>, issue the following command.
      For Windows: <SP_HOME>/bin/jartobundle.bat <SOURCE_DIRECTORY_PATH> <DESTINATION_DIRECTORY_PATH>
