@@ -39,14 +39,14 @@ Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/si
   
    - Create a directory (SOURCE_DIRECTORY) in a preferred location in your machine and copy the following JARs to it from the
    <KAFKA_HOME>/libs directory.
-   
-     - kafka_2.11-0.9.0.1.jar
-     - kafka-clients-0.9.0.1.jar
+      
+     - kafka_2.11-0.10.2.1.jar
+     - kafka-clients-0.10.2.1.jar
      - metrics-core-2.2.0.jar
-     - scala-library-2.11.7.jar
+     - scala-library-2.11.8.jar
      - scala-parser-combinators_2.11-1.0.4.jar
-     - zkclient-0.7.jar
-     - zookeeper-3.4.6.jar
+     - zkclient-0.10.jar
+     - zookeeper-3.4.9.jar
      
    - Create another directory (DESTINATION_DIRECTORY) in a preferred location in your machine.
    - To convert all the Kafka jars you copied into the <SOURCE_DIRECTORY>, issue the following command.
