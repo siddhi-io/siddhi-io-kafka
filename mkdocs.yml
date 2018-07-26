@@ -10,7 +10,7 @@ repo_name: Siddhi-IO-Kafka
 repo_url: https://github.com/wso2-extensions/siddhi-io-kafka
 copyright: Copyright &copy; 2011 - 2018 WSO2
 theme:
-  name: 'material'
+  name: material
   logo: images/siddhi-logo-w.svg
   favicon: images/favicon.ico
   palette:
@@ -26,12 +26,13 @@ extra:
   - type: linkedin
     link: https://www.linkedin.com/groups/13553064
 markdown_extensions:
-  - admonition
-  - toc(permalink=true)
-  - codehilite(guess_lang=false)
+- admonition
+- toc(permalink=true)
+- codehilite(guess_lang=false)
 pages:
 - Welcome: index.md
 - API Docs:
+  - 4.1.14: api/4.1.14.md
   - 4.1.13: api/4.1.13.md
   - 4.1.12: api/4.1.12.md
   - 4.1.11: api/4.1.11.md
