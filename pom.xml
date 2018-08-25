@@ -44,7 +44,7 @@
     </profiles>
 
     <properties>
-        <siddhi.version>4.1.38</siddhi.version>
+        <siddhi.version>4.2.0</siddhi.version>
         <log4j.version>1.2.17.wso2v1</log4j.version>
         <testng.version>6.8</testng.version>
         <commons.logging.version>1.1.1</commons.logging.version>
@@ -53,9 +53,9 @@
         <zookeeper.version>3.4.0</zookeeper.version>
         <commons-io.version>2.5</commons-io.version>
         <kafka.client.version>0.10.0.0</kafka.client.version>
-        <xml.mapper.version>4.0.14</xml.mapper.version>
-        <text.mapper.version>1.0.18</text.mapper.version>
-        <binary.mapper.version>1.0.11</binary.mapper.version>
+        <xml.mapper.version>4.0.16</xml.mapper.version>
+        <text.mapper.version>1.0.20</text.mapper.version>
+        <binary.mapper.version>1.0.13</binary.mapper.version>
         <jacoco.version>0.7.9</jacoco.version>
 
         <mavan.findbugsplugin.exclude.file>findbugs-exclude.xml</mavan.findbugsplugin.exclude.file>
