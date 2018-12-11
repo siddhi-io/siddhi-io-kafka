@@ -93,8 +93,8 @@ import java.util.concurrent.ScheduledExecutorService;
                         optional = true,
                         defaultValue = "false"),
                 @Parameter(name = "is.binary.message",
-                        description = "To receive binary events via the Kafka source, this parameter needs to be set "
-                                + "to `true`.",
+                        description = "In order to receive binary events via the Kafka source,it is required to set" +
+                                "this parameter to 'True'.",
                         type = {DataType.BOOL},
                         optional = true,
                         defaultValue = "false"),
