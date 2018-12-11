@@ -86,8 +86,8 @@ import java.util.concurrent.atomic.AtomicInteger;
                            optional = true,
                            defaultValue = "null"),
                 @Parameter(name = "is.binary.message",
-                        description = "To send the binary events via kafka sink, it is needed to set "
-                                + "this parameter value to `true`.",
+                        description = "In order to send the binary events via kafka sink, this " +
+                                "parameter is set to 'True'.",
                         type = {DataType.BOOL},
                         optional = false,
                         defaultValue = "null"),

@@ -47,34 +47,34 @@ import java.util.UUID;
 @Extension(
         name = "kafkaMultiDC",
         namespace = "source",
-        description = "The Kafka Multi Data Center(DC) Source receives records from the same topic in brokers " +
-                "deployed in two different kafka cluster. It will filter out all duplicate messages and try to ensure" +
-                "that the events are received in the correct order by using sequence numbers. events are received in" +
-                " format such as `text`, `XML` JSON` and `Binary`.The Kafka Source will create the default partition" +
-                " '0' for a given topic, if the topic is not already been created in the Kafka cluster.",
+        description = "The Kafka Multi-Datacenter(DC) source receives records from the same topic in brokers " +
+                "deployed in two different kafka clusters. It filters out all the duplicate messages and ensures" +
+                "that the events are received in the correct order using sequential numbering. It receives events in" +
+                " formats such as `TEXT`, `XML` JSON` and `Binary`.The Kafka Source creates the default partition" +
+                " '0' for a given topic, if the topic has not yet been created in the Kafka cluster.",
         parameters = {
                 @Parameter(name = "bootstrap.servers",
-                        description = "This should contain the kafka server list which the kafka source should be "
-                                + "listening to. This should be given in comma separated values. "
+                        description = "This contains the kafka server list which the kafka source "
+                                + "listens to. This is given using comma-separated values. "
                                 + "eg: 'localhost:9092,localhost:9093' ",
                         type = {DataType.STRING}),
                 @Parameter(name = "topic",
-                        description = "The topic  which the source would be listening to. eg: 'topic_one' ",
+                        description = "This is the topic that the source listens to. eg: 'topic_one' ",
                         type = {DataType.STRING}),
                 @Parameter(name = "partition.no",
-                        description = "The partition number for the given topic",
+                        description = "This is the partition number of the given topic.",
                         type = {DataType.INT},
                         optional = true,
                         defaultValue = "0"),
                 @Parameter(name = "is.binary.message",
-                        description = "To receive the binary events via KafkaMultiDCSource, it is needed to set "
-                                + "this parameter value to `true`.",
+                        description = "In order to receive the binary events via the Kafka Multi-DC source, the " +
+                                "value of this parameter needs to be set to 'True'.",
                         type = {DataType.BOOL},
                         optional = true,
                         defaultValue = "false"),
                 @Parameter(name = "optional.configuration",
-                        description = "This may contain all the other possible configurations which the consumer "
-                                + "should be created with."
+                        description = "This contains all the other possible configurations with which the consumer "
+                                + "can be created."
                                 + "eg: producer.type:async,batch.size:200",
                         type = {DataType.STRING},
                         optional = true,
@@ -82,10 +82,6 @@ import java.util.UUID;
         },
         examples = {
                 @Example(
-                        description = "The following query will listen to 'kafka_topic' topic deployed in broker "
-                                + "host1:9092 and host1:9093 with partition 1. There will be a thread created for " +
-                                "each broker. The receiving xml events will be mapped to a siddhi event "
-                                + "and will be send to the FooStream.",
                         syntax = "@App:name('TestExecutionPlan') \n" +
                                 "define stream BarStream (symbol string, price float, volume long); \n" +
                                 "@info(name = 'query1') \n" +
@@ -96,7 +92,11 @@ import java.util.UUID;
                                 + "partition.no='1', "
                                 + "@map(type='xml'))\n" +
                                 "Define stream FooStream (symbol string, price float, volume long);\n" +
-                                "from FooStream select symbol, price, volume insert into BarStream;\n")
+                                "from FooStream select symbol, price, volume insert into BarStream;\n",
+                        description = "The following query listens to 'kafka_topic' topic, deployed in the broker " +
+                                "host1:9092 and host1:9093, with partition 1. A thread is created for " +
+                                "each broker. The receiving xml events are mapped to a siddhi event " +
+                                "and sent to the FooStream.")
         }
 )
 public class KafkaMultiDCSource extends Source {
