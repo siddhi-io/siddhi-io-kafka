@@ -59,7 +59,7 @@ import java.util.Properties;
                 @Parameter(name = "bootstrap.servers",
                         description = " This parameter specifies the list of Kafka servers to which the Kafka " +
                                 "sink must publish events. This list should be provided as a set of comma " +
-                                "separated values. There must be " +
+                                "-separated values. There must be " +
                                 "at least two servers in this list. e.g., `localhost:9092,localhost:9093`.",
                         type = {DataType.STRING}),
                 @Parameter(name = "topic",
@@ -86,8 +86,8 @@ import java.util.Properties;
                         optional = true,
                         defaultValue = "0"),
                 @Parameter(name = "is.binary.message",
-                        description = "To send the binary events via kafkaMultiDCSink, it is needed to set "
-                                + "this parameter value to `true`.",
+                        description = "In order to send the binary events via kafkaMultiDCSink, it is required to set "
+                                + "this parameter to `true`.",
                         type = {DataType.BOOL},
                         optional = false,
                         defaultValue = "null"),
