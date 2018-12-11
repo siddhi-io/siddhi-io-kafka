@@ -106,7 +106,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="#api-docs-v4118" tabindex="1" class="md-skip">
+      <a href="#api-docs-v4119" tabindex="1" class="md-skip">
         Skip to content
       </a>
     
@@ -275,6 +275,18 @@
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
         
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../4.1.19/" title="4.1.19" class="md-nav__link">
+      4.1.19
+    </a>
+  </li>
+
         
           
           
@@ -843,7 +855,7 @@
                   <a href="https://github.com/wso2-extensions/siddhi-io-kafka/edit/master/docs/api/latest.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                <h1 id="api-docs-v4118">API Docs - v4.1.18<a class="headerlink" href="#api-docs-v4118" title="Permanent link">&para;</a></h1>
+                <h1 id="api-docs-v4119">API Docs - v4.1.19<a class="headerlink" href="#api-docs-v4119" title="Permanent link">&para;</a></h1>
 <h2 id="sink">Sink<a class="headerlink" href="#sink" title="Permanent link">&para;</a></h2>
 <h3 id="kafka-sink">kafka <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sink">(Sink)</a></em><a class="headerlink" href="#kafka-sink" title="Permanent link">&para;</a></h3>
 <p style="word-wrap: break-word">A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.<br>To configure a sink to use the Kafka transport, the <code>type</code> parameter should have <code>kafka</code> as its value.</p>
@@ -905,7 +917,7 @@
     </tr>
     <tr>
         <td style="vertical-align: top">is.binary.message</td>
-        <td style="vertical-align: top; word-wrap: break-word">To send the binary events via kafka sink, it is needed to set this parameter value to <code>true</code>.</td>
+        <td style="vertical-align: top; word-wrap: break-word">In order to send the binary events via kafka sink, this parameter is set to 'True'.</td>
         <td style="vertical-align: top">null</td>
         <td style="vertical-align: top">BOOL</td>
         <td style="vertical-align: top">No</td>
@@ -975,7 +987,7 @@ from FooStream select symbol, price, volume insert into BarStream;
     </tr>
     <tr>
         <td style="vertical-align: top">bootstrap.servers</td>
-        <td style="vertical-align: top; word-wrap: break-word"> This parameter specifies the list of Kafka servers to which the Kafka sink must publish events. This list should be provided as a set of comma separated values. There must be at least two servers in this list. e.g., <code>localhost:9092,localhost:9093</code>.</td>
+        <td style="vertical-align: top; word-wrap: break-word"> This parameter specifies the list of Kafka servers to which the Kafka sink must publish events. This list should be provided as a set of comma -separated values. There must be at least two servers in this list. e.g., <code>localhost:9092,localhost:9093</code>.</td>
         <td style="vertical-align: top"></td>
         <td style="vertical-align: top">STRING</td>
         <td style="vertical-align: top">No</td>
@@ -1015,7 +1027,7 @@ from FooStream select symbol, price, volume insert into BarStream;
     </tr>
     <tr>
         <td style="vertical-align: top">is.binary.message</td>
-        <td style="vertical-align: top; word-wrap: break-word">To send the binary events via kafkaMultiDCSink, it is needed to set this parameter value to <code>true</code>.</td>
+        <td style="vertical-align: top; word-wrap: break-word">In order to send the binary events via kafkaMultiDCSink, it is required to set this parameter to <code>true</code>.</td>
         <td style="vertical-align: top">null</td>
         <td style="vertical-align: top">BOOL</td>
         <td style="vertical-align: top">No</td>
@@ -1111,7 +1123,7 @@ from FooStream select symbol, price, volume insert into BarStream;
     </tr>
     <tr>
         <td style="vertical-align: top">is.binary.message</td>
-        <td style="vertical-align: top; word-wrap: break-word">To receive binary events via the Kafka source, this parameter needs to be set to <code>true</code>.</td>
+        <td style="vertical-align: top; word-wrap: break-word">In order to receive binary events via the Kafka source,it is required to setthis parameter to 'True'.</td>
         <td style="vertical-align: top">false</td>
         <td style="vertical-align: top">BOOL</td>
         <td style="vertical-align: top">Yes</td>
@@ -1173,7 +1185,7 @@ from FooStream select symbol, price, volume insert into BarStream;
 <p style="word-wrap: break-word">This Kafka source configuration listens to the <code>kafka_topic</code> topic for the default partition because no <code>partition.no.list</code> is defined. Only one thread is created for the topic. The events are received in the XML format, mapped to a Siddhi event, and sent to a stream named <code>FooStream</code>.</p>
 
 <h3 id="kafkamultidc-source">kafkaMultiDC <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#source">(Source)</a></em><a class="headerlink" href="#kafkamultidc-source" title="Permanent link">&para;</a></h3>
-<p style="word-wrap: break-word">The Kafka Multi Data Center(DC) Source receives records from the same topic in brokers deployed in two different kafka cluster. It will filter out all duplicate messages and try to ensurethat the events are received in the correct order by using sequence numbers. events are received in format such as <code>text</code>, <code>XML</code> JSON<code> and </code>Binary`.The Kafka Source will create the default partition '0' for a given topic, if the topic is not already been created in the Kafka cluster.</p>
+<p style="word-wrap: break-word">The Kafka Multi-Datacenter(DC) source receives records from the same topic in brokers deployed in two different kafka clusters. It filters out all the duplicate messages and ensuresthat the events are received in the correct order using sequential numbering. It receives events in formats such as <code>TEXT</code>, <code>XML</code> JSON<code> and </code>Binary`.The Kafka Source creates the default partition '0' for a given topic, if the topic has not yet been created in the Kafka cluster.</p>
 
 <p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
 <div class="codehilite"><pre><span></span>@source(type=&quot;kafkaMultiDC&quot;, bootstrap.servers=&quot;&lt;STRING&gt;&quot;, topic=&quot;&lt;STRING&gt;&quot;, partition.no=&quot;&lt;INT&gt;&quot;, is.binary.message=&quot;&lt;BOOL&gt;&quot;, optional.configuration=&quot;&lt;STRING&gt;&quot;, @map(...)))
@@ -1192,7 +1204,7 @@ from FooStream select symbol, price, volume insert into BarStream;
     </tr>
     <tr>
         <td style="vertical-align: top">bootstrap.servers</td>
-        <td style="vertical-align: top; word-wrap: break-word">This should contain the kafka server list which the kafka source should be listening to. This should be given in comma separated values. eg: 'localhost:9092,localhost:9093' </td>
+        <td style="vertical-align: top; word-wrap: break-word">This contains the kafka server list which the kafka source listens to. This is given using comma-separated values. eg: 'localhost:9092,localhost:9093' </td>
         <td style="vertical-align: top"></td>
         <td style="vertical-align: top">STRING</td>
         <td style="vertical-align: top">No</td>
@@ -1200,7 +1212,7 @@ from FooStream select symbol, price, volume insert into BarStream;
     </tr>
     <tr>
         <td style="vertical-align: top">topic</td>
-        <td style="vertical-align: top; word-wrap: break-word">The topic  which the source would be listening to. eg: 'topic_one' </td>
+        <td style="vertical-align: top; word-wrap: break-word">This is the topic that the source listens to. eg: 'topic_one' </td>
         <td style="vertical-align: top"></td>
         <td style="vertical-align: top">STRING</td>
         <td style="vertical-align: top">No</td>
@@ -1208,7 +1220,7 @@ from FooStream select symbol, price, volume insert into BarStream;
     </tr>
     <tr>
         <td style="vertical-align: top">partition.no</td>
-        <td style="vertical-align: top; word-wrap: break-word">The partition number for the given topic</td>
+        <td style="vertical-align: top; word-wrap: break-word">This is the partition number of the given topic.</td>
         <td style="vertical-align: top">0</td>
         <td style="vertical-align: top">INT</td>
         <td style="vertical-align: top">Yes</td>
@@ -1216,7 +1228,7 @@ from FooStream select symbol, price, volume insert into BarStream;
     </tr>
     <tr>
         <td style="vertical-align: top">is.binary.message</td>
-        <td style="vertical-align: top; word-wrap: break-word">To receive the binary events via KafkaMultiDCSource, it is needed to set this parameter value to <code>true</code>.</td>
+        <td style="vertical-align: top; word-wrap: break-word">In order to receive the binary events via the Kafka Multi-DC source, the value of this parameter needs to be set to 'True'.</td>
         <td style="vertical-align: top">false</td>
         <td style="vertical-align: top">BOOL</td>
         <td style="vertical-align: top">Yes</td>
@@ -1224,7 +1236,7 @@ from FooStream select symbol, price, volume insert into BarStream;
     </tr>
     <tr>
         <td style="vertical-align: top">optional.configuration</td>
-        <td style="vertical-align: top; word-wrap: break-word">This may contain all the other possible configurations which the consumer should be created with.eg: producer.type:async,batch.size:200</td>
+        <td style="vertical-align: top; word-wrap: break-word">This contains all the other possible configurations with which the consumer can be created.eg: producer.type:async,batch.size:200</td>
         <td style="vertical-align: top">null</td>
         <td style="vertical-align: top">STRING</td>
         <td style="vertical-align: top">Yes</td>
@@ -1242,7 +1254,7 @@ from FooStream select symbol, price, volume insert into BarStream;
 </pre></div>
 
 
-<p style="word-wrap: break-word">The following query will listen to 'kafka_topic' topic deployed in broker host1:9092 and host1:9093 with partition 1. There will be a thread created for each broker. The receiving xml events will be mapped to a siddhi event and will be send to the FooStream.</p>
+<p style="word-wrap: break-word">The following query listens to 'kafka_topic' topic, deployed in the broker host1:9092 and host1:9093, with partition 1. A thread is created for each broker. The receiving xml events are mapped to a siddhi event and sent to the FooStream.</p>
                 
                   
                 

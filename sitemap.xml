@@ -6,6 +6,11 @@
      <changefreq>daily</changefreq>
     </url>
     <url>
+     <loc>https://wso2-extensions.github.io/siddhi-io-kafka/api/4.1.19/</loc>
+     <lastmod>2018-12-11</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
      <loc>https://wso2-extensions.github.io/siddhi-io-kafka/api/4.1.18/</loc>
      <lastmod>2018-12-11</lastmod>
      <changefreq>daily</changefreq>
