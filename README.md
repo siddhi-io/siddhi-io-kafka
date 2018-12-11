@@ -35,25 +35,25 @@ Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/si
  - Download and install Kafka and Zookeeper.
  - Start the Apache ZooKeeper server with the following command: `bin/zookeeper-server-start.sh config/zookeeper.properties`.
  - Start the Kafka server with the following command:  `bin/kafka-server-start.sh config/server.properties`
- - Convert and copy the Kafka client jars from the <KAFKA_HOME>/libs directory to the <SP_HOME>/libs directory as follows.
+ - Convert and copy the Kafka client jars from the `<KAFKA_HOME>/libs` directory to the `<SP_HOME>/lib` directory as follows.
   
    - Create a directory (SOURCE_DIRECTORY) in a preferred location in your machine and copy the following JARs to it from the
-   <KAFKA_HOME>/libs directory.
+   `<KAFKA_HOME>/libs` directory.
       
-     - kafka_2.11-0.10.2.1.jar
-     - kafka-clients-0.10.2.1.jar
-     - metrics-core-2.2.0.jar
+     - kafka_2.11-*.jar
+     - kafka-clients-*.jar
+     - metrics-core-*.jar
      - scala-library-2.11.8.jar
-     - scala-parser-combinators_2.11-1.0.4.jar
-     - zkclient-0.10.jar
-     - zookeeper-3.4.9.jar
+     - scala-parser-combinators_2.11*.jar (if exist)
+     - zkclient-*.jar
+     - zookeeper-*.jar
      
    - Create another directory (DESTINATION_DIRECTORY) in a preferred location in your machine.
-   - To convert all the Kafka jars you copied into the <SOURCE_DIRECTORY>, issue the following command.
-     For Windows: <SP_HOME>/bin/jartobundle.bat <SOURCE_DIRECTORY_PATH> <DESTINATION_DIRECTORY_PATH>
-     For Linux: <SP_HOME>/bin/jartobundle.sh <SOURCE_DIRECTORY_PATH> <DESTINATION_DIRECTORY_PATH>
-   - Copy the converted files from the <DESTINATION_DIRECTORY> to the <SP_HOME>/libs directory.
-   - Copy the jars that are not converted from the <SOURCE_DIRECTORY> to the <SP_HOME>/samples/sample-clients/lib directory.
+   - To convert all the Kafka jars you copied into the `<SOURCE_DIRECTORY>`, issue the following command.
+     - For Windows: `<SP_HOME>/bin/jartobundle.bat <SOURCE_DIRECTORY_PATH> <DESTINATION_DIRECTORY_PATH>`
+     - For Linux: `<SP_HOME>/bin/jartobundle.sh <SOURCE_DIRECTORY_PATH> <DESTINATION_DIRECTORY_PATH>`
+   - Copy the converted files from the `<DESTINATION_DIRECTORY>` to the `<SP_HOME>/lib` directory.
+   - Copy the jars that are not converted from the `<SOURCE_DIRECTORY>` to the `<SP_HOME>/samples/sample-clients/lib` directory.
 
 
 * You can use this extension in the latest <a target="_blank" href="https://github.com/wso2/product-sp/releases">WSO2 Stream Processor</a> that is a part of <a target="_blank" href="http://wso2.com/analytics?utm_source=gitanalytics&utm_campaign=gitanalytics_Jul17">WSO2 Analytics</a> offering, with editor, debugger and simulation support.
