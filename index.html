@@ -360,6 +360,18 @@
 
 
   <li class="md-nav__item">
+    <a href="api/4.1.18/" title="4.1.18" class="md-nav__link">
+      4.1.18
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
     <a href="api/4.1.17/" title="4.1.17" class="md-nav__link">
       4.1.17
     </a>
@@ -839,7 +851,7 @@ The publishing topic and partition can be a dynamic value taken from the Siddhi 
 <li><a target="_blank" href="https://github.com/wso2-extensions/siddhi-io-kafka/issues">Issue tracker</a></li>
 </ul>
 <h2 id="latest-api-docs">Latest API Docs<a class="headerlink" href="#latest-api-docs" title="Permanent link">&para;</a></h2>
-<p>Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.1.17">4.1.17</a>.</p>
+<p>Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.1.18">4.1.18</a>.</p>
 <h2 id="how-to-use">How to use<a class="headerlink" href="#how-to-use" title="Permanent link">&para;</a></h2>
 <p><strong>Using the extension in <a target="_blank" href="https://github.com/wso2/product-sp">WSO2 Stream Processor</a></strong></p>
 <p><strong><em>Prerequisites for using the feature</em></strong></p>
@@ -848,30 +860,32 @@ The publishing topic and partition can be a dynamic value taken from the Siddhi 
 <li>Start the Apache ZooKeeper server with the following command: <code>bin/zookeeper-server-start.sh config/zookeeper.properties</code>.</li>
 <li>Start the Kafka server with the following command:  <code>bin/kafka-server-start.sh config/server.properties</code></li>
 <li>
-<p>Convert and copy the Kafka client jars from the <KAFKA_HOME>/libs directory to the <SP_HOME>/libs directory as follows.</p>
+<p>Convert and copy the Kafka client jars from the <code>&lt;KAFKA_HOME&gt;/libs</code> directory to the <code>&lt;SP_HOME&gt;/lib</code> directory as follows.</p>
 </li>
 <li>
 <p>Create a directory (SOURCE_DIRECTORY) in a preferred location in your machine and copy the following JARs to it from the
-   <KAFKA_HOME>/libs directory.</p>
+   <code>&lt;KAFKA_HOME&gt;/libs</code> directory.</p>
 <ul>
-<li>kafka_2.11-0.10.2.1.jar</li>
-<li>kafka-clients-0.10.2.1.jar</li>
-<li>metrics-core-2.2.0.jar</li>
+<li>kafka_2.11-*.jar</li>
+<li>kafka-clients-*.jar</li>
+<li>metrics-core-*.jar</li>
 <li>scala-library-2.11.8.jar</li>
-<li>scala-parser-combinators_2.11-1.0.4.jar</li>
-<li>zkclient-0.10.jar</li>
-<li>zookeeper-3.4.9.jar</li>
+<li>scala-parser-combinators_2.11*.jar (if exist)</li>
+<li>zkclient-*.jar</li>
+<li>zookeeper-*.jar</li>
 </ul>
 </li>
 <li>
 <p>Create another directory (DESTINATION_DIRECTORY) in a preferred location in your machine.</p>
 </li>
-<li>To convert all the Kafka jars you copied into the <SOURCE_DIRECTORY>, issue the following command.
-     For Windows: <SP_HOME>/bin/jartobundle.bat <SOURCE_DIRECTORY_PATH> <DESTINATION_DIRECTORY_PATH>
-     For Linux: <SP_HOME>/bin/jartobundle.sh <SOURCE_DIRECTORY_PATH> <DESTINATION_DIRECTORY_PATH></li>
-<li>Copy the converted files from the <DESTINATION_DIRECTORY> to the <SP_HOME>/libs directory.</li>
+<li>To convert all the Kafka jars you copied into the <code>&lt;SOURCE_DIRECTORY&gt;</code>, issue the following command.<ul>
+<li>For Windows: <code>&lt;SP_HOME&gt;/bin/jartobundle.bat &lt;SOURCE_DIRECTORY_PATH&gt; &lt;DESTINATION_DIRECTORY_PATH&gt;</code></li>
+<li>For Linux: <code>&lt;SP_HOME&gt;/bin/jartobundle.sh &lt;SOURCE_DIRECTORY_PATH&gt; &lt;DESTINATION_DIRECTORY_PATH&gt;</code></li>
+</ul>
+</li>
+<li>Copy the converted files from the <code>&lt;DESTINATION_DIRECTORY&gt;</code> to the <code>&lt;SP_HOME&gt;/lib</code> directory.</li>
 <li>
-<p>Copy the jars that are not converted from the <SOURCE_DIRECTORY> to the <SP_HOME>/samples/sample-clients/lib directory.</p>
+<p>Copy the jars that are not converted from the <code>&lt;SOURCE_DIRECTORY&gt;</code> to the <code>&lt;SP_HOME&gt;/samples/sample-clients/lib</code> directory.</p>
 </li>
 <li>
 <p>You can use this extension in the latest <a target="_blank" href="https://github.com/wso2/product-sp/releases">WSO2 Stream Processor</a> that is a part of <a target="_blank" href="http://wso2.com/analytics?utm_source=gitanalytics&utm_campaign=gitanalytics_Jul17">WSO2 Analytics</a> offering, with editor, debugger and simulation support.</p>
@@ -912,10 +926,10 @@ extension you can replace the component <a target="_blank" href="https://github.
 <hr />
 <h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.1.17/#kafka-sink">kafka</a> <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sink">(Sink)</a></em><br><div style="padding-left: 1em;"><p>A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.<br>To configure a sink to use the Kafka transport, the <code>type</code> parameter should have <code>kafka</code> as its value.</p></div></li>
-<li><a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.1.17/#kafkamultidc-sink">kafkaMultiDC</a> <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sink">(Sink)</a></em><br><div style="padding-left: 1em;"><p>A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.<br>To configure a sink to publish events via the Kafka transport, and using two Kafka brokers to publish events to the same topic, the <code>type</code> parameter must have <code>kafkaMultiDC</code> as its value.</p></div></li>
-<li><a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.1.17/#kafka-source">kafka</a> <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#source">(Source)</a></em><br><div style="padding-left: 1em;"><p>A Kafka source receives events to be processed by WSO2 SP from a topic with a partition for a Kafka cluster. The events received can be in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic.</p></div></li>
-<li><a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.1.17/#kafkamultidc-source">kafkaMultiDC</a> <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#source">(Source)</a></em><br><div style="padding-left: 1em;"><p>The Kafka Multi Data Center(DC) Source receives records from the same topic in brokers deployed in two different kafka cluster. It will filter out all duplicate messages and try to ensurethat the events are received in the correct order by using sequence numbers. events are received in format such as <code>text</code>, <code>XML</code> JSON<code> and </code>Binary`.The Kafka Source will create the default partition '0' for a given topic, if the topic is not already been created in the Kafka cluster.</p></div></li>
+<li><a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.1.18/#kafka-sink">kafka</a> <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sink">(Sink)</a></em><br><div style="padding-left: 1em;"><p>A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.<br>To configure a sink to use the Kafka transport, the <code>type</code> parameter should have <code>kafka</code> as its value.</p></div></li>
+<li><a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.1.18/#kafkamultidc-sink">kafkaMultiDC</a> <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sink">(Sink)</a></em><br><div style="padding-left: 1em;"><p>A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.<br>To configure a sink to publish events via the Kafka transport, and using two Kafka brokers to publish events to the same topic, the <code>type</code> parameter must have <code>kafkaMultiDC</code> as its value.</p></div></li>
+<li><a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.1.18/#kafka-source">kafka</a> <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#source">(Source)</a></em><br><div style="padding-left: 1em;"><p>A Kafka source receives events to be processed by WSO2 SP from a topic with a partition for a Kafka cluster. The events received can be in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic.</p></div></li>
+<li><a target="_blank" href="https://wso2-extensions.github.io/siddhi-io-kafka/api/4.1.18/#kafkamultidc-source">kafkaMultiDC</a> <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#source">(Source)</a></em><br><div style="padding-left: 1em;"><p>The Kafka Multi Data Center(DC) Source receives records from the same topic in brokers deployed in two different kafka cluster. It will filter out all duplicate messages and try to ensurethat the events are received in the correct order by using sequence numbers. events are received in format such as <code>text</code>, <code>XML</code> JSON<code> and </code>Binary`.The Kafka Source will create the default partition '0' for a given topic, if the topic is not already been created in the Kafka cluster.</p></div></li>
 </ul>
 <h2 id="how-to-contribute">How to Contribute<a class="headerlink" href="#how-to-contribute" title="Permanent link">&para;</a></h2>
 <ul>
@@ -967,13 +981,13 @@ extension you can replace the component <a target="_blank" href="https://github.
       <nav class="md-footer-nav__inner md-grid">
         
         
-          <a href="api/4.1.17/" title="4.1.17" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="api/4.1.18/" title="4.1.18" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                4.1.17
+                4.1.18
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">
