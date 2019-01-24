@@ -39,6 +39,7 @@ public class ConsumerKafkaGroup {
     private final Properties props;
     private List<KafkaConsumerThread> kafkaConsumerThreadList = new ArrayList<>();
     private Map<String, Map<Integer, Long>> topicOffsetMap = new HashMap<>();
+    private Map<String, Map<Integer, Long>> syncPropertyCallbackTopicOffsetMap;
     private ScheduledExecutorService executorService;
     private String threadingOption;
     private boolean isBinaryMessage;
@@ -46,7 +47,8 @@ public class ConsumerKafkaGroup {
 
     ConsumerKafkaGroup(String topics[], String partitions[], Properties props, Map<String, Map<Integer, Long>>
             topicOffsetMap, Map<String, Map<SequenceKey, Integer>> perConsumerLastReceivedSeqNo, String threadingOption,
-                       ScheduledExecutorService executorService, boolean isBinaryMessage) {
+                       ScheduledExecutorService executorService, boolean isBinaryMessage,
+                       Map<String, Map<Integer, Long>> syncPropertyCallbackTopicOffsetMap) {
         this.threadingOption = threadingOption;
         this.topicOffsetMap = topicOffsetMap;
         this.perConsumerLastReceivedSeqNo = perConsumerLastReceivedSeqNo;
@@ -55,6 +57,7 @@ public class ConsumerKafkaGroup {
         this.props = props;
         this.executorService = executorService;
         this.isBinaryMessage = isBinaryMessage;
+        this.syncPropertyCallbackTopicOffsetMap = syncPropertyCallbackTopicOffsetMap;
     }
 
     public void setTopicOffsetMap(Map<String, Map<Integer, Long>> topicOffsetMap) {
@@ -69,8 +72,11 @@ public class ConsumerKafkaGroup {
     }
 
     void restore(final Map<String, Map<Integer, Long>> topic) {
-        kafkaConsumerThreadList.forEach(kafkaConsumerThread -> kafkaConsumerThread.restore(topic));
+        kafkaConsumerThreadList.forEach(kafkaConsumerThread -> kafkaConsumerThread.restore(topic,
+                syncPropertyCallbackTopicOffsetMap));
     }
+
+    // update topicOffset
 
     void shutdown() {
         kafkaConsumerThreadList.forEach(KafkaConsumerThread::shutdownConsumer);
@@ -81,7 +87,7 @@ public class ConsumerKafkaGroup {
             if (KafkaSource.SINGLE_THREADED.equals(threadingOption)) {
                 KafkaConsumerThread kafkaConsumerThread =
                         new KafkaConsumerThread(sourceEventListener, topics, partitions, props, topicOffsetMap,
-                                false, isBinaryMessage);
+                                false, isBinaryMessage, syncPropertyCallbackTopicOffsetMap);
                 kafkaConsumerThreadList.add(kafkaConsumerThread);
                 LOG.info("Kafka Consumer thread starting to listen on topic(s): " + Arrays.toString(topics) +
                         " with partition/s: " + Arrays.toString(partitions));
@@ -89,7 +95,8 @@ public class ConsumerKafkaGroup {
                 for (String topic : topics) {
                     KafkaConsumerThread kafkaConsumerThread =
                             new KafkaConsumerThread(sourceEventListener, new String[]{topic}, partitions, props,
-                                    topicOffsetMap, false, isBinaryMessage);
+                                    topicOffsetMap, false, isBinaryMessage,
+                                    syncPropertyCallbackTopicOffsetMap);
                     kafkaConsumerThreadList.add(kafkaConsumerThread);
                     LOG.info("Kafka Consumer thread starting to listen on topic: " + topic +
                             " with partition/s: " + Arrays.toString(partitions));
@@ -100,7 +107,7 @@ public class ConsumerKafkaGroup {
                         KafkaConsumerThread kafkaConsumerThread =
                                 new KafkaConsumerThread(sourceEventListener, new String[]{topic},
                                         new String[]{partition}, props, topicOffsetMap, true,
-                                        isBinaryMessage);
+                                        isBinaryMessage, syncPropertyCallbackTopicOffsetMap);
                         kafkaConsumerThreadList.add(kafkaConsumerThread);
                         LOG.info("Kafka Consumer thread starting to listen on topic: " + topic +
                                 " with partition: " + partition);

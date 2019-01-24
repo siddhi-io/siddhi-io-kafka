@@ -50,6 +50,11 @@ public class KafkaMultiDCSourceSynchronizerTestCases {
         public void onEvent(Object o, String[] strings) {
             eventsArrived.add(o);
         }
+
+        @Override
+        public void onEvent(Object o, String[] strings, String[] strings1) {
+            eventsArrived.add(o);
+        }
     };
 
     @BeforeMethod

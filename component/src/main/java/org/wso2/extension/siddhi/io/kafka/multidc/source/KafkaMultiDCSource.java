@@ -253,7 +253,20 @@ class Interceptor implements SourceEventListener {
     
     @Override
     public void onEvent(Object event, String[] strings) {
+        onEventReceive(event, strings, null);
+    }
 
+    @Override
+    public void onEvent(Object event, String[] strings, String[] strings1) {
+        onEventReceive(event, strings, strings1);
+    }
+
+    @Override
+    public StreamDefinition getStreamDefinition() {
+        return null;
+    }
+
+    private void onEventReceive(Object event, String[] strings, String[] strings1) {
         if (!isBinaryMessage) {
             String eventString = (String) event;
             int headerStartingIndex = eventString.indexOf(KafkaSink.SEQ_NO_HEADER_DELIMITER);
@@ -281,12 +294,6 @@ class Interceptor implements SourceEventListener {
                 LOG.warn("Sequence number is not contained in the message. Dropping the message");
             }
         }
-
-    }
-
-    @Override
-    public StreamDefinition getStreamDefinition() {
-        return null;
     }
 }
 

@@ -61,10 +61,12 @@ public class KafkaConsumerThread implements Runnable {
     private boolean isBinaryMessage = false;
     private ReentrantLock lock;
     private Condition condition;
+    private Map<String, Map<Integer, Long>> syncPropertyCallbackTopicOffsetMap;
 
     KafkaConsumerThread(SourceEventListener sourceEventListener, String topics[], String partitions[],
                         Properties props, Map<String, Map<Integer, Long>> topicOffsetMap,
-                        boolean isPartitionWiseThreading, boolean isBinaryMessage) {
+                        boolean isPartitionWiseThreading, boolean isBinaryMessage, Map<String, Map<Integer, Long>>
+                                syncPropertyCallbackTopicOffsetMap) {
         this.consumer = new KafkaConsumer<>(props);
         this.sourceEventListener = sourceEventListener;
         this.topicOffsetMap = topicOffsetMap;
@@ -73,6 +75,7 @@ public class KafkaConsumerThread implements Runnable {
         this.isPartitionWiseThreading = isPartitionWiseThreading;
         this.isBinaryMessage = isBinaryMessage;
         this.consumerThreadId = buildId();
+        this.syncPropertyCallbackTopicOffsetMap = syncPropertyCallbackTopicOffsetMap;
         lock = new ReentrantLock();
         condition = lock.newCondition();
         if (null != partitions) {
@@ -88,7 +91,7 @@ public class KafkaConsumerThread implements Runnable {
                 LOG.info("Adding partitions " + Arrays.toString(partitions) + " for topic: " + topic);
                 consumer.assign(partitionsList);
             }
-            restore(topicOffsetMap);
+            restore(topicOffsetMap, syncPropertyCallbackTopicOffsetMap);
         } else {
             for (String topic : topics) {
                 if (null == topicOffsetMap.get(topic)) {
@@ -105,7 +108,7 @@ public class KafkaConsumerThread implements Runnable {
     }
 
     void resume() {
-        restore(topicOffsetMap);
+        restore(topicOffsetMap, syncPropertyCallbackTopicOffsetMap);
         paused = false;
         try {
             lock.lock();
@@ -115,23 +118,57 @@ public class KafkaConsumerThread implements Runnable {
         }
     }
 
-    void restore(Map<String, Map<Integer, Long>> topicOffsetMap) {
+    void restore(Map<String, Map<Integer, Long>> topicOffsetMap, Map<String, Map<Integer, Long>>
+            syncPropertyCallbackTopicOffsetMap) {
         final Lock consumerLock = this.consumerLock;
-        if (null != topicOffsetMap) {
+
+        if (syncPropertyCallbackTopicOffsetMap.size() == 0 && null != topicOffsetMap) {
+            restoreState(topicOffsetMap);
+        } else {
             for (String topic : topics) {
                 Map<Integer, Long> offsetMap = topicOffsetMap.get(topic);
-                if (null != offsetMap) {
+                Map<Integer, Long> trpSyncPropertiesOffsetMap = syncPropertyCallbackTopicOffsetMap.get(topic);
+                if (null != offsetMap && offsetMap.size() != 0) {
                     for (Map.Entry<Integer, Long> entry : offsetMap.entrySet()) {
                         TopicPartition partition = new TopicPartition(topic, entry.getKey());
                         if (partitionsList.contains(partition)) {
-                            LOG.info("Seeking partition: " + partition + " for topic: " + topic + " offset: " + (entry
-                                    .getValue() + 1));
+                            long offset = entry.getValue();
+                            long syncPropertyOffset = trpSyncPropertiesOffsetMap.get(entry.getKey());
+                            if (syncPropertyOffset > entry.getValue()) {
+                                offset = syncPropertyOffset;
+                            }
+                            LOG.info("Seeking partition: " + partition + " for topic: " + topic + " offset: " +
+                                    (offset + 1));
                             try {
                                 consumerLock.lock();
-                                consumer.seek(partition, entry.getValue() + 1);
+                                consumer.seek(partition, offset + 1);
                             } finally {
                                 consumerLock.unlock();
                             }
+                        }
+
+                    }
+                } else {
+                    restoreState(syncPropertyCallbackTopicOffsetMap);
+                }
+            }
+        }
+    }
+
+    private void restoreState(Map<String, Map<Integer, Long>> topicOffsetMap) {
+        for (String topic : topics) {
+            Map<Integer, Long> offsetMap = topicOffsetMap.get(topic);
+            if (null != offsetMap) {
+                for (Map.Entry<Integer, Long> entry : offsetMap.entrySet()) {
+                    TopicPartition partition = new TopicPartition(topic, entry.getKey());
+                    if (partitionsList.contains(partition)) {
+                        LOG.info("Seeking partition: " + partition + " for topic: " + topic + " offset: " + (entry
+                                .getValue() + 1));
+                        try {
+                            consumerLock.lock();
+                            consumer.seek(partition, entry.getValue() + 1);
+                        } finally {
+                            consumerLock.unlock();
                         }
                     }
                 }
@@ -180,8 +217,12 @@ public class KafkaConsumerThread implements Runnable {
                         }
                         topicOffsetMap.get(record.topic()).put(record.partition(), record.offset());
 
+                        String transportSyncProperties = "topic:" + record.topic() + ",partition:" + record.partition()
+                                + ",offSet:" + record.offset();
+                        String[] transportSyncPropertiesArr = new String[]{transportSyncProperties};
+
                         if (lastReceivedSeqNoMap == null) {
-                            sourceEventListener.onEvent(event, new String[0]);
+                            sourceEventListener.onEvent(event, new String[0], transportSyncPropertiesArr);
                         } else {
                             if (isBinaryMessage) {
                                 byte[] byteEvents = (byte[]) event;
@@ -211,7 +252,7 @@ public class KafkaConsumerThread implements Runnable {
 
                                 if (lastReceivedSeqNo < seqNo) {
                                     lastReceivedSeqNoMap.put(sequenceKey, seqNo);
-                                    sourceEventListener.onEvent(eventBody, new String[0]);
+                                    sourceEventListener.onEvent(eventBody, new String[0], transportSyncPropertiesArr);
                                     if (LOG.isDebugEnabled()) {
                                         LOG.debug("Last Received SeqNo Updated to:" + seqNo + " for " + "SeqKey:["
                                                 + sequenceKey.toString() + "] in Kafka consumer thread:"

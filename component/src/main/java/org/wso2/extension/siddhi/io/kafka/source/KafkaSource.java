@@ -32,6 +32,7 @@ import org.wso2.siddhi.core.exception.ConnectionUnavailableException;
 import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
 import org.wso2.siddhi.core.stream.input.source.Source;
 import org.wso2.siddhi.core.stream.input.source.SourceEventListener;
+import org.wso2.siddhi.core.stream.input.source.SourceSyncCallback;
 import org.wso2.siddhi.core.util.SiddhiConstants;
 import org.wso2.siddhi.core.util.config.ConfigReader;
 import org.wso2.siddhi.core.util.transport.OptionHolder;
@@ -157,7 +158,7 @@ import java.util.concurrent.ScheduledExecutorService;
                                 " to a Siddhi event, and sent to a stream named `FooStream`.")
         }
 )
-public class KafkaSource extends Source {
+public class KafkaSource extends Source implements SourceSyncCallback {
 
     public static final String SINGLE_THREADED = "single.thread";
     public static final String TOPIC_WISE = "topic.wise";
@@ -180,6 +181,7 @@ public class KafkaSource extends Source {
     private OptionHolder optionHolder;
     private ConsumerKafkaGroup consumerKafkaGroup;
     private Map<String, Map<Integer, Long>> topicOffsetMap = new HashMap<>();
+    private Map<String, Map<Integer, Long>> syncPropertyCallbackTopicOffsetMap = new HashMap<>();
     private String bootstrapServers;
     private String groupID;
     private String threadingOption;
@@ -192,6 +194,9 @@ public class KafkaSource extends Source {
     private String topicOffsetMapConfig;
     private boolean isRestored = false;
     private SiddhiAppContext siddhiAppContext;
+    public static final String TOPIC = "topic";
+    public static final String PARTITION = "partition";
+    public static final String OFFSET = "offSet";
 
 
     @Override
@@ -224,10 +229,9 @@ public class KafkaSource extends Source {
         }
 
         consumerKafkaGroup = new ConsumerKafkaGroup(topics, partitions,
-                                                    KafkaSource.createConsumerConfig(bootstrapServers, groupID,
-                                                                                     optionalConfigs, isBinaryMessage),
-                                                    topicOffsetMap, consumerLastReceivedSeqNoMap, threadingOption,
-                                                    executorService, isBinaryMessage);
+                KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs, isBinaryMessage),
+                topicOffsetMap, consumerLastReceivedSeqNoMap, threadingOption, executorService, isBinaryMessage,
+                syncPropertyCallbackTopicOffsetMap);
     }
 
     @Override
@@ -480,5 +484,35 @@ public class KafkaSource extends Source {
                                  "org.apache.kafka.common.serialization.ByteArraySerializer");
         }
         return configProperties;
+    }
+
+    @Override
+    public void update(String[] transportSyncProperties) {
+        //here we are handling out of order events which could occur
+        for (String propertiesStr : transportSyncProperties) {
+            String[] properties = propertiesStr.split(",");
+            String topic = "";
+            Integer partition = 0;
+            for (String property : properties) {
+                String[] keyValues = property.split(":");
+                if (keyValues[0].equals(TOPIC)) {
+                    topic = keyValues[1];
+                    syncPropertyCallbackTopicOffsetMap.computeIfAbsent(keyValues[1], k -> new HashMap<>());
+                } else if (keyValues[0].equals(PARTITION)) {
+                    Map<Integer, Long> partitionOffsetMap = syncPropertyCallbackTopicOffsetMap.get(topic);
+                    if (null == partitionOffsetMap.get(Integer.valueOf(keyValues[1]))) {
+                        partition = Integer.valueOf(keyValues[1]);
+                        partitionOffsetMap.put(partition, 0L);
+                    }
+                } else if (keyValues[0].equals(OFFSET)) {
+                    Map<Integer, Long> partitionOffsetMap = syncPropertyCallbackTopicOffsetMap.get(topic);
+                    long savedOffsetValue = partitionOffsetMap.get(partition);
+                    Long offsetValue = Long.valueOf(keyValues[1]);
+                    if (offsetValue > savedOffsetValue) {
+                        partitionOffsetMap.put(partition, offsetValue);
+                    }
+                }
+            }
+        }
     }
 }
