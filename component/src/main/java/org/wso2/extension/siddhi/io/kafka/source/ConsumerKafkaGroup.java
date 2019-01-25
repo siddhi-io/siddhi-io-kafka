@@ -76,8 +76,6 @@ public class ConsumerKafkaGroup {
                 syncPropertyCallbackTopicOffsetMap));
     }
 
-    // update topicOffset
-
     void shutdown() {
         kafkaConsumerThreadList.forEach(KafkaConsumerThread::shutdownConsumer);
     }
