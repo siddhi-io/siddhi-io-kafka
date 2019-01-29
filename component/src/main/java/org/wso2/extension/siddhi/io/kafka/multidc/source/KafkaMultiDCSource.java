@@ -110,7 +110,7 @@ public class KafkaMultiDCSource extends Source {
     private SourceSynchronizer synchronizer;
 
     @Override
-    public void init(SourceEventListener sourceEventListener, OptionHolder optionHolder, String[] strings,
+    public void init(SourceEventListener sourceEventListener, OptionHolder optionHolder, String[] transportPropertyNames,
                      ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
         this.eventListener = sourceEventListener;
         String serverList = optionHolder.validateAndGetStaticValue(KafkaSource
@@ -128,14 +128,14 @@ public class KafkaMultiDCSource extends Source {
         Interceptor interceptor = new Interceptor(bootstrapServers[0], synchronizer, isBinaryMessage);
         OptionHolder options = createOptionHolders(bootstrapServers[0], optionHolder);
         KafkaSource source = new KafkaSource();
-        source.init(interceptor, options, strings, configReader, siddhiAppContext);
+        source.init(interceptor, options, transportPropertyNames, configReader, siddhiAppContext);
         sources.put(bootstrapServers[0], source);
 
         LOG.info("Initializing kafka source for bootstrap server :" + bootstrapServers[1]);
         interceptor = new Interceptor(bootstrapServers[1], synchronizer, isBinaryMessage);
         options = createOptionHolders(bootstrapServers[1], optionHolder);
         source = new KafkaSource();
-        source.init(interceptor, options, strings, configReader, siddhiAppContext);
+        source.init(interceptor, options, transportPropertyNames, configReader, siddhiAppContext);
         sources.put(bootstrapServers[1], source);
     }
 
@@ -252,13 +252,13 @@ class Interceptor implements SourceEventListener {
     }
     
     @Override
-    public void onEvent(Object event, String[] strings) {
-        onEventReceive(event, strings, null);
+    public void onEvent(Object event, String[] transportProperties) {
+        onEventReceive(event, transportProperties, null);
     }
 
     @Override
-    public void onEvent(Object event, String[] strings, String[] strings1) {
-        onEventReceive(event, strings, strings1);
+    public void onEvent(Object event, String[] transportProperties, String[] transportSyncProperties) {
+        onEventReceive(event, transportProperties, transportSyncProperties);
     }
 
     @Override
@@ -266,7 +266,7 @@ class Interceptor implements SourceEventListener {
         return null;
     }
 
-    private void onEventReceive(Object event, String[] strings, String[] strings1) {
+    private void onEventReceive(Object event, String[] transportProperties, String[] transportSyncProperties) {
         if (!isBinaryMessage) {
             String eventString = (String) event;
             int headerStartingIndex = eventString.indexOf(KafkaSink.SEQ_NO_HEADER_DELIMITER);
@@ -276,7 +276,7 @@ class Interceptor implements SourceEventListener {
 
                 String[] headerElements = header.split(KafkaSink.SEQ_NO_HEADER_FIELD_SEPERATOR);
                 Integer seqNo = Integer.parseInt(headerElements[1]);
-                synchronizer.onEvent(sourceId, seqNo, eventBody, strings);
+                synchronizer.onEvent(sourceId, seqNo, eventBody, transportProperties);
             } else {
                 LOG.warn("Sequence number is not contained in the message. Dropping the message :" + eventString);
             }
@@ -289,7 +289,7 @@ class Interceptor implements SourceEventListener {
                 Integer seqNo = Integer.parseInt(headerElements[1]);
                 byte[] eventBody = Arrays.copyOfRange(byteEvents, stringSize + 4,
                         byteEvents.length);
-                synchronizer.onEvent(sourceId, seqNo, eventBody, strings);
+                synchronizer.onEvent(sourceId, seqNo, eventBody, transportProperties);
             } else {
                 LOG.warn("Sequence number is not contained in the message. Dropping the message");
             }

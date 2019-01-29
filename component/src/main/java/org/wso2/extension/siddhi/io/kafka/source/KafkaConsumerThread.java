@@ -61,12 +61,10 @@ public class KafkaConsumerThread implements Runnable {
     private boolean isBinaryMessage = false;
     private ReentrantLock lock;
     private Condition condition;
-    private Map<String, Map<Integer, Long>> syncPropertyCallbackTopicOffsetMap;
 
     KafkaConsumerThread(SourceEventListener sourceEventListener, String topics[], String partitions[],
                         Properties props, Map<String, Map<Integer, Long>> topicOffsetMap,
-                        boolean isPartitionWiseThreading, boolean isBinaryMessage, Map<String, Map<Integer, Long>>
-                                syncPropertyCallbackTopicOffsetMap) {
+                        boolean isPartitionWiseThreading, boolean isBinaryMessage) {
         this.consumer = new KafkaConsumer<>(props);
         this.sourceEventListener = sourceEventListener;
         this.topicOffsetMap = topicOffsetMap;
@@ -75,7 +73,6 @@ public class KafkaConsumerThread implements Runnable {
         this.isPartitionWiseThreading = isPartitionWiseThreading;
         this.isBinaryMessage = isBinaryMessage;
         this.consumerThreadId = buildId();
-        this.syncPropertyCallbackTopicOffsetMap = syncPropertyCallbackTopicOffsetMap;
         lock = new ReentrantLock();
         condition = lock.newCondition();
         if (null != partitions) {
@@ -91,7 +88,6 @@ public class KafkaConsumerThread implements Runnable {
                 LOG.info("Adding partitions " + Arrays.toString(partitions) + " for topic: " + topic);
                 consumer.assign(partitionsList);
             }
-            restore(topicOffsetMap, syncPropertyCallbackTopicOffsetMap);
         } else {
             for (String topic : topics) {
                 if (null == topicOffsetMap.get(topic)) {
@@ -108,7 +104,7 @@ public class KafkaConsumerThread implements Runnable {
     }
 
     void resume() {
-        restore(topicOffsetMap, syncPropertyCallbackTopicOffsetMap);
+        restore(topicOffsetMap);
         paused = false;
         try {
             lock.lock();
@@ -118,44 +114,8 @@ public class KafkaConsumerThread implements Runnable {
         }
     }
 
-    void restore(Map<String, Map<Integer, Long>> topicOffsetMap, Map<String, Map<Integer, Long>>
-            syncPropertyCallbackTopicOffsetMap) {
+    void restore(Map<String, Map<Integer, Long>> topicOffsetMap) {
         final Lock consumerLock = this.consumerLock;
-
-        if (syncPropertyCallbackTopicOffsetMap.size() == 0 && null != topicOffsetMap) {
-            restoreState(topicOffsetMap);
-        } else {
-            for (String topic : topics) {
-                Map<Integer, Long> offsetMap = topicOffsetMap.get(topic);
-                Map<Integer, Long> trpSyncPropertiesOffsetMap = syncPropertyCallbackTopicOffsetMap.get(topic);
-                if (null != offsetMap && offsetMap.size() != 0) {
-                    for (Map.Entry<Integer, Long> entry : offsetMap.entrySet()) {
-                        TopicPartition partition = new TopicPartition(topic, entry.getKey());
-                        if (partitionsList.contains(partition)) {
-                            long offset = entry.getValue();
-                            long syncPropertyOffset = trpSyncPropertiesOffsetMap.get(entry.getKey());
-                            if (syncPropertyOffset > entry.getValue()) {
-                                offset = syncPropertyOffset;
-                            }
-                            LOG.info("Seeking partition: " + partition + " for topic: " + topic + " offset: " +
-                                    (offset + 1));
-                            try {
-                                consumerLock.lock();
-                                consumer.seek(partition, offset + 1);
-                            } finally {
-                                consumerLock.unlock();
-                            }
-                        }
-
-                    }
-                } else {
-                    restoreState(syncPropertyCallbackTopicOffsetMap);
-                }
-            }
-        }
-    }
-
-    private void restoreState(Map<String, Map<Integer, Long>> topicOffsetMap) {
         for (String topic : topics) {
             Map<Integer, Long> offsetMap = topicOffsetMap.get(topic);
             if (null != offsetMap) {

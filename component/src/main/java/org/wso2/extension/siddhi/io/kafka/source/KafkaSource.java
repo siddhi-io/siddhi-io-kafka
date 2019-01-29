@@ -181,7 +181,6 @@ public class KafkaSource extends Source implements SourceSyncCallback {
     private OptionHolder optionHolder;
     private ConsumerKafkaGroup consumerKafkaGroup;
     private Map<String, Map<Integer, Long>> topicOffsetMap = new HashMap<>();
-    private Map<String, Map<Integer, Long>> syncPropertyCallbackTopicOffsetMap = new HashMap<>();
     private String bootstrapServers;
     private String groupID;
     private String threadingOption;
@@ -231,7 +230,7 @@ public class KafkaSource extends Source implements SourceSyncCallback {
         consumerKafkaGroup = new ConsumerKafkaGroup(topics, partitions,
                 KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs, isBinaryMessage),
                 topicOffsetMap, consumerLastReceivedSeqNoMap, threadingOption, executorService, isBinaryMessage,
-                syncPropertyCallbackTopicOffsetMap);
+                sourceEventListener);
     }
 
     @Override
@@ -249,7 +248,7 @@ public class KafkaSource extends Source implements SourceSyncCallback {
                 consumerKafkaGroup.restore(topicOffsetMap);
             }
         }
-        consumerKafkaGroup.run(sourceEventListener);
+        consumerKafkaGroup.run();
     }
 
     @Override
@@ -497,15 +496,15 @@ public class KafkaSource extends Source implements SourceSyncCallback {
                 String[] keyValues = property.split(":");
                 if (keyValues[0].equals(TOPIC)) {
                     topic = keyValues[1];
-                    syncPropertyCallbackTopicOffsetMap.computeIfAbsent(keyValues[1], k -> new HashMap<>());
+                    topicOffsetMap.computeIfAbsent(keyValues[1], k -> new HashMap<>());
                 } else if (keyValues[0].equals(PARTITION)) {
-                    Map<Integer, Long> partitionOffsetMap = syncPropertyCallbackTopicOffsetMap.get(topic);
+                    Map<Integer, Long> partitionOffsetMap = topicOffsetMap.get(topic);
                     if (null == partitionOffsetMap.get(Integer.valueOf(keyValues[1]))) {
                         partition = Integer.valueOf(keyValues[1]);
                         partitionOffsetMap.put(partition, 0L);
                     }
                 } else if (keyValues[0].equals(OFFSET)) {
-                    Map<Integer, Long> partitionOffsetMap = syncPropertyCallbackTopicOffsetMap.get(topic);
+                    Map<Integer, Long> partitionOffsetMap = topicOffsetMap.get(topic);
                     long savedOffsetValue = partitionOffsetMap.get(partition);
                     Long offsetValue = Long.valueOf(keyValues[1]);
                     if (offsetValue > savedOffsetValue) {
