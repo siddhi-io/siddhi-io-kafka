@@ -110,8 +110,8 @@ public class KafkaMultiDCSource extends Source {
     private SourceSynchronizer synchronizer;
 
     @Override
-    public void init(SourceEventListener sourceEventListener, OptionHolder optionHolder, String[] transportPropertyNames,
-                     ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
+    public void init(SourceEventListener sourceEventListener, OptionHolder optionHolder, String[]
+            transportPropertyNames, ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
         this.eventListener = sourceEventListener;
         String serverList = optionHolder.validateAndGetStaticValue(KafkaSource
             .ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS);
