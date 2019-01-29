@@ -193,9 +193,9 @@ public class KafkaSource extends Source implements SourceSyncCallback {
     private String topicOffsetMapConfig;
     private boolean isRestored = false;
     private SiddhiAppContext siddhiAppContext;
-    public static final String TOPIC = "topic";
-    public static final String PARTITION = "partition";
-    public static final String OFFSET = "offSet";
+    private static final String TOPIC = "topic";
+    private static final String PARTITION = "partition";
+    private static final String OFFSET = "offSet";
 
 
     @Override
