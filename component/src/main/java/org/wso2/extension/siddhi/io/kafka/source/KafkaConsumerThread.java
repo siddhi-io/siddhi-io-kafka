@@ -88,7 +88,6 @@ public class KafkaConsumerThread implements Runnable {
                 LOG.info("Adding partitions " + Arrays.toString(partitions) + " for topic: " + topic);
                 consumer.assign(partitionsList);
             }
-            restore(topicOffsetMap);
         } else {
             for (String topic : topics) {
                 if (null == topicOffsetMap.get(topic)) {
@@ -180,8 +179,12 @@ public class KafkaConsumerThread implements Runnable {
                         }
                         topicOffsetMap.get(record.topic()).put(record.partition(), record.offset());
 
+                        String transportSyncProperties = "topic:" + record.topic() + ",partition:" + record.partition()
+                                + ",offSet:" + record.offset();
+                        String[] transportSyncPropertiesArr = new String[]{transportSyncProperties};
+
                         if (lastReceivedSeqNoMap == null) {
-                            sourceEventListener.onEvent(event, new String[0]);
+                            sourceEventListener.onEvent(event, new String[0], transportSyncPropertiesArr);
                         } else {
                             if (isBinaryMessage) {
                                 byte[] byteEvents = (byte[]) event;
@@ -211,7 +214,7 @@ public class KafkaConsumerThread implements Runnable {
 
                                 if (lastReceivedSeqNo < seqNo) {
                                     lastReceivedSeqNoMap.put(sequenceKey, seqNo);
-                                    sourceEventListener.onEvent(eventBody, new String[0]);
+                                    sourceEventListener.onEvent(eventBody, new String[0], transportSyncPropertiesArr);
                                     if (LOG.isDebugEnabled()) {
                                         LOG.debug("Last Received SeqNo Updated to:" + seqNo + " for " + "SeqKey:["
                                                 + sequenceKey.toString() + "] in Kafka consumer thread:"

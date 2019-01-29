@@ -46,7 +46,8 @@ public class ConsumerKafkaGroup {
 
     ConsumerKafkaGroup(String topics[], String partitions[], Properties props, Map<String, Map<Integer, Long>>
             topicOffsetMap, Map<String, Map<SequenceKey, Integer>> perConsumerLastReceivedSeqNo, String threadingOption,
-                       ScheduledExecutorService executorService, boolean isBinaryMessage) {
+                       ScheduledExecutorService executorService, boolean isBinaryMessage,
+                       SourceEventListener sourceEventListener) {
         this.threadingOption = threadingOption;
         this.topicOffsetMap = topicOffsetMap;
         this.perConsumerLastReceivedSeqNo = perConsumerLastReceivedSeqNo;
@@ -55,6 +56,36 @@ public class ConsumerKafkaGroup {
         this.props = props;
         this.executorService = executorService;
         this.isBinaryMessage = isBinaryMessage;
+
+        if (KafkaSource.SINGLE_THREADED.equals(threadingOption)) {
+            KafkaConsumerThread kafkaConsumerThread =
+                    new KafkaConsumerThread(sourceEventListener, topics, partitions, props, topicOffsetMap,
+                            false, isBinaryMessage);
+            kafkaConsumerThreadList.add(kafkaConsumerThread);
+            LOG.info("Kafka Consumer thread starting to listen on topic(s): " + Arrays.toString(topics) +
+                    " with partition/s: " + Arrays.toString(partitions));
+        } else if (KafkaSource.TOPIC_WISE.equals(threadingOption)) {
+            for (String topic : topics) {
+                KafkaConsumerThread kafkaConsumerThread =
+                        new KafkaConsumerThread(sourceEventListener, new String[]{topic}, partitions, props,
+                                topicOffsetMap, false, isBinaryMessage);
+                kafkaConsumerThreadList.add(kafkaConsumerThread);
+                LOG.info("Kafka Consumer thread starting to listen on topic: " + topic +
+                        " with partition/s: " + Arrays.toString(partitions));
+            }
+        } else if (KafkaSource.PARTITION_WISE.equals(threadingOption)) {
+            for (String topic : topics) {
+                for (String partition : partitions) {
+                    KafkaConsumerThread kafkaConsumerThread =
+                            new KafkaConsumerThread(sourceEventListener, new String[]{topic},
+                                    new String[]{partition}, props, topicOffsetMap, true,
+                                    isBinaryMessage);
+                    kafkaConsumerThreadList.add(kafkaConsumerThread);
+                    LOG.info("Kafka Consumer thread starting to listen on topic: " + topic +
+                            " with partition: " + partition);
+                }
+            }
+        }
     }
 
     public void setTopicOffsetMap(Map<String, Map<Integer, Long>> topicOffsetMap) {
@@ -76,38 +107,8 @@ public class ConsumerKafkaGroup {
         kafkaConsumerThreadList.forEach(KafkaConsumerThread::shutdownConsumer);
     }
 
-    void run(SourceEventListener sourceEventListener) {
+    void run() {
         try {
-            if (KafkaSource.SINGLE_THREADED.equals(threadingOption)) {
-                KafkaConsumerThread kafkaConsumerThread =
-                        new KafkaConsumerThread(sourceEventListener, topics, partitions, props, topicOffsetMap,
-                                false, isBinaryMessage);
-                kafkaConsumerThreadList.add(kafkaConsumerThread);
-                LOG.info("Kafka Consumer thread starting to listen on topic(s): " + Arrays.toString(topics) +
-                        " with partition/s: " + Arrays.toString(partitions));
-            } else if (KafkaSource.TOPIC_WISE.equals(threadingOption)) {
-                for (String topic : topics) {
-                    KafkaConsumerThread kafkaConsumerThread =
-                            new KafkaConsumerThread(sourceEventListener, new String[]{topic}, partitions, props,
-                                    topicOffsetMap, false, isBinaryMessage);
-                    kafkaConsumerThreadList.add(kafkaConsumerThread);
-                    LOG.info("Kafka Consumer thread starting to listen on topic: " + topic +
-                            " with partition/s: " + Arrays.toString(partitions));
-                }
-            } else if (KafkaSource.PARTITION_WISE.equals(threadingOption)) {
-                for (String topic : topics) {
-                    for (String partition : partitions) {
-                        KafkaConsumerThread kafkaConsumerThread =
-                                new KafkaConsumerThread(sourceEventListener, new String[]{topic},
-                                        new String[]{partition}, props, topicOffsetMap, true,
-                                        isBinaryMessage);
-                        kafkaConsumerThreadList.add(kafkaConsumerThread);
-                        LOG.info("Kafka Consumer thread starting to listen on topic: " + topic +
-                                " with partition: " + partition);
-                    }
-                }
-            }
-
             for (KafkaConsumerThread consumerThread : kafkaConsumerThreadList) {
                 if (perConsumerLastReceivedSeqNo != null) {
                     Map<SequenceKey, Integer> seqNoMap = perConsumerLastReceivedSeqNo
