@@ -116,19 +116,21 @@ public class KafkaConsumerThread implements Runnable {
 
     void restore(Map<String, Map<Integer, Long>> topicOffsetMap) {
         final Lock consumerLock = this.consumerLock;
-        for (String topic : topics) {
-            Map<Integer, Long> offsetMap = topicOffsetMap.get(topic);
-            if (null != offsetMap) {
-                for (Map.Entry<Integer, Long> entry : offsetMap.entrySet()) {
-                    TopicPartition partition = new TopicPartition(topic, entry.getKey());
-                    if (partitionsList.contains(partition)) {
-                        LOG.info("Seeking partition: " + partition + " for topic: " + topic + " offset: " + (entry
-                                .getValue() + 1));
-                        try {
-                            consumerLock.lock();
-                            consumer.seek(partition, entry.getValue() + 1);
-                        } finally {
-                            consumerLock.unlock();
+        if (null != topicOffsetMap) {
+            for (String topic : topics) {
+                Map<Integer, Long> offsetMap = topicOffsetMap.get(topic);
+                if (null != offsetMap) {
+                    for (Map.Entry<Integer, Long> entry : offsetMap.entrySet()) {
+                        TopicPartition partition = new TopicPartition(topic, entry.getKey());
+                        if (partitionsList.contains(partition)) {
+                            LOG.info("Seeking partition: " + partition + " for topic: " + topic + " offset: " + (entry
+                                    .getValue() + 1));
+                            try {
+                                consumerLock.lock();
+                                consumer.seek(partition, entry.getValue() + 1);
+                            } finally {
+                                consumerLock.unlock();
+                            }
                         }
                     }
                 }
