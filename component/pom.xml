@@ -130,6 +130,9 @@
                             org.wso2.extension.siddhi.io.kafka.*
                         </Export-Package>
                         <Import-Package>
+                            org.wso2.siddhi.core.*;version="${siddhi.version.range}",
+                            org.wso2.siddhi.annotation.*;version="${siddhi.version.range}",
+                            org.wso2.siddhi.query.api.*;version="${siddhi.version.range}",
                             *;resolution:=optional
                         </Import-Package>
                         <Include-Resource>
