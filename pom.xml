@@ -28,7 +28,7 @@
 
     <groupId>org.wso2.extension.siddhi.io.kafka</groupId>
     <artifactId>siddhi-io-kafka-parent</artifactId>
-    <version>4.2.2-SNAPSHOT</version>
+    <version>5.0.0-SNAPSHOT</version>
     <name>Siddhi IO Kafka Extension Parent</name>
 
     <profiles>
@@ -44,7 +44,7 @@
     </profiles>
 
     <properties>
-        <siddhi.version>5.0.0-m10</siddhi.version>
+        <siddhi.version>5.0.0-m11</siddhi.version>
         <siddhi.version.range>[5.0.0,6.0.0)</siddhi.version.range>
         <log4j.version>1.2.17.wso2v1</log4j.version>
         <testng.version>6.8</testng.version>
