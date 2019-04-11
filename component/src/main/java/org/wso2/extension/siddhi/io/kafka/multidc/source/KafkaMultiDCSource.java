@@ -18,21 +18,24 @@
 
 package org.wso2.extension.siddhi.io.kafka.multidc.source;
 
+import io.siddhi.annotation.Example;
+import io.siddhi.annotation.Extension;
+import io.siddhi.annotation.Parameter;
+import io.siddhi.annotation.util.DataType;
+import io.siddhi.core.config.SiddhiAppContext;
+import io.siddhi.core.exception.ConnectionUnavailableException;
+import io.siddhi.core.stream.ServiceDeploymentInfo;
+import io.siddhi.core.stream.input.source.Source;
+import io.siddhi.core.stream.input.source.SourceEventListener;
+import io.siddhi.core.util.config.ConfigReader;
+import io.siddhi.core.util.snapshot.state.State;
+import io.siddhi.core.util.snapshot.state.StateFactory;
+import io.siddhi.core.util.transport.OptionHolder;
+import io.siddhi.query.api.definition.StreamDefinition;
+import io.siddhi.query.api.exception.SiddhiAppValidationException;
 import org.apache.log4j.Logger;
 import org.wso2.extension.siddhi.io.kafka.sink.KafkaSink;
 import org.wso2.extension.siddhi.io.kafka.source.KafkaSource;
-import org.wso2.siddhi.annotation.Example;
-import org.wso2.siddhi.annotation.Extension;
-import org.wso2.siddhi.annotation.Parameter;
-import org.wso2.siddhi.annotation.util.DataType;
-import org.wso2.siddhi.core.config.SiddhiAppContext;
-import org.wso2.siddhi.core.exception.ConnectionUnavailableException;
-import org.wso2.siddhi.core.stream.input.source.Source;
-import org.wso2.siddhi.core.stream.input.source.SourceEventListener;
-import org.wso2.siddhi.core.util.config.ConfigReader;
-import org.wso2.siddhi.core.util.transport.OptionHolder;
-import org.wso2.siddhi.query.api.definition.StreamDefinition;
-import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -99,22 +102,24 @@ import java.util.UUID;
                                 "and sent to the FooStream.")
         }
 )
-public class KafkaMultiDCSource extends Source {
+public class KafkaMultiDCSource extends Source<KafkaMultiDCSource.KafkaMultiDCSourceState> {
     private static final String KAFKA_TOPIC = "topic";
     private static final String KAFKA_PARTITION_NO = "partition.no";
     private static final Logger LOG = Logger.getLogger(KafkaMultiDCSource.class);
     private static final String LAST_RECEIVED_SEQ_NO_KEY = "lastConsumedSeqNo";
     private SourceEventListener eventListener;
     private Map<String, KafkaSource> sources = new HashMap<>();
+    private Map<String, StateFactory<KafkaSource.KafkaSourceState>> stateFactories = new HashMap<>();
     private String[] bootstrapServers;
     private SourceSynchronizer synchronizer;
 
     @Override
-    public void init(SourceEventListener sourceEventListener, OptionHolder optionHolder, String[]
-            transportPropertyNames, ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
+    public StateFactory<KafkaMultiDCSourceState> init(SourceEventListener sourceEventListener,
+                                                      OptionHolder optionHolder, String[] transportPropertyNames,
+                                                      ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
         this.eventListener = sourceEventListener;
         String serverList = optionHolder.validateAndGetStaticValue(KafkaSource
-            .ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS);
+                .ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS);
         boolean isBinaryMessage = Boolean.parseBoolean(
                 optionHolder.validateAndGetStaticValue(KafkaSource.IS_BINARY_MESSAGE, "false"));
         bootstrapServers = serverList.split(",");
@@ -128,15 +133,18 @@ public class KafkaMultiDCSource extends Source {
         Interceptor interceptor = new Interceptor(bootstrapServers[0], synchronizer, isBinaryMessage);
         OptionHolder options = createOptionHolders(bootstrapServers[0], optionHolder);
         KafkaSource source = new KafkaSource();
-        source.init(interceptor, options, transportPropertyNames, configReader, siddhiAppContext);
+        stateFactories.put(bootstrapServers[0], source.init(interceptor, options, transportPropertyNames,
+                configReader, siddhiAppContext));
         sources.put(bootstrapServers[0], source);
 
         LOG.info("Initializing kafka source for bootstrap server :" + bootstrapServers[1]);
         interceptor = new Interceptor(bootstrapServers[1], synchronizer, isBinaryMessage);
         options = createOptionHolders(bootstrapServers[1], optionHolder);
         source = new KafkaSource();
-        source.init(interceptor, options, transportPropertyNames, configReader, siddhiAppContext);
+        stateFactories.put(bootstrapServers[1], source.init(interceptor, options, transportPropertyNames,
+                configReader, siddhiAppContext));
         sources.put(bootstrapServers[1], source);
+        return new KafkaMultiDCSourceStateFactory(stateFactories);
     }
 
 
@@ -146,11 +154,15 @@ public class KafkaMultiDCSource extends Source {
     }
 
     @Override
-    public void connect(ConnectionCallback connectionCallback) throws ConnectionUnavailableException {
+    public void connect(ConnectionCallback connectionCallback, KafkaMultiDCSourceState kafkaMultiDCSourceState)
+            throws ConnectionUnavailableException {
         StringBuilder errorMessage = new StringBuilder();
-        for (Map.Entry entry: sources.entrySet()) {
+        for (Map.Entry entry : sources.entrySet()) {
             try {
-                ((KafkaSource) entry.getValue()).connect(connectionCallback);
+                KafkaSource.KafkaSourceState kafkaSourceState = kafkaMultiDCSourceState.kafkaSourceStateMap.
+                        get(entry.getKey().toString());
+                ((KafkaSource) entry.getValue()).connect((Source.ConnectionCallback) connectionCallback,
+                        kafkaSourceState);
                 LOG.info("Connect to bootstrap server " + entry.getKey());
             } catch (ConnectionUnavailableException e) {
                 errorMessage.append("Error occurred while connecting to ")
@@ -168,6 +180,7 @@ public class KafkaMultiDCSource extends Source {
     @Override
     public void disconnect() {
         sources.values().forEach(KafkaSource::disconnect);
+
     }
 
     @Override
@@ -185,29 +198,8 @@ public class KafkaMultiDCSource extends Source {
         sources.values().forEach(KafkaSource::resume);
     }
 
-    @Override
-    public Map<String, Object> currentState() {
-        HashMap<String, Object> state = new HashMap<>();
-        for (Map.Entry<String, KafkaSource> entry: sources.entrySet()) {
-            state.put(entry.getKey(), entry.getValue().currentState());
-        }
-        state.put(LAST_RECEIVED_SEQ_NO_KEY, synchronizer.getLastConsumedSeqNo());
-        return state;
-    }
-
-    @Override
-    public void restoreState(Map<String, Object> map) {
-        synchronizer.setLastConsumedSeqNo((Long) map.get(LAST_RECEIVED_SEQ_NO_KEY));
-
-        Map<String, Object> sourceState = (Map<String, Object>) map.get(bootstrapServers[0]);
-        sources.get(bootstrapServers[0]).restoreState(sourceState);
-
-        sourceState = (Map<String, Object>) map.get(bootstrapServers[1]);
-        sources.get(bootstrapServers[1]).restoreState(sourceState);
-    }
-
     // Create option holders for two sources to connect to two bootstrap servers
-    private  OptionHolder createOptionHolders(String server, OptionHolder originalOptionHolder) {
+    private OptionHolder createOptionHolders(String server, OptionHolder originalOptionHolder) {
         Map<String, String> options = new HashMap<>();
 
         options.put(KafkaSource.ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS, server);
@@ -229,12 +221,72 @@ public class KafkaMultiDCSource extends Source {
                 "false");
         options.put(KafkaSource.IS_BINARY_MESSAGE, isBinaryMessage);
 
-        Extension extension = KafkaSource.class.getAnnotation(org.wso2.siddhi.annotation.Extension.class);
+        Extension extension = KafkaSource.class.getAnnotation(io.siddhi.annotation.Extension.class);
 
         OptionHolder holder = new OptionHolder(eventListener.getStreamDefinition(), options, new HashMap<>(),
                 extension);
 
         return holder;
+    }
+
+    @Override
+    protected ServiceDeploymentInfo exposeServiceDeploymentInfo() {
+        return null;
+    }
+
+    /**
+     * State class for Kafka MultiDC source.
+     */
+    class KafkaMultiDCSourceState extends State {
+        Map<String, KafkaSource.KafkaSourceState> kafkaSourceStateMap = new HashMap<>();
+
+        KafkaMultiDCSourceState(Map<String, KafkaSource.KafkaSourceState> kafkaSourceStateMap) {
+            this.kafkaSourceStateMap = kafkaSourceStateMap;
+        }
+
+        @Override
+        public Map<String, Object> snapshot() {
+            HashMap<String, Object> state = new HashMap<>();
+            for (Map.Entry<String, KafkaSource.KafkaSourceState> entry : kafkaSourceStateMap.entrySet()) {
+                state.put(entry.getKey(), entry.getValue().snapshot());
+            }
+            state.put(LAST_RECEIVED_SEQ_NO_KEY, synchronizer.getLastConsumedSeqNo());
+            return state;
+        }
+
+        public void restore(Map<String, Object> state) {
+            synchronizer.setLastConsumedSeqNo((Long) state.get(LAST_RECEIVED_SEQ_NO_KEY));
+            for (Map.Entry<String, KafkaSource.KafkaSourceState> entry : kafkaSourceStateMap.entrySet()) {
+                entry.getValue().restore((Map<String, Object>) state.get(entry.getKey()));
+            }
+            kafkaSourceStateMap = (Map<String, KafkaSource.KafkaSourceState>) state.get("SOURCE_STATES");
+        }
+
+        @Override
+        public boolean canDestroy() {
+            return false;
+        }
+    }
+
+    class KafkaMultiDCSourceStateFactory implements StateFactory<KafkaMultiDCSource.KafkaMultiDCSourceState> {
+
+        private Map<String, StateFactory<KafkaSource.KafkaSourceState>> stateFactories;
+
+        public KafkaMultiDCSourceStateFactory(
+                Map<String, StateFactory<KafkaSource.KafkaSourceState>> kafkaStateFactories) {
+            this.stateFactories = kafkaStateFactories;
+        }
+
+        @Override
+        public KafkaMultiDCSource.KafkaMultiDCSourceState createNewState() {
+            Map<String, KafkaSource.KafkaSourceState> kafkaSourceStateMap = new HashMap<>();
+            for (Map.Entry<String, StateFactory<KafkaSource.KafkaSourceState>> entry : stateFactories.entrySet()) {
+                String sourceKey = entry.getKey();
+                StateFactory<KafkaSource.KafkaSourceState> kafkaSourceStateStateFactory = entry.getValue();
+                kafkaSourceStateMap.put(sourceKey, kafkaSourceStateStateFactory.createNewState());
+            }
+            return new KafkaMultiDCSourceState(kafkaSourceStateMap);
+        }
     }
 }
 
@@ -250,7 +302,7 @@ class Interceptor implements SourceEventListener {
         this.synchronizer = synchronizer;
         this.isBinaryMessage = isBinaryMessage;
     }
-    
+
     @Override
     public void onEvent(Object event, String[] transportProperties) {
         onEventReceive(event, transportProperties, null);
@@ -296,8 +348,4 @@ class Interceptor implements SourceEventListener {
         }
     }
 }
-
-
-
-
 

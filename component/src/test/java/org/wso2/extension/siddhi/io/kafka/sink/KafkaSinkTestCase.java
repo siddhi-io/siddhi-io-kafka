@@ -18,6 +18,11 @@
 
 package org.wso2.extension.siddhi.io.kafka.sink;
 
+import io.siddhi.core.SiddhiAppRuntime;
+import io.siddhi.core.SiddhiManager;
+import io.siddhi.core.event.Event;
+import io.siddhi.core.stream.input.InputHandler;
+import io.siddhi.core.stream.output.StreamCallback;
 import org.I0Itec.zkclient.exception.ZkTimeoutException;
 import org.apache.log4j.Logger;
 import org.testng.AssertJUnit;
@@ -26,11 +31,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.extension.siddhi.io.kafka.KafkaTestUtil;
-import org.wso2.siddhi.core.SiddhiAppRuntime;
-import org.wso2.siddhi.core.SiddhiManager;
-import org.wso2.siddhi.core.event.Event;
-import org.wso2.siddhi.core.stream.input.InputHandler;
-import org.wso2.siddhi.core.stream.output.StreamCallback;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -123,7 +123,7 @@ public class KafkaSinkTestCase {
             expectedValues.add(102L);
             expectedValues.add(103L);
             AssertJUnit.assertEquals("Kafka Sink didnt publish the expected events", expectedNames,
-                                     receivedEventNameList);
+                    receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Sink didnt publish the expected events", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(3, count);
             KafkaTestUtil.deleteTopic(topics);
@@ -134,7 +134,7 @@ public class KafkaSinkTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testPublisherWithTopicWithoutPartitionKafkaTransport")
+    @Test(dependsOnMethods = "testPublisherWithTopicWithoutPartitionKafkaTransport")
     public void testPublisherWithTopicWithPartitionKafkaTransport() throws InterruptedException {
         LOG.info("Creating test for publishing events for static topic with a partition");
         String topics[] = new String[]{"topic_with_two_partitions_sub0"};
@@ -190,7 +190,7 @@ public class KafkaSinkTestCase {
             expectedValues.add(102L);
             expectedValues.add(103L);
             AssertJUnit.assertEquals("Kafka Sink didnt publish the expected events", expectedNames,
-                                     receivedEventNameList);
+                    receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Sink didnt publish the expected events", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(3, count);
             KafkaTestUtil.deleteTopic(topics);
@@ -201,7 +201,7 @@ public class KafkaSinkTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testPublisherWithTopicWithPartitionKafkaTransport")
+    @Test(dependsOnMethods = "testPublisherWithTopicWithPartitionKafkaTransport")
     public void testPublisherWithInvalidTopicKafkaTransport() throws InterruptedException {
         LOG.info("Creating test for publishing events for invalid topic without a partition");
         String topics[] = new String[]{"invalid_topic_without_partition2"};
@@ -260,7 +260,7 @@ public class KafkaSinkTestCase {
             expectedValues.add(102L);
             expectedValues.add(103L);
             AssertJUnit.assertEquals("Kafka Sink didnt publish the expected events", expectedNames,
-                                     receivedEventNameList);
+                    receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Sink didnt publish the expected events", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(3, count);
             KafkaTestUtil.deleteTopic(topics);
@@ -271,7 +271,7 @@ public class KafkaSinkTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testPublisherWithInvalidTopicKafkaTransport")
+    @Test(dependsOnMethods = "testPublisherWithInvalidTopicKafkaTransport")
     public void testPublisherWithInvalidTopicWithPartitionKafkaTransport() throws InterruptedException {
         LOG.info("Creating test for publishing events for invalid topic with a partition");
         String topics[] = new String[]{"invalid_topic_with_partition"};
@@ -331,7 +331,7 @@ public class KafkaSinkTestCase {
             expectedValues.add(102L);
             expectedValues.add(103L);
             AssertJUnit.assertEquals("Kafka Sink didnt publish the expected events", expectedNames,
-                                     receivedEventNameList);
+                    receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Sink didnt publish the expected events", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(3, count);
             KafkaTestUtil.deleteTopic(topics);
@@ -342,11 +342,11 @@ public class KafkaSinkTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testPublisherWithInvalidTopicWithPartitionKafkaTransport")
+    @Test(dependsOnMethods = "testPublisherWithInvalidTopicWithPartitionKafkaTransport")
     public void testPublisherWithInvalidTopicWithPartitionOtherThan0KafkaTransportReceiveMessage() throws
-                                                                                            InterruptedException {
+            InterruptedException {
         LOG.info("Creating test for publishing events for invalid topic with a partition other than 0 but the source "
-                         + "will be getting events from the default partition when given a key");
+                + "will be getting events from the default partition when given a key");
         String topics[] = new String[]{"invalid_topic_with_partition_3"};
         receivedEventNameList = new ArrayList<>(3);
         receivedValueList = new ArrayList<>(3);
@@ -403,7 +403,7 @@ public class KafkaSinkTestCase {
             expectedValues.add(102L);
             expectedValues.add(103L);
             AssertJUnit.assertEquals("Kafka Sink didnt publish the expected events", expectedNames,
-                                     receivedEventNameList);
+                    receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Sink didnt publish the expected events", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(3, count);
             KafkaTestUtil.deleteTopic(topics);
@@ -414,10 +414,10 @@ public class KafkaSinkTestCase {
         }
     }
 
-//    @Test (dependsOnMethods = "testPublisherWithInvalidTopicWithPartitionOtherThan0KafkaTransportReceiveMessage")
+    //    @Test (dependsOnMethods = "testPublisherWithInvalidTopicWithPartitionOtherThan0KafkaTransportReceiveMessage")
     public void testPublisherWithInvalidTopicWithPartitionOtherThan0KafkaTransport() throws InterruptedException {
         LOG.info("Creating test for publishing events for invalid topic with a partition other than 0 but the source "
-                         + "will be not be getting events from the default partition since the key is not defined");
+                + "will be not be getting events from the default partition since the key is not defined");
         String topics[] = new String[]{"invalid_topic_with_partition_2"};
         receivedEventNameList = new ArrayList<>(3);
         receivedValueList = new ArrayList<>(3);
@@ -477,7 +477,7 @@ public class KafkaSinkTestCase {
         }
     }
 
-//    @Test (dependsOnMethods = "testPublisherWithInvalidTopicWithPartitionOtherThan0KafkaTransport")
+    //    @Test (dependsOnMethods = "testPublisherWithInvalidTopicWithPartitionOtherThan0KafkaTransport")
     @Test(dependsOnMethods =
             "testPublisherWithInvalidTopicWithPartitionOtherThan0KafkaTransportReceiveMessage")
     public void testPublisherWithKafkaTransportWithDynamicTopic() throws InterruptedException {
@@ -535,7 +535,7 @@ public class KafkaSinkTestCase {
             expectedValues.add(102L);
             AssertJUnit.assertEquals(2, count);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
-                                     receivedEventNameList);
+                    receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             KafkaTestUtil.deleteTopic(topics);
             executionPlanRuntime.shutdown();
@@ -544,7 +544,7 @@ public class KafkaSinkTestCase {
         }
     }
 
-//    @Test
+    //    @Test
     public void testPublisherWithKafkaTransportWithDynamicTopicAndPartition() throws InterruptedException {
         LOG.info("Creating test for publishing events for dynamic topic with dynamic partition");
         try {
@@ -614,7 +614,7 @@ public class KafkaSinkTestCase {
             expectedValues.add(1L);
             AssertJUnit.assertEquals(4, count);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
-                                     receivedEventNameList);
+                    receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             KafkaTestUtil.deleteTopic(topics);
             executionPlanRuntime.shutdown();

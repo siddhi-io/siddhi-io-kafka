@@ -18,22 +18,25 @@
 
 package org.wso2.extension.siddhi.io.kafka.sink;
 
+import io.siddhi.annotation.Example;
+import io.siddhi.annotation.Extension;
+import io.siddhi.annotation.Parameter;
+import io.siddhi.annotation.util.DataType;
+import io.siddhi.core.config.SiddhiAppContext;
+import io.siddhi.core.exception.ConnectionUnavailableException;
+import io.siddhi.core.stream.ServiceDeploymentInfo;
+import io.siddhi.core.stream.output.sink.Sink;
+import io.siddhi.core.util.config.ConfigReader;
+import io.siddhi.core.util.snapshot.state.State;
+import io.siddhi.core.util.snapshot.state.StateFactory;
+import io.siddhi.core.util.transport.DynamicOptions;
+import io.siddhi.core.util.transport.Option;
+import io.siddhi.core.util.transport.OptionHolder;
+import io.siddhi.query.api.definition.StreamDefinition;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
-import org.wso2.siddhi.annotation.Example;
-import org.wso2.siddhi.annotation.Extension;
-import org.wso2.siddhi.annotation.Parameter;
-import org.wso2.siddhi.annotation.util.DataType;
-import org.wso2.siddhi.core.config.SiddhiAppContext;
-import org.wso2.siddhi.core.exception.ConnectionUnavailableException;
-import org.wso2.siddhi.core.stream.output.sink.Sink;
-import org.wso2.siddhi.core.util.config.ConfigReader;
-import org.wso2.siddhi.core.util.transport.DynamicOptions;
-import org.wso2.siddhi.core.util.transport.Option;
-import org.wso2.siddhi.core.util.transport.OptionHolder;
-import org.wso2.siddhi.query.api.definition.StreamDefinition;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
@@ -58,21 +61,21 @@ import java.util.concurrent.atomic.AtomicInteger;
                 "value.",
         parameters = {
                 @Parameter(name = "bootstrap.servers",
-                           description = " This parameter specifies the list of Kafka servers to which the Kafka " +
-                                   "sink must publish events. This list should be provided as a set of comma " +
-                                   "separated values. e.g., `localhost:9092,localhost:9093`.",
-                           type = {DataType.STRING}),
+                        description = " This parameter specifies the list of Kafka servers to which the Kafka " +
+                                "sink must publish events. This list should be provided as a set of comma " +
+                                "separated values. e.g., `localhost:9092,localhost:9093`.",
+                        type = {DataType.STRING}),
                 @Parameter(name = "topic",
-                           description = "The topic to which the Kafka sink needs to publish events. Only one " +
-                                   "topic must be specified.",
-                           type = {DataType.STRING}),
+                        description = "The topic to which the Kafka sink needs to publish events. Only one " +
+                                "topic must be specified.",
+                        type = {DataType.STRING}),
                 @Parameter(name = "partition.no",
-                           description = "The partition number for the given topic. Only one partition ID can be " +
-                                   "defined. If no value is specified for this parameter, the Kafka sink publishes " +
-                                   "to the default partition of the topic (i.e., 0)",
-                           type = {DataType.INT},
-                           optional = true,
-                           defaultValue = "0"),
+                        description = "The partition number for the given topic. Only one partition ID can be " +
+                                "defined. If no value is specified for this parameter, the Kafka sink publishes " +
+                                "to the default partition of the topic (i.e., 0)",
+                        type = {DataType.INT},
+                        optional = true,
+                        defaultValue = "0"),
                 @Parameter(name = "sequence.id",
                         description = "A unique identifier to identify the messages published by this sink. This ID " +
                                 "allows receivers to identify the sink that published a specific message.",
@@ -80,11 +83,11 @@ import java.util.concurrent.atomic.AtomicInteger;
                         optional = true,
                         defaultValue = "null"),
                 @Parameter(name = "key",
-                           description = "The key contains the values that are used to maintain ordering in a Kafka" +
-                                   " partition.",
-                           type = {DataType.STRING},
-                           optional = true,
-                           defaultValue = "null"),
+                        description = "The key contains the values that are used to maintain ordering in a Kafka" +
+                                " partition.",
+                        type = {DataType.STRING},
+                        optional = true,
+                        defaultValue = "null"),
                 @Parameter(name = "is.binary.message",
                         description = "In order to send the binary events via kafka sink, this " +
                                 "parameter is set to 'True'.",
@@ -92,12 +95,12 @@ import java.util.concurrent.atomic.AtomicInteger;
                         optional = false,
                         defaultValue = "null"),
                 @Parameter(name = "optional.configuration",
-                           description = "This parameter contains all the other possible configurations that the " +
-                                   "producer is created with. \n" +
-                                   "e.g., `producer.type:async,batch.size:200`",
-                           optional = true,
-                           type = {DataType.STRING},
-                           defaultValue = "null")
+                        description = "This parameter contains all the other possible configurations that the " +
+                                "producer is created with. \n" +
+                                "e.g., `producer.type:async,batch.size:200`",
+                        optional = true,
+                        type = {DataType.STRING},
+                        defaultValue = "null")
         },
         examples = {
                 @Example(
@@ -113,7 +116,7 @@ import java.util.concurrent.atomic.AtomicInteger;
                                 "Define stream BarStream (symbol string, price float, volume long);\n" +
                                 "from FooStream select symbol, price, volume insert into BarStream;\n",
                         description = "This Kafka sink configuration publishes to 0th partition of the topic named " +
-                        "`topic_with_partitions`."),
+                                "`topic_with_partitions`."),
 
                 @Example(
                         syntax = "@App:name('TestExecutionPlan') \n" +
@@ -128,27 +131,15 @@ import java.util.concurrent.atomic.AtomicInteger;
                                 "Define stream BarStream (symbol string, price float, volume long); \n" +
                                 "from FooStream select symbol, price, volume insert into BarStream;",
                         description = "This query publishes dynamic topic and partitions that are taken from the " +
-                        "Siddhi event. The value for `partition.no` is taken from the `volume` attribute, and the " +
-                        "topic value is taken from the `symbol` attribute.")
+                                "Siddhi event. The value for `partition.no` is taken from the `volume` attribute, " +
+                                "and the topic value is taken from the `symbol` attribute.")
         }
 )
-public class KafkaSink extends Sink {
-
-    private Producer<String, Object>  producer;
-    protected Option topicOption = null;
-    protected String bootstrapServers;
-    protected String optionalConfigs;
-    protected Option partitionOption;
-    protected Boolean isSequenced = false;
-    protected AtomicInteger lastSentSequenceNo = new AtomicInteger(0);
-    protected String sequenceId = null;
-    protected Boolean isBinaryMessage;
+public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
 
     public static final String LAST_SENT_SEQ_NO_PERSIST_KEY = "lastSentSequenceNo";
     public static final String SEQ_NO_HEADER_DELIMITER = "~";
     public static final String SEQ_NO_HEADER_FIELD_SEPERATOR = ":";
-    protected Option keyOption;
-
     protected static final String KAFKA_PUBLISH_TOPIC = "topic";
     protected static final String KAFKA_BROKER_LIST = "bootstrap.servers";
     protected static final String KAFKA_MESSAGE_KEY = "key";
@@ -158,12 +149,36 @@ public class KafkaSink extends Sink {
     protected static final String KAFKA_PARTITION_NO = "partition.no";
     protected static final String SEQ_ID = "sequence.id";
     protected static final String IS_BINARY_MESSAGE = "is.binary.message";
-
     private static final Logger LOG = Logger.getLogger(KafkaSink.class);
+    protected Option topicOption = null;
+    protected String bootstrapServers;
+    protected String optionalConfigs;
+    protected Option partitionOption;
+    protected Boolean isSequenced = false;
+    protected String sequenceId = null;
+    protected Boolean isBinaryMessage;
+    protected Option keyOption;
+    private Producer<String, Object> producer;
+
+    public static void readOptionalConfigs(Properties props, String optionalConfigs) {
+        if (optionalConfigs != null && !optionalConfigs.isEmpty()) {
+            String[] optionalProperties = optionalConfigs.split(HEADER_SEPARATOR);
+            if (optionalProperties.length > 0) {
+                for (String header : optionalProperties) {
+                    try {
+                        String[] configPropertyWithValue = header.split(ENTRY_SEPARATOR, 2);
+                        props.put(configPropertyWithValue[0], configPropertyWithValue[1]);
+                    } catch (Exception e) {
+                        LOG.warn("Optional property '" + header + "' is not defined in the correct format.", e);
+                    }
+                }
+            }
+        }
+    }
 
     @Override
-    protected void init(StreamDefinition outputStreamDefinition, OptionHolder optionHolder,
-                        ConfigReader sinkConfigReader, SiddhiAppContext siddhiAppContext) {
+    protected StateFactory<KafkaSinkState> init(StreamDefinition outputStreamDefinition, OptionHolder optionHolder,
+                                                ConfigReader sinkConfigReader, SiddhiAppContext siddhiAppContext) {
         bootstrapServers = optionHolder.validateAndGetStaticValue(KAFKA_BROKER_LIST);
         optionalConfigs = optionHolder.validateAndGetStaticValue(KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES, null);
         topicOption = optionHolder.validateAndGetOption(KAFKA_PUBLISH_TOPIC);
@@ -173,6 +188,66 @@ public class KafkaSink extends Sink {
                 "false"));
         isSequenced = sequenceId != null;
         keyOption = optionHolder.getOrCreateOption(KAFKA_MESSAGE_KEY, null);
+
+        return () -> new KafkaSinkState(isSequenced);
+    }
+
+    @Override
+    public void publish(Object payload, DynamicOptions dynamicOptions, KafkaSinkState kafkaSinkState)
+            throws ConnectionUnavailableException {
+        String topic = topicOption.getValue(dynamicOptions);
+        String partitionNo = partitionOption.getValue(dynamicOptions);
+        String key = keyOption.getValue(dynamicOptions);
+        Object payloadToSend;
+
+        try {
+            //If the received payload is String.
+            if (payload instanceof String) {
+
+                // If it is required to send the message as string message with sequence numbers.
+                if (isSequenced && !isBinaryMessage) {
+                    StringBuilder strPayload = new StringBuilder();
+                    strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR).
+                            append(kafkaSinkState.lastSentSequenceNo.get())
+                            .append(SEQ_NO_HEADER_DELIMITER).append(payload.toString());
+                    payloadToSend = strPayload.toString();
+                    kafkaSinkState.lastSentSequenceNo.incrementAndGet();
+
+                    // If it is required to send the message as string message without sequence numbers.
+                } else if (!isSequenced && !isBinaryMessage) {
+                    payloadToSend = payload.toString();
+
+                    // If it is required to send the message as binary message with sequence numbers.
+                } else if (isSequenced && isBinaryMessage) {
+                    byte[] byteEvents = payload.toString().getBytes("UTF-8");
+                    payloadToSend = getSequencedBinaryPayloadToSend(byteEvents, kafkaSinkState);
+                    kafkaSinkState.lastSentSequenceNo.incrementAndGet();
+
+                    // If it is required to send the message as binary message without sequence numbers.
+                } else {
+                    payloadToSend = payload.toString().getBytes("UTF-8");
+                }
+
+                //if the received payload to send is binary.
+            } else {
+                byte[] byteEvents = ((ByteBuffer) payload).array();
+                if (isSequenced) {
+                    payloadToSend = getSequencedBinaryPayloadToSend(byteEvents, kafkaSinkState);
+                    kafkaSinkState.lastSentSequenceNo.incrementAndGet();
+                } else {
+                    payloadToSend = byteEvents;
+                }
+            }
+
+            if (null == partitionNo) {
+                producer.send(new ProducerRecord<>(topic, null, key, payloadToSend));
+            } else {
+                producer.send(new ProducerRecord<>(topic, Integer.parseInt(partitionNo), key, payloadToSend));
+            }
+        } catch (UnsupportedEncodingException e) {
+            LOG.error("Error while converting the received string payload to byte[].", e);
+        }
+
     }
 
     @Override
@@ -199,61 +274,6 @@ public class KafkaSink extends Sink {
     }
 
     @Override
-    public void publish(Object payload, DynamicOptions transportOptions) throws ConnectionUnavailableException {
-        String topic = topicOption.getValue(transportOptions);
-        String partitionNo = partitionOption.getValue(transportOptions);
-        String key = keyOption.getValue(transportOptions);
-        Object payloadToSend;
-
-        try {
-            //If the received payload is String.
-            if (payload instanceof String) {
-
-                // If it is required to send the message as string message with sequence numbers.
-                if (isSequenced && !isBinaryMessage) {
-                    StringBuilder strPayload = new StringBuilder();
-                    strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR).append(lastSentSequenceNo)
-                            .append(SEQ_NO_HEADER_DELIMITER).append(payload.toString());
-                    payloadToSend = strPayload.toString();
-                    lastSentSequenceNo.incrementAndGet();
-
-                 // If it is required to send the message as string message without sequence numbers.
-                } else if (!isSequenced && !isBinaryMessage) {
-                    payloadToSend = payload.toString();
-
-                // If it is required to send the message as binary message with sequence numbers.
-                } else if (isSequenced && isBinaryMessage) {
-                    byte[] byteEvents = payload.toString().getBytes("UTF-8");
-                    payloadToSend = getSequencedBinaryPayloadToSend(byteEvents);
-                    lastSentSequenceNo.incrementAndGet();
-
-                 // If it is required to send the message as binary message without sequence numbers.
-                } else {
-                    payloadToSend = payload.toString().getBytes("UTF-8");
-                }
-
-            //if the received payload to send is binary.
-            } else {
-                byte[] byteEvents = ((ByteBuffer) payload).array();
-                if (isSequenced) {
-                    payloadToSend = getSequencedBinaryPayloadToSend(byteEvents);
-                    lastSentSequenceNo.incrementAndGet();
-                } else {
-                    payloadToSend = byteEvents;
-                }
-            }
-
-            if (null == partitionNo) {
-                producer.send(new ProducerRecord<>(topic, null, key, payloadToSend));
-            } else {
-                producer.send(new ProducerRecord<>(topic, Integer.parseInt(partitionNo), key, payloadToSend));
-            }
-        } catch (UnsupportedEncodingException e) {
-            LOG.error("Error while converting the received string payload to byte[].", e);
-        }
-    }
-
-    @Override
     public void disconnect() {
         //close producer
         if (producer != null) {
@@ -272,50 +292,19 @@ public class KafkaSink extends Sink {
     }
 
     @Override
+    protected ServiceDeploymentInfo exposeServiceDeploymentInfo() {
+        return null;
+    }
+
+    @Override
     public String[] getSupportedDynamicOptions() {
         return new String[]{KAFKA_PUBLISH_TOPIC, KAFKA_PARTITION_NO, KAFKA_MESSAGE_KEY};
     }
 
-    @Override
-    public Map<String, Object> currentState() {
-        if (isSequenced) {
-            Map<String, Object> state = new HashMap<>();
-            state.put(LAST_SENT_SEQ_NO_PERSIST_KEY, lastSentSequenceNo.get());
-            return state;
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    public void restoreState(Map<String, Object> state) {
-        if (isSequenced) {
-            Object sequenceNumber = state.get(LAST_SENT_SEQ_NO_PERSIST_KEY);
-            if (sequenceNumber != null) {
-                lastSentSequenceNo.set((Integer) sequenceNumber);
-            }
-        }
-    }
-
-    public static void readOptionalConfigs(Properties props, String optionalConfigs) {
-        if (optionalConfigs != null && !optionalConfigs.isEmpty()) {
-            String[] optionalProperties = optionalConfigs.split(HEADER_SEPARATOR);
-            if (optionalProperties.length > 0) {
-                for (String header : optionalProperties) {
-                    try {
-                        String[] configPropertyWithValue = header.split(ENTRY_SEPARATOR, 2);
-                        props.put(configPropertyWithValue[0], configPropertyWithValue[1]);
-                    } catch (Exception e) {
-                        LOG.warn("Optional property '" + header + "' is not defined in the correct format.", e);
-                    }
-                }
-            }
-        }
-    }
-
-    public byte[] getSequencedBinaryPayloadToSend(byte[] payload) {
+    public byte[] getSequencedBinaryPayloadToSend(byte[] payload, KafkaSinkState kafkaSinkState) {
         StringBuilder strPayload = new StringBuilder();
-        strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR).append(lastSentSequenceNo)
+        strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR)
+                .append(kafkaSinkState.lastSentSequenceNo.get())
                 .append(SEQ_NO_HEADER_DELIMITER);
         int headerSize = strPayload.toString().length();
         int bufferSize = headerSize + 4 + payload.length;
@@ -324,5 +313,42 @@ public class KafkaSink extends Sink {
         byteBuffer.put(strPayload.toString().getBytes(Charset.defaultCharset()));
         byteBuffer.put(payload);
         return byteBuffer.array();
+    }
+
+    /**
+     * State class for Kafka sink.
+     */
+    public class KafkaSinkState extends State {
+        public AtomicInteger lastSentSequenceNo = new AtomicInteger(0);
+        private boolean isSequenced = false;
+
+        KafkaSinkState(boolean isSequenced) {
+            this.isSequenced = isSequenced;
+        }
+
+        @Override
+        public Map<String, Object> snapshot() {
+            if (isSequenced) {
+                Map<String, Object> state = new HashMap<>();
+                state.put(LAST_SENT_SEQ_NO_PERSIST_KEY, lastSentSequenceNo.get());
+                return state;
+            } else {
+                return null;
+            }
+        }
+
+        public void restore(Map<String, Object> state) {
+            if (isSequenced) {
+                Object sequenceNumber = state.get(LAST_SENT_SEQ_NO_PERSIST_KEY);
+                if (sequenceNumber != null) {
+                    lastSentSequenceNo.set((Integer) sequenceNumber);
+                }
+            }
+        }
+
+        @Override
+        public boolean canDestroy() {
+            return false;
+        }
     }
 }

@@ -18,6 +18,12 @@
 
 package org.wso2.extension.siddhi.io.kafka.source;
 
+import io.siddhi.core.SiddhiAppRuntime;
+import io.siddhi.core.SiddhiManager;
+import io.siddhi.core.event.Event;
+import io.siddhi.core.exception.SiddhiAppCreationException;
+import io.siddhi.core.stream.output.StreamCallback;
+import io.siddhi.query.api.exception.SiddhiAppValidationException;
 import org.I0Itec.zkclient.exception.ZkTimeoutException;
 import org.apache.log4j.Logger;
 import org.testng.AssertJUnit;
@@ -26,12 +32,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.extension.siddhi.io.kafka.KafkaTestUtil;
-import org.wso2.siddhi.core.SiddhiAppRuntime;
-import org.wso2.siddhi.core.SiddhiManager;
-import org.wso2.siddhi.core.event.Event;
-import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
-import org.wso2.siddhi.core.stream.output.StreamCallback;
-import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -111,7 +111,7 @@ public class KafkaSourceTestCase {
             expectedValues.add(0L);
             expectedValues.add(1L);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
-                                     receivedEventNameList);
+                    receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(2, count);
             KafkaTestUtil.deleteTopic(topics);
@@ -139,7 +139,7 @@ public class KafkaSourceTestCase {
     }
 
     @Test(expectedExceptions = SiddhiAppValidationException.class,
-          dependsOnMethods = "testTransportCreationDisabledProperty")
+            dependsOnMethods = "testTransportCreationDisabledProperty")
     public void testKafkaWithoutTopicSource() {
         try {
             log.info("-------------------------------------------------------------------------------------------");
@@ -210,7 +210,7 @@ public class KafkaSourceTestCase {
             expectedValues.add(1L);
             AssertJUnit.assertEquals(4, count);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
-                                     receivedEventNameList);
+                    receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             KafkaTestUtil.deleteTopic(topics);
             siddhiAppRuntime.shutdown();
@@ -224,7 +224,7 @@ public class KafkaSourceTestCase {
         try {
             log.info("-------------------------------------------------------------------------------------------");
             log.info("Creating test for single topic with one partition which subscribes for the partition "
-                             + "specifically");
+                    + "specifically");
             log.info("-------------------------------------------------------------------------------------------");
             String topics[] = new String[]{"topic_with_one_partition"};
             receivedEventNameList = new ArrayList<>(4);
@@ -264,7 +264,7 @@ public class KafkaSourceTestCase {
             List<Long> expectedValues = new ArrayList<>(2);
             expectedValues.add(0L);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
-                                     receivedEventNameList);
+                    receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(1, count);
             KafkaTestUtil.deleteTopic(topics);
@@ -275,7 +275,7 @@ public class KafkaSourceTestCase {
     }
 
     @Test(expectedExceptions = SiddhiAppValidationException.class,
-          dependsOnMethods = "testKafkaSingleTopicWithSpecificSubscribeSource")
+            dependsOnMethods = "testKafkaSingleTopicWithSpecificSubscribeSource")
     public void testKafkaSpecificSubscribeForUnavailablePartitionSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
@@ -305,11 +305,11 @@ public class KafkaSourceTestCase {
 
     @Test(dependsOnMethods = "testKafkaSpecificSubscribeForUnavailablePartitionSource")
     public void testKafkaMultipleTopic_MultiplePartition_OnePartitionSubscribe_Source() throws
-                                                                                        InterruptedException {
+            InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
             log.info("Creating test to configure Kafka source with multiple topics having multiple partitions "
-                             + "subscribing for single partition id");
+                    + "subscribing for single partition id");
             log.info("-------------------------------------------------------------------------------------------");
             String topics[] = new String[]{"multiple_topic1_two_par_one_sub", "multiple_topic2_two_par_one_sub"};
             receivedEventNameList = new ArrayList<>(4);
@@ -352,7 +352,7 @@ public class KafkaSourceTestCase {
             expectedValues.add(1L);
             AssertJUnit.assertEquals(2, count);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
-                                     receivedEventNameList);
+                    receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             KafkaTestUtil.deleteTopic(topics);
             siddhiAppRuntime.shutdown();
@@ -363,11 +363,11 @@ public class KafkaSourceTestCase {
 
     @Test(dependsOnMethods = "testKafkaMultipleTopic_MultiplePartition_OnePartitionSubscribe_Source")
     public void testKafkaMultipleTopic_MultiplePartition_AllPartitionSubscribe_Source() throws
-                                                                                        InterruptedException {
+            InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
             log.info("Creating test to configure Kafka source with multiple topics having multiple partitions "
-                             + "subscribing for all partition ids");
+                    + "subscribing for all partition ids");
             log.info("-------------------------------------------------------------------------------------------");
             String topics[] = new String[]{"multiple_topic1_two_par_all_sub", "multiple_topic2_two_par_all_sub"};
             receivedEventNameList = new ArrayList<>(4);
@@ -414,7 +414,7 @@ public class KafkaSourceTestCase {
             expectedValues.add(0L);
             expectedValues.add(1L);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
-                                     receivedEventNameList);
+                    receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(4, count);
             KafkaTestUtil.deleteTopic(topics);
@@ -425,7 +425,7 @@ public class KafkaSourceTestCase {
     }
 
     @Test(expectedExceptions = SiddhiAppValidationException.class,
-          dependsOnMethods = "testKafkaMultipleTopic_MultiplePartition_AllPartitionSubscribe_Source")
+            dependsOnMethods = "testKafkaMultipleTopic_MultiplePartition_AllPartitionSubscribe_Source")
     public void testKafkaWithoutBootstrapServerSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
@@ -501,7 +501,7 @@ public class KafkaSourceTestCase {
             expectedValues.add(0L);
             expectedValues.add(1L);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
-                                     receivedEventNameList);
+                    receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(4, count);
             KafkaTestUtil.deleteTopic(topics);
@@ -562,7 +562,7 @@ public class KafkaSourceTestCase {
             expectedValues.add(0L);
             expectedValues.add(1L);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
-                                     receivedEventNameList);
+                    receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(4, count);
             KafkaTestUtil.deleteTopic(topics);
@@ -573,7 +573,7 @@ public class KafkaSourceTestCase {
     }
 
     @Test(expectedExceptions = SiddhiAppValidationException.class,
-          dependsOnMethods = "testKafkaMultipleTopicWithThreadingPerPartitionSource")
+            dependsOnMethods = "testKafkaMultipleTopicWithThreadingPerPartitionSource")
     public void testKafkaWithoutThreadingOptionSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
@@ -600,7 +600,7 @@ public class KafkaSourceTestCase {
     }
 
     @Test(expectedExceptions = SiddhiAppValidationException.class,
-          dependsOnMethods = "testKafkaWithoutThreadingOptionSource")
+            dependsOnMethods = "testKafkaWithoutThreadingOptionSource")
     public void testKafkaSingleTopicWithoutGroupIdSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
@@ -698,7 +698,7 @@ public class KafkaSourceTestCase {
             expectedValues.add(0L);
             expectedValues.add(0L);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
-                                     receivedEventNameList);
+                    receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(2, count);
             KafkaTestUtil.deleteTopic(topics);
@@ -773,7 +773,7 @@ public class KafkaSourceTestCase {
             List<Long> expectedValues = new ArrayList<>(2);
             expectedValues.add(0L);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
-                                     receivedEventNameList);
+                    receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(1, count);
             KafkaTestUtil.deleteTopic(topics);
@@ -823,7 +823,7 @@ public class KafkaSourceTestCase {
             List<Long> expectedValues = new ArrayList<>(2);
             expectedValues.add(0L);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
-                                     receivedEventNameList);
+                    receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             KafkaTestUtil.deleteTopic(topics);
             AssertJUnit.assertEquals(1, count);
@@ -882,7 +882,7 @@ public class KafkaSourceTestCase {
         expectedValues.add(0L);
         expectedValues.add(1L);
         AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
-                                 receivedEventNameList);
+                receivedEventNameList);
         AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
         KafkaTestUtil.deleteTopic(topics);
         siddhiAppRuntime.shutdown();
@@ -947,11 +947,11 @@ public class KafkaSourceTestCase {
 
     //    @Test
     public void testKafkaSingleTopic_MultiplePartition_AllPartitionSubscribe_Source_106() throws
-                                                                                          InterruptedException {
+            InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
             log.info("Creating test to configure Kafka source with multiple topics having multiple partitions "
-                             + "subscribing for all partition ids");
+                    + "subscribing for all partition ids");
             log.info("-------------------------------------------------------------------------------------------");
             String topics[] = new String[]{"single_topic1_two_par_two_servers"};
             KafkaTestUtil.setupKafkaBroker2();
@@ -997,7 +997,7 @@ public class KafkaSourceTestCase {
             expectedNames.add("single_topic1_two_par_two_servers");
             List<Long> expectedValues = new ArrayList<>(2);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
-                                     receivedEventNameList);
+                    receivedEventNameList);
             AssertJUnit.assertEquals(2, count);
             KafkaTestUtil.deleteTopic(topics);
             Thread.sleep(1000);
@@ -1008,12 +1008,12 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaMultipleTopicPartitionTopicWiseSubscription")
+    @Test(dependsOnMethods = "testKafkaMultipleTopicPartitionTopicWiseSubscription")
     public void testKafkaTopic_MultiplePartition_AllSubscribe_Source() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
             log.info("Creating test to configure Kafka source with a single topic having multiple partitions "
-                             + "subscribing for all partition ids");
+                    + "subscribing for all partition ids");
             log.info("-------------------------------------------------------------------------------------------");
             String topics[] = new String[]{"kafka_topic_888"};
             receivedEventNameList = new ArrayList<>(4);
@@ -1068,12 +1068,12 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testKafkaTopic_MultiplePartition_AllSubscribe_Source")
+    @Test(dependsOnMethods = "testKafkaTopic_MultiplePartition_AllSubscribe_Source")
     public void testKafkaTopic_MultiplePartition_SubscribeALl_oneByOne_Source() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
             log.info("Creating test to configure Kafka source with a single topic having multiple partitions "
-                             + "subscribing for all partition ids with separate apps");
+                    + "subscribing for all partition ids with separate apps");
             log.info("-------------------------------------------------------------------------------------------");
             String topics[] = new String[]{"kafka_topic_999"};
             receivedEventNameList = new ArrayList<>(4);

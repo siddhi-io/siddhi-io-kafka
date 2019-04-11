@@ -18,6 +18,11 @@
 
 package org.wso2.extension.siddhi.io.kafka.multidc;
 
+import io.siddhi.core.SiddhiAppRuntime;
+import io.siddhi.core.SiddhiManager;
+import io.siddhi.core.event.Event;
+import io.siddhi.core.stream.input.InputHandler;
+import io.siddhi.core.stream.output.StreamCallback;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.testng.annotations.AfterClass;
@@ -25,11 +30,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.extension.siddhi.io.kafka.KafkaTestUtil;
-import org.wso2.siddhi.core.SiddhiAppRuntime;
-import org.wso2.siddhi.core.SiddhiManager;
-import org.wso2.siddhi.core.event.Event;
-import org.wso2.siddhi.core.stream.input.InputHandler;
-import org.wso2.siddhi.core.stream.output.StreamCallback;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -143,16 +143,16 @@ public class KafkaMultiDCSinkTestCases {
         Thread.sleep(4000);
 
         String sinkApp = "@App:name('SinkSiddhiApp') \n"
-                    + "define stream FooStream (symbol string, price float, volume long); \n"
-                    + "@info(name = 'query1') \n"
-                    + "@sink("
-                    + "type='kafkaMultiDC', "
-                    + "topic='myTopic', "
-                    + "partition='0',"
-                    + "bootstrap.servers='localhost:9092,localhost:9093', "
-                    + "@map(type='xml'))" +
-                    "Define stream BarStream (symbol string, price float, volume long);\n" +
-                    "from FooStream select symbol, price, volume insert into BarStream;\n";
+                + "define stream FooStream (symbol string, price float, volume long); \n"
+                + "@info(name = 'query1') \n"
+                + "@sink("
+                + "type='kafkaMultiDC', "
+                + "topic='myTopic', "
+                + "partition='0',"
+                + "bootstrap.servers='localhost:9092,localhost:9093', "
+                + "@map(type='xml'))" +
+                "Define stream BarStream (symbol string, price float, volume long);\n" +
+                "from FooStream select symbol, price, volume insert into BarStream;\n";
 
         SiddhiManager siddhiManager = new SiddhiManager();
         SiddhiAppRuntime siddhiAppRuntimeSink = siddhiManager.createSiddhiAppRuntime(sinkApp);
