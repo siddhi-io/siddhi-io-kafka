@@ -51,23 +51,21 @@ public class KafkaConsumerThread implements Runnable {
     private final String partitions[];
     private SourceEventListener sourceEventListener;
     private String topics[];
-    private Map<String, Map<Integer, Long>> topicOffsetMap = new HashMap<>();
     private volatile boolean paused;
     private volatile boolean inactive;
     private List<TopicPartition> partitionsList = new ArrayList<>();
-    private Map<SequenceKey, Integer> lastReceivedSeqNoMap = null;
     private String consumerThreadId;
     private boolean isPartitionWiseThreading = false;
     private boolean isBinaryMessage = false;
     private ReentrantLock lock;
     private Condition condition;
+    private KafkaSource.KafkaSourceState kafkaSourceState;
 
-    KafkaConsumerThread(SourceEventListener sourceEventListener, String topics[], String partitions[],
-                        Properties props, Map<String, Map<Integer, Long>> topicOffsetMap,
+    KafkaConsumerThread(SourceEventListener sourceEventListener, String[] topics, String[] partitions,
+                        Properties props,
                         boolean isPartitionWiseThreading, boolean isBinaryMessage) {
         this.consumer = new KafkaConsumer<>(props);
         this.sourceEventListener = sourceEventListener;
-        this.topicOffsetMap = topicOffsetMap;
         this.topics = topics;
         this.partitions = partitions;
         this.isPartitionWiseThreading = isPartitionWiseThreading;
@@ -77,9 +75,6 @@ public class KafkaConsumerThread implements Runnable {
         condition = lock.newCondition();
         if (null != partitions) {
             for (String topic : topics) {
-                if (null == topicOffsetMap.get(topic)) {
-                    this.topicOffsetMap.put(topic, new HashMap<>());
-                }
                 for (String partition1 : partitions) {
                     TopicPartition partition = new TopicPartition(topic, Integer.parseInt(partition1));
                     LOG.info("Adding partition " + partition1 + " for topic: " + topic);
@@ -89,11 +84,6 @@ public class KafkaConsumerThread implements Runnable {
                 consumer.assign(partitionsList);
             }
         } else {
-            for (String topic : topics) {
-                if (null == topicOffsetMap.get(topic)) {
-                    this.topicOffsetMap.put(topic, new HashMap<>());
-                }
-            }
             consumer.subscribe(Arrays.asList(topics));
         }
         LOG.info("Subscribed for topics: " + Arrays.toString(topics));
@@ -104,7 +94,7 @@ public class KafkaConsumerThread implements Runnable {
     }
 
     void resume() {
-        restore(topicOffsetMap);
+        restore();
         paused = false;
         try {
             lock.lock();
@@ -114,11 +104,11 @@ public class KafkaConsumerThread implements Runnable {
         }
     }
 
-    void restore(Map<String, Map<Integer, Long>> topicOffsetMap) {
+    void restore() {
         final Lock consumerLock = this.consumerLock;
-        if (null != topicOffsetMap) {
+        if (kafkaSourceState != null && kafkaSourceState.getTopicOffsetMap() != null) {
             for (String topic : topics) {
-                Map<Integer, Long> offsetMap = topicOffsetMap.get(topic);
+                Map<Integer, Long> offsetMap = kafkaSourceState.getTopicOffsetMap().get(topic);
                 if (null != offsetMap) {
                     for (Map.Entry<Integer, Long> entry : offsetMap.entrySet()) {
                         TopicPartition partition = new TopicPartition(topic, entry.getKey());
@@ -167,6 +157,10 @@ public class KafkaConsumerThread implements Runnable {
                 consumerLock.unlock();
             }
             if (null != records) {
+                Map<SequenceKey, Integer> lastReceivedSeqNoMap = null;
+                if (kafkaSourceState.getConsumerLastReceivedSeqNoMap() != null) {
+                    lastReceivedSeqNoMap = kafkaSourceState.getConsumerLastReceivedSeqNoMap().get(consumerThreadId);
+                }
                 for (ConsumerRecord record : records) {
                     int partition = record.partition();
                     Object event = record.value();
@@ -177,7 +171,7 @@ public class KafkaConsumerThread implements Runnable {
                                 + ", key: " + record.key() + ", topic: " + record.topic() +
                                 ", partition: " + partition);
                     }
-                    topicOffsetMap.get(record.topic()).put(record.partition(), record.offset());
+                    kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(), record.offset());
 
                     String transportSyncProperties = "topic:" + record.topic() + ",partition:" + record.partition()
                             + ",offSet:" + record.offset();
@@ -289,20 +283,16 @@ public class KafkaConsumerThread implements Runnable {
         return key.toString();
     }
 
-    Map<String, Map<Integer, Long>> getTopicOffsetMap() {
-        return topicOffsetMap;
-    }
-
-    public String getConsumerThreadId() {
-        return consumerThreadId;
-    }
-
-    public Map<SequenceKey, Integer> getLastReceivedSeqNoMap() {
-        return lastReceivedSeqNoMap;
-    }
-
-    public void setLastReceivedSeqNoMap(Map<SequenceKey, Integer> seqNoMap) {
-        this.lastReceivedSeqNoMap = seqNoMap;
+    public void setKafkaSourceState(KafkaSource.KafkaSourceState kafkaSourceState) {
+        this.kafkaSourceState = kafkaSourceState;
+        if (kafkaSourceState != null) {
+            if (kafkaSourceState.getConsumerLastReceivedSeqNoMap() != null) {
+                kafkaSourceState.getConsumerLastReceivedSeqNoMap().putIfAbsent(consumerThreadId, new HashMap<>());
+            }
+            for (String topic : topics) {
+                kafkaSourceState.getTopicOffsetMap().putIfAbsent(topic, new HashMap<>());
+            }
+        }
     }
 }
 

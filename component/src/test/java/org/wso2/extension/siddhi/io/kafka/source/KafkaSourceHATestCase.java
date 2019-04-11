@@ -228,7 +228,7 @@ public class KafkaSourceHATestCase {
             });
             // start the execution app
             siddhiAppRuntime.start();
-            // immediately trigger a restore from last revision
+            // immediately trigger a restoreState from last revision
             siddhiAppRuntime.restoreLastRevision();
             Thread.sleep(5000);
 
@@ -352,7 +352,7 @@ public class KafkaSourceHATestCase {
             // start the execution app
             siddhiAppRuntime1.start();
             siddhiAppRuntime2.start();
-            // immediately trigger a restore from last revision
+            // immediately trigger a restoreState from last revision
             siddhiAppRuntime1.restoreLastRevision();
             siddhiAppRuntime2.restoreLastRevision();
             Thread.sleep(5000);

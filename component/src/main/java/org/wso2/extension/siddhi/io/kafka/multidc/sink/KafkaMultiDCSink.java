@@ -193,13 +193,13 @@ public class KafkaMultiDCSink extends KafkaSink {
                     // If it is required to send 'xml`, 'json' or 'test' mapping payload as a byte stream through kafka.
                 } else {
                     byte[] byteEvents = payload.toString().getBytes("UTF-8");
-                    payloadToSend = getSequencedBinaryPayloadToSend(byteEvents, kafkaSinkState.lastSentSequenceNo);
+                    payloadToSend = getSequencedBinaryPayloadToSend(byteEvents, kafkaSinkState);
                     kafkaSinkState.lastSentSequenceNo.incrementAndGet();
                 }
                 //if the received payload to send is binary.
             } else {
                 byte[] byteEvents = ((ByteBuffer) payload).array();
-                payloadToSend = getSequencedBinaryPayloadToSend(byteEvents, kafkaSinkState.lastSentSequenceNo);
+                payloadToSend = getSequencedBinaryPayloadToSend(byteEvents, kafkaSinkState);
                 kafkaSinkState.lastSentSequenceNo.incrementAndGet();
             }
         } catch (UnsupportedEncodingException e) {

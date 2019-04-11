@@ -42,7 +42,6 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -110,6 +109,7 @@ public class KafkaMultiDCSource extends Source<KafkaMultiDCSource.KafkaMultiDCSo
     private static final String LAST_RECEIVED_SEQ_NO_KEY = "lastConsumedSeqNo";
     private SourceEventListener eventListener;
     private Map<String, KafkaSource> sources = new HashMap<>();
+    private Map<String, StateFactory<KafkaSource.KafkaSourceState>> stateFactories = new HashMap<>();
     private String[] bootstrapServers;
     private SourceSynchronizer synchronizer;
 
@@ -133,16 +133,18 @@ public class KafkaMultiDCSource extends Source<KafkaMultiDCSource.KafkaMultiDCSo
         Interceptor interceptor = new Interceptor(bootstrapServers[0], synchronizer, isBinaryMessage);
         OptionHolder options = createOptionHolders(bootstrapServers[0], optionHolder);
         KafkaSource source = new KafkaSource();
-        source.init(interceptor, options, transportPropertyNames, configReader, siddhiAppContext);
+        stateFactories.put(bootstrapServers[0], source.init(interceptor, options, transportPropertyNames,
+                configReader, siddhiAppContext));
         sources.put(bootstrapServers[0], source);
 
         LOG.info("Initializing kafka source for bootstrap server :" + bootstrapServers[1]);
         interceptor = new Interceptor(bootstrapServers[1], synchronizer, isBinaryMessage);
         options = createOptionHolders(bootstrapServers[1], optionHolder);
         source = new KafkaSource();
-        source.init(interceptor, options, transportPropertyNames, configReader, siddhiAppContext);
+        stateFactories.put(bootstrapServers[1], source.init(interceptor, options, transportPropertyNames,
+                configReader, siddhiAppContext));
         sources.put(bootstrapServers[1], source);
-        return () -> new KafkaMultiDCSourceState(sources.entrySet());
+        return new KafkaMultiDCSourceStateFactory(stateFactories);
     }
 
 
@@ -238,30 +240,52 @@ public class KafkaMultiDCSource extends Source<KafkaMultiDCSource.KafkaMultiDCSo
     class KafkaMultiDCSourceState extends State {
         Map<String, KafkaSource.KafkaSourceState> kafkaSourceStateMap = new HashMap<>();
 
-        KafkaMultiDCSourceState(Set<Map.Entry<String, KafkaSource>> entrySet) {
-            for (Map.Entry entry : entrySet) {
-                String sourceKey = entry.getKey().toString();
-                KafkaSource kafkaSource = (KafkaSource) entry.getValue();
-                kafkaSourceStateMap.put(sourceKey, kafkaSource.new KafkaSourceState());
-            }
+        KafkaMultiDCSourceState(Map<String, KafkaSource.KafkaSourceState> kafkaSourceStateMap) {
+            this.kafkaSourceStateMap = kafkaSourceStateMap;
         }
 
         @Override
         public Map<String, Object> snapshot() {
             HashMap<String, Object> state = new HashMap<>();
-            state.put("SOURCE_STATES", kafkaSourceStateMap);
+            for (Map.Entry<String, KafkaSource.KafkaSourceState> entry : kafkaSourceStateMap.entrySet()) {
+                state.put(entry.getKey(), entry.getValue().snapshot());
+            }
             state.put(LAST_RECEIVED_SEQ_NO_KEY, synchronizer.getLastConsumedSeqNo());
             return state;
         }
 
         public void restore(Map<String, Object> state) {
             synchronizer.setLastConsumedSeqNo((Long) state.get(LAST_RECEIVED_SEQ_NO_KEY));
+            for (Map.Entry<String, KafkaSource.KafkaSourceState> entry : kafkaSourceStateMap.entrySet()) {
+                entry.getValue().restore((Map<String, Object>) state.get(entry.getKey()));
+            }
             kafkaSourceStateMap = (Map<String, KafkaSource.KafkaSourceState>) state.get("SOURCE_STATES");
         }
 
         @Override
         public boolean canDestroy() {
             return false;
+        }
+    }
+
+    class KafkaMultiDCSourceStateFactory implements StateFactory<KafkaMultiDCSource.KafkaMultiDCSourceState> {
+
+        private Map<String, StateFactory<KafkaSource.KafkaSourceState>> stateFactories;
+
+        public KafkaMultiDCSourceStateFactory(
+                Map<String, StateFactory<KafkaSource.KafkaSourceState>> kafkaStateFactories) {
+            this.stateFactories = kafkaStateFactories;
+        }
+
+        @Override
+        public KafkaMultiDCSource.KafkaMultiDCSourceState createNewState() {
+            Map<String, KafkaSource.KafkaSourceState> kafkaSourceStateMap = new HashMap<>();
+            for (Map.Entry<String, StateFactory<KafkaSource.KafkaSourceState>> entry : stateFactories.entrySet()) {
+                String sourceKey = entry.getKey();
+                StateFactory<KafkaSource.KafkaSourceState> kafkaSourceStateStateFactory = entry.getValue();
+                kafkaSourceStateMap.put(sourceKey, kafkaSourceStateStateFactory.createNewState());
+            }
+            return new KafkaMultiDCSourceState(kafkaSourceStateMap);
         }
     }
 }

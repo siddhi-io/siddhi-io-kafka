@@ -186,7 +186,6 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     private ScheduledExecutorService executorService;
     private OptionHolder optionHolder;
     private ConsumerKafkaGroup consumerKafkaGroup;
-    private Map<String, Map<Integer, Long>> topicOffsetMap = new HashMap<>();
     private String bootstrapServers;
     private String groupID;
     private String threadingOption;
@@ -194,11 +193,10 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     private String topics[];
     private String optionalConfigs;
     private boolean seqEnabled = false;
-    private Map<String, Map<SequenceKey, Integer>> consumerLastReceivedSeqNoMap = null;
     private boolean isBinaryMessage;
     private String topicOffsetMapConfig;
-    private boolean isRestored = false;
     private SiddhiAppContext siddhiAppContext;
+    private KafkaSourceState kafkaSourceState;
 
     private static Properties createConsumerConfig(String zkServerList, String groupId, String optionalConfigs,
                                                    boolean isBinaryMessage) {
@@ -290,16 +288,12 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         }
         checkTopicsAvailableInCluster();
         checkPartitionsAvailableForTheTopicsInCluster();
-        if (seqEnabled && consumerLastReceivedSeqNoMap == null) {
-            consumerLastReceivedSeqNoMap = new HashMap<>();
-        }
 
         consumerKafkaGroup = new ConsumerKafkaGroup(topics, partitions,
                 KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs, isBinaryMessage),
-                topicOffsetMap, consumerLastReceivedSeqNoMap, threadingOption, executorService, isBinaryMessage,
-                sourceEventListener);
+                threadingOption, executorService, isBinaryMessage, sourceEventListener);
 
-        return KafkaSourceState::new;
+        return () -> new KafkaSourceState(seqEnabled);
     }
 
     @Override
@@ -310,25 +304,25 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     @Override
     public void connect(ConnectionCallback connectionCallback, KafkaSourceState kafkaSourceState)
             throws ConnectionUnavailableException {
+        this.kafkaSourceState = kafkaSourceState;
         // If state does not contain the topic offset map try to read it from the config
-        if (!isRestored && topicOffsetMapConfig != null) {
-            topicOffsetMap = readTopicOffsetsConfig(topicOffsetMapConfig);
-            if (topicOffsetMap != null) {
-                consumerKafkaGroup.setTopicOffsetMap(topicOffsetMap);
-                consumerKafkaGroup.restore(topicOffsetMap);
+        if (!kafkaSourceState.isRestored && topicOffsetMapConfig != null) {
+            synchronized (kafkaSourceState) {
+                kafkaSourceState.topicOffsetMap = readTopicOffsetsConfig(topicOffsetMapConfig);
             }
+            consumerKafkaGroup.setKafkaSourceState(kafkaSourceState);
+            consumerKafkaGroup.restoreState();
         } else {
-            this.topicOffsetMap = kafkaSourceState.topicOffsetMap;
-            this.consumerLastReceivedSeqNoMap = kafkaSourceState.consumerLastReceivedSeqNoMap;
+            consumerKafkaGroup.setKafkaSourceState(kafkaSourceState);
         }
         consumerKafkaGroup.run();
     }
 
     @Override
     public void disconnect() {
-        this.topicOffsetMap = null;
-        this.consumerLastReceivedSeqNoMap = null;
+        this.kafkaSourceState = null;
         if (consumerKafkaGroup != null) {
+            consumerKafkaGroup.setKafkaSourceState(null);
             consumerKafkaGroup.shutdown();
             LOG.info("Kafka Adapter disconnected for topic(s): " +
                     optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_TOPIC));
@@ -484,15 +478,15 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                 String[] keyValues = property.split(":");
                 if (keyValues[0].equals(TOPIC)) {
                     topic = keyValues[1];
-                    topicOffsetMap.computeIfAbsent(keyValues[1], k -> new HashMap<>());
+                    kafkaSourceState.topicOffsetMap.computeIfAbsent(keyValues[1], k -> new HashMap<>());
                 } else if (keyValues[0].equals(PARTITION)) {
-                    Map<Integer, Long> partitionOffsetMap = topicOffsetMap.get(topic);
+                    Map<Integer, Long> partitionOffsetMap = kafkaSourceState.topicOffsetMap.get(topic);
                     if (null == partitionOffsetMap.get(Integer.valueOf(keyValues[1]))) {
                         partition = Integer.valueOf(keyValues[1]);
                         partitionOffsetMap.put(partition, 0L);
                     }
                 } else if (keyValues[0].equals(OFFSET)) {
-                    Map<Integer, Long> partitionOffsetMap = topicOffsetMap.get(topic);
+                    Map<Integer, Long> partitionOffsetMap = kafkaSourceState.topicOffsetMap.get(topic);
                     long savedOffsetValue = partitionOffsetMap.get(partition);
                     Long offsetValue = Long.valueOf(keyValues[1]);
                     if (offsetValue > savedOffsetValue) {
@@ -514,24 +508,37 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     public class KafkaSourceState extends State {
 
         private Map<String, Map<Integer, Long>> topicOffsetMap = new HashMap<>();
-        private Map<String, Map<SequenceKey, Integer>> consumerLastReceivedSeqNoMap = new HashMap<>();
+        private Map<String, Map<SequenceKey, Integer>> consumerLastReceivedSeqNoMap = null;
+        private boolean isRestored = false;
+
+        public Map<String, Map<Integer, Long>> getTopicOffsetMap() {
+            return topicOffsetMap;
+        }
+
+        public Map<String, Map<SequenceKey, Integer>> getConsumerLastReceivedSeqNoMap() {
+            return consumerLastReceivedSeqNoMap;
+        }
+
+        public KafkaSourceState(boolean seqEnabled) {
+            if (seqEnabled) {
+                consumerLastReceivedSeqNoMap = new HashMap<>();
+            }
+        }
 
         @Override
         public Map<String, Object> snapshot() {
             Map<String, Object> currentState = new HashMap<>();
             currentState.put(TOPIC_OFFSET_MAP, this.topicOffsetMap);
             if (seqEnabled) {
-                currentState.put(LAST_RECEIVED_SEQ_NO_KEY, consumerKafkaGroup.getPerConsumerLastReceivedSeqNo());
+                currentState.put(LAST_RECEIVED_SEQ_NO_KEY, consumerLastReceivedSeqNoMap);
             }
             return currentState;
         }
 
         public void restore(Map<String, Object> state) {
             isRestored = true;
-            this.topicOffsetMap = (Map<String, Map<Integer, Long>>) state.get(TOPIC_OFFSET_MAP);
-            consumerKafkaGroup.setTopicOffsetMap(topicOffsetMap);
-            consumerKafkaGroup.restore(topicOffsetMap);
-
+            topicOffsetMap = (Map<String, Map<Integer, Long>>) state.get(TOPIC_OFFSET_MAP);
+            consumerKafkaGroup.restoreState();
             if (seqEnabled) {
                 this.consumerLastReceivedSeqNoMap =
                         (Map<String, Map<SequenceKey, Integer>>) state.get(LAST_RECEIVED_SEQ_NO_KEY);

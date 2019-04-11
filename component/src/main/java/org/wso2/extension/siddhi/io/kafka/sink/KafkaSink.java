@@ -208,7 +208,7 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
                 if (isSequenced && !isBinaryMessage) {
                     StringBuilder strPayload = new StringBuilder();
                     strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR).
-                            append(kafkaSinkState.lastSentSequenceNo)
+                            append(kafkaSinkState.lastSentSequenceNo.get())
                             .append(SEQ_NO_HEADER_DELIMITER).append(payload.toString());
                     payloadToSend = strPayload.toString();
                     kafkaSinkState.lastSentSequenceNo.incrementAndGet();
@@ -220,7 +220,7 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
                     // If it is required to send the message as binary message with sequence numbers.
                 } else if (isSequenced && isBinaryMessage) {
                     byte[] byteEvents = payload.toString().getBytes("UTF-8");
-                    payloadToSend = getSequencedBinaryPayloadToSend(byteEvents, kafkaSinkState.lastSentSequenceNo);
+                    payloadToSend = getSequencedBinaryPayloadToSend(byteEvents, kafkaSinkState);
                     kafkaSinkState.lastSentSequenceNo.incrementAndGet();
 
                     // If it is required to send the message as binary message without sequence numbers.
@@ -232,7 +232,7 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
             } else {
                 byte[] byteEvents = ((ByteBuffer) payload).array();
                 if (isSequenced) {
-                    payloadToSend = getSequencedBinaryPayloadToSend(byteEvents, kafkaSinkState.lastSentSequenceNo);
+                    payloadToSend = getSequencedBinaryPayloadToSend(byteEvents, kafkaSinkState);
                     kafkaSinkState.lastSentSequenceNo.incrementAndGet();
                 } else {
                     payloadToSend = byteEvents;
@@ -301,9 +301,10 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
         return new String[]{KAFKA_PUBLISH_TOPIC, KAFKA_PARTITION_NO, KAFKA_MESSAGE_KEY};
     }
 
-    public byte[] getSequencedBinaryPayloadToSend(byte[] payload, AtomicInteger lastSentSequenceNo) {
+    public byte[] getSequencedBinaryPayloadToSend(byte[] payload, KafkaSinkState kafkaSinkState) {
         StringBuilder strPayload = new StringBuilder();
-        strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR).append(lastSentSequenceNo)
+        strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR)
+                .append(kafkaSinkState.lastSentSequenceNo.get())
                 .append(SEQ_NO_HEADER_DELIMITER);
         int headerSize = strPayload.toString().length();
         int bufferSize = headerSize + 4 + payload.length;
