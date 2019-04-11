@@ -18,13 +18,13 @@
 
 package org.wso2.extension.siddhi.io.kafka.multidc;
 
+import io.siddhi.core.stream.input.source.SourceEventListener;
+import io.siddhi.query.api.definition.StreamDefinition;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.testng.annotations.BeforeMethod;
 import org.wso2.extension.siddhi.io.kafka.multidc.source.SourceSynchronizer;
-import org.wso2.siddhi.core.stream.input.source.SourceEventListener;
-import org.wso2.siddhi.query.api.definition.StreamDefinition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,12 +34,10 @@ import java.util.List;
  */
 public class KafkaMultiDCSourceSynchronizerTestCases {
     private static final Logger LOG = Logger.getLogger(KafkaMultiDCSourceSynchronizerTestCases.class);
-
-    private List<Object> eventsArrived = new ArrayList<>();
     private static final String SOURCE_1 = "source:9000";
     private static final String SOURCE_2 = "source2:9000";
     private static String[] servers = {SOURCE_1, SOURCE_2};
-
+    private List<Object> eventsArrived = new ArrayList<>();
     private SourceEventListener eventListener = new SourceEventListener() {
         @Override
         public StreamDefinition getStreamDefinition() {
@@ -57,38 +55,38 @@ public class KafkaMultiDCSourceSynchronizerTestCases {
         }
     };
 
-    @BeforeMethod
-    public void reset() {
-        eventsArrived.clear();
-    }
-
     private static String buildDummyEvent(String source, long seqNo) {
         StringBuilder builder = new StringBuilder();
         builder.append(source).append(":").append(seqNo);
         return builder.toString();
     }
 
+    @BeforeMethod
+    public void reset() {
+        eventsArrived.clear();
+    }
+
     private boolean compareEventSequnce(List<Object> expectedEventSequence) {
         if (eventsArrived.size() != expectedEventSequence.size()) {
             LOG.info("Expected number of events and actual number of events are different. " +
-                "Expected=" + expectedEventSequence.size() + ". Arrived=" + eventsArrived.size());
+                    "Expected=" + expectedEventSequence.size() + ". Arrived=" + eventsArrived.size());
             return false;
         }
         for (int i = 0; i < expectedEventSequence.size(); i++) {
-            if (!eventsArrived.get(i).toString().equals(expectedEventSequence.get(i)))  {
-            LOG.warn("Event " + i + " in the expected and arrived events are different."
-                + " Expected=" + expectedEventSequence.get(i).toString()
-                + ", Arrived=" + eventsArrived.get(i).toString());
+            if (!eventsArrived.get(i).toString().equals(expectedEventSequence.get(i))) {
+                LOG.warn("Event " + i + " in the expected and arrived events are different."
+                        + " Expected=" + expectedEventSequence.get(i).toString()
+                        + ", Arrived=" + eventsArrived.get(i).toString());
                 return false;
             }
         }
         return true;
     }
 
-        private void sendEvent(SourceSynchronizer synchronizer, String source, long seqNo) {
-            String[] dummyDynamicOptions = new String[2];
-            synchronizer.onEvent(source, seqNo, buildDummyEvent(source, seqNo), dummyDynamicOptions);
-        }
+    private void sendEvent(SourceSynchronizer synchronizer, String source, long seqNo) {
+        String[] dummyDynamicOptions = new String[2];
+        synchronizer.onEvent(source, seqNo, buildDummyEvent(source, seqNo), dummyDynamicOptions);
+    }
 
     /*
         Source1: 0 - 1 - 2

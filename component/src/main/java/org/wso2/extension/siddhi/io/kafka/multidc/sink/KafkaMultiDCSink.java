@@ -18,22 +18,23 @@
 
 package org.wso2.extension.siddhi.io.kafka.multidc.sink;
 
+import io.siddhi.annotation.Example;
+import io.siddhi.annotation.Extension;
+import io.siddhi.annotation.Parameter;
+import io.siddhi.annotation.util.DataType;
+import io.siddhi.core.config.SiddhiAppContext;
+import io.siddhi.core.exception.ConnectionUnavailableException;
+import io.siddhi.core.util.config.ConfigReader;
+import io.siddhi.core.util.snapshot.state.StateFactory;
+import io.siddhi.core.util.transport.DynamicOptions;
+import io.siddhi.core.util.transport.OptionHolder;
+import io.siddhi.query.api.definition.StreamDefinition;
+import io.siddhi.query.api.exception.SiddhiAppValidationException;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
 import org.wso2.extension.siddhi.io.kafka.sink.KafkaSink;
-import org.wso2.siddhi.annotation.Example;
-import org.wso2.siddhi.annotation.Extension;
-import org.wso2.siddhi.annotation.Parameter;
-import org.wso2.siddhi.annotation.util.DataType;
-import org.wso2.siddhi.core.config.SiddhiAppContext;
-import org.wso2.siddhi.core.exception.ConnectionUnavailableException;
-import org.wso2.siddhi.core.util.config.ConfigReader;
-import org.wso2.siddhi.core.util.transport.DynamicOptions;
-import org.wso2.siddhi.core.util.transport.OptionHolder;
-import org.wso2.siddhi.query.api.definition.StreamDefinition;
-import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
@@ -68,7 +69,7 @@ import java.util.Properties;
                         type = {DataType.STRING}),
                 @Parameter(name = "sequence.id",
                         description = "A unique identifier to identify the messages published by this sink. This ID " +
-                        "allows receivers to identify the sink that published a specific message.",
+                                "allows receivers to identify the sink that published a specific message.",
                         type = {DataType.STRING},
                         optional = true,
                         defaultValue = "null"),
@@ -117,21 +118,25 @@ import java.util.Properties;
         }
 )
 public class KafkaMultiDCSink extends KafkaSink {
+    private static final Logger LOG = Logger.getLogger(KafkaMultiDCSink.class);
     List<Producer<String, String>> producers = new ArrayList<>();
     private String topic;
     private Integer partitionNo;
-    private static final Logger LOG = Logger.getLogger(KafkaMultiDCSink.class);
 
     @Override
-    protected void init(StreamDefinition outputStreamDefinition, OptionHolder optionHolder,
-                       ConfigReader sinkConfigReader, SiddhiAppContext siddhiAppContext) {
-        super.init(outputStreamDefinition, optionHolder, sinkConfigReader, siddhiAppContext);
+    protected StateFactory<KafkaSinkState> init(StreamDefinition outputStreamDefinition, OptionHolder optionHolder,
+                                                ConfigReader sinkConfigReader,
+                                                SiddhiAppContext siddhiAppContext) {
+        StateFactory<KafkaSinkState> stateStateFactory = super.init(outputStreamDefinition, optionHolder,
+                sinkConfigReader, siddhiAppContext);
         topic = optionHolder.validateAndGetStaticValue(KAFKA_PUBLISH_TOPIC);
         partitionNo = Integer.parseInt(optionHolder.validateAndGetStaticValue(KAFKA_PARTITION_NO, "0"));
         if (bootstrapServers.split(",").length != 2) {
             throw new SiddhiAppValidationException("There should be two servers listed in 'bootstrap.servers' " +
                     "configuration");
         }
+
+        return stateStateFactory;
     }
 
     @Override
@@ -169,8 +174,9 @@ public class KafkaMultiDCSink extends KafkaSink {
 
 
     @Override
-    public void publish(Object payload, DynamicOptions transportOptions) throws ConnectionUnavailableException {
-        String key = keyOption.getValue(transportOptions);
+    public void publish(Object payload, DynamicOptions dynamicOptions, KafkaSinkState kafkaSinkState)
+            throws ConnectionUnavailableException {
+        String key = keyOption.getValue(dynamicOptions);
         Object payloadToSend = null;
         try {
             if (payload instanceof String) {
@@ -178,22 +184,23 @@ public class KafkaMultiDCSink extends KafkaSink {
                 // If it is required to send the message as string message.
                 if (!isBinaryMessage) {
                     StringBuilder strPayload = new StringBuilder();
-                    strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR).append(lastSentSequenceNo)
-                            .append(SEQ_NO_HEADER_DELIMITER).append(payload.toString());
+                    strPayload.append(sequenceId).append(SEQ_NO_HEADER_FIELD_SEPERATOR).
+                            append(kafkaSinkState.lastSentSequenceNo).append(SEQ_NO_HEADER_DELIMITER).
+                            append(payload.toString());
                     payloadToSend = strPayload.toString();
-                    lastSentSequenceNo.incrementAndGet();
+                    kafkaSinkState.lastSentSequenceNo.incrementAndGet();
 
                     // If it is required to send 'xml`, 'json' or 'test' mapping payload as a byte stream through kafka.
                 } else {
                     byte[] byteEvents = payload.toString().getBytes("UTF-8");
-                    payloadToSend = getSequencedBinaryPayloadToSend(byteEvents);
-                    lastSentSequenceNo.incrementAndGet();
+                    payloadToSend = getSequencedBinaryPayloadToSend(byteEvents, kafkaSinkState.lastSentSequenceNo);
+                    kafkaSinkState.lastSentSequenceNo.incrementAndGet();
                 }
                 //if the received payload to send is binary.
             } else {
                 byte[] byteEvents = ((ByteBuffer) payload).array();
-                    payloadToSend = getSequencedBinaryPayloadToSend(byteEvents);
-                    lastSentSequenceNo.incrementAndGet();
+                payloadToSend = getSequencedBinaryPayloadToSend(byteEvents, kafkaSinkState.lastSentSequenceNo);
+                kafkaSinkState.lastSentSequenceNo.incrementAndGet();
             }
         } catch (UnsupportedEncodingException e) {
             LOG.error("Error while converting the received string payload to byte[].", e);
@@ -204,7 +211,7 @@ public class KafkaMultiDCSink extends KafkaSink {
                 producer.send(new ProducerRecord<>(topic, partitionNo, key, payloadToSend));
             } catch (Exception e) {
                 LOG.error(String.format("Failed to publish the message to [topic] %s. Error: %s. Sequence Number " +
-                        ": %d", topic, e.getMessage(), lastSentSequenceNo.get() - 1), e);
+                        ": %d", topic, e.getMessage(), kafkaSinkState.lastSentSequenceNo.get() - 1), e);
             }
         }
     }

@@ -18,6 +18,23 @@
 
 package org.wso2.extension.siddhi.io.kafka.source;
 
+import io.siddhi.core.SiddhiAppRuntime;
+import io.siddhi.core.SiddhiManager;
+import io.siddhi.core.event.Event;
+import io.siddhi.core.exception.CannotRestoreSiddhiAppStateException;
+import io.siddhi.core.stream.input.source.Source;
+import io.siddhi.core.stream.output.StreamCallback;
+import io.siddhi.core.util.EventPrinter;
+import io.siddhi.core.util.persistence.InMemoryPersistenceStore;
+import io.siddhi.core.util.persistence.PersistenceStore;
+import io.siddhi.query.api.SiddhiApp;
+import io.siddhi.query.api.annotation.Annotation;
+import io.siddhi.query.api.definition.Attribute;
+import io.siddhi.query.api.definition.StreamDefinition;
+import io.siddhi.query.api.execution.query.Query;
+import io.siddhi.query.api.execution.query.input.stream.InputStream;
+import io.siddhi.query.api.execution.query.selection.Selector;
+import io.siddhi.query.api.expression.Variable;
 import org.I0Itec.zkclient.exception.ZkTimeoutException;
 import org.apache.log4j.Logger;
 import org.testng.annotations.AfterClass;
@@ -25,23 +42,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.extension.siddhi.io.kafka.KafkaTestUtil;
-import org.wso2.siddhi.core.SiddhiAppRuntime;
-import org.wso2.siddhi.core.SiddhiManager;
-import org.wso2.siddhi.core.event.Event;
-import org.wso2.siddhi.core.exception.CannotRestoreSiddhiAppStateException;
-import org.wso2.siddhi.core.stream.input.source.Source;
-import org.wso2.siddhi.core.stream.output.StreamCallback;
-import org.wso2.siddhi.core.util.EventPrinter;
-import org.wso2.siddhi.core.util.persistence.InMemoryPersistenceStore;
-import org.wso2.siddhi.core.util.persistence.PersistenceStore;
-import org.wso2.siddhi.query.api.SiddhiApp;
-import org.wso2.siddhi.query.api.annotation.Annotation;
-import org.wso2.siddhi.query.api.definition.Attribute;
-import org.wso2.siddhi.query.api.definition.StreamDefinition;
-import org.wso2.siddhi.query.api.execution.query.Query;
-import org.wso2.siddhi.query.api.execution.query.input.stream.InputStream;
-import org.wso2.siddhi.query.api.execution.query.selection.Selector;
-import org.wso2.siddhi.query.api.expression.Variable;
 
 import java.rmi.RemoteException;
 import java.util.Collection;
@@ -73,6 +73,11 @@ public class KafkaSourceHATestCase {
         } catch (Exception e) {
             throw new RemoteException("Exception caught when starting server", e);
         }
+    }
+
+    @AfterClass
+    public static void stopKafkaBroker() {
+        KafkaTestUtil.stopKafkaBroker();
     }
 
     @BeforeMethod
@@ -152,9 +157,9 @@ public class KafkaSourceHATestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testAKafkaPauseAndResume")
+    @Test(dependsOnMethods = "testAKafkaPauseAndResume")
     public void testRecoveryOnFailureOfSingleNodeWithKafka() throws InterruptedException,
-                                                                    CannotRestoreSiddhiAppStateException {
+            CannotRestoreSiddhiAppStateException {
         try {
             log.info("Test to verify recovering process of a Siddhi node on a failure when Kafka is the event source");
             String topics[] = new String[]{"kafka_topic4"};
@@ -243,9 +248,9 @@ public class KafkaSourceHATestCase {
         }
     }
 
-    @Test (dependsOnMethods = "testRecoveryOnFailureOfSingleNodeWithKafka")
+    @Test(dependsOnMethods = "testRecoveryOnFailureOfSingleNodeWithKafka")
     public void testRecoveryOnFailureOfMultipleNodeWithKafka() throws InterruptedException,
-                                                                      CannotRestoreSiddhiAppStateException {
+            CannotRestoreSiddhiAppStateException {
         try {
             log.info("Test to verify recovering process of multiple Siddhi nodes on a failure when Kafka is the event"
                     + " source");
@@ -375,11 +380,6 @@ public class KafkaSourceHATestCase {
         Thread t1 = new Thread(kafkaReceiver);
         t1.start();
         Thread.sleep(35000);
-    }
-
-    @AfterClass
-    public static void stopKafkaBroker() {
-        KafkaTestUtil.stopKafkaBroker();
     }
 
     private class KafkaFlow implements Runnable {

@@ -18,19 +18,19 @@
 
 package org.wso2.extension.siddhi.io.kafka;
 
+import io.siddhi.core.SiddhiAppRuntime;
+import io.siddhi.core.SiddhiManager;
+import io.siddhi.core.event.Event;
+import io.siddhi.core.exception.CannotRestoreSiddhiAppStateException;
+import io.siddhi.core.stream.output.StreamCallback;
+import io.siddhi.core.util.EventPrinter;
+import io.siddhi.core.util.persistence.InMemoryPersistenceStore;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.wso2.siddhi.core.SiddhiAppRuntime;
-import org.wso2.siddhi.core.SiddhiManager;
-import org.wso2.siddhi.core.event.Event;
-import org.wso2.siddhi.core.exception.CannotRestoreSiddhiAppStateException;
-import org.wso2.siddhi.core.stream.output.StreamCallback;
-import org.wso2.siddhi.core.util.EventPrinter;
-import org.wso2.siddhi.core.util.persistence.InMemoryPersistenceStore;
 
 import java.rmi.RemoteException;
 import java.util.List;
@@ -172,7 +172,7 @@ public class SequencedMessagingTestCase {
 
     @Test(dependsOnMethods = "basicKafkaTestUsingBinaryMessage")
     public void basicKafkaTestUsingBinaryMessageWithXmlMapper() throws InterruptedException,
-                                                                       CannotRestoreSiddhiAppStateException {
+            CannotRestoreSiddhiAppStateException {
         LOG.info("Test to verify recovering process of a Siddhi node on a failure when Kafka is the event source");
         String topics[] = new String[]{"ExternalTopic-xml", "IntermediateTopic-xml"};
         KafkaTestUtil.createTopic(topics, 1);
@@ -359,7 +359,7 @@ public class SequencedMessagingTestCase {
 
     @Test(dependsOnMethods = "basicTest")
     public void testWithMultiplePartitionsSingleTopic() throws InterruptedException,
-                                                               CannotRestoreSiddhiAppStateException {
+            CannotRestoreSiddhiAppStateException {
         LOG.info("Test to verify recovering process of a Siddhi node on a failure when Kafka is the event source");
         KafkaTestUtil.createTopic(new String[]{"ExternalTopic-2"}, 1);
         KafkaTestUtil.createTopic(new String[]{"IntermediateTopic-2"}, 3);
@@ -461,7 +461,7 @@ public class SequencedMessagingTestCase {
 
     @Test(dependsOnMethods = "testWithMultiplePartitionsSingleTopic")
     public void testWithMultiplePartitionsSingleTopicWithPartitionWiseThreading() throws InterruptedException,
-                                                          CannotRestoreSiddhiAppStateException {
+            CannotRestoreSiddhiAppStateException {
         LOG.info("Test to verify recovering process of a Siddhi node on a failure when Kafka is the event source");
         KafkaTestUtil.createTopic(new String[]{"ExternalTopic-3"}, 1);
         KafkaTestUtil.createTopic(new String[]{"IntermediateTopic-3"}, 3);
@@ -563,7 +563,7 @@ public class SequencedMessagingTestCase {
 
     @Test(dependsOnMethods = "testWithMultiplePartitionsSingleTopicWithPartitionWiseThreading")
     public void testWithMultipleSeqIdsAndMultiplePartitionsWithTopicWiseThreading() throws InterruptedException,
-                                                                    CannotRestoreSiddhiAppStateException {
+            CannotRestoreSiddhiAppStateException {
         LOG.info("Test to verify recovering process of a Siddhi node on a failure when Kafka is the event source");
         KafkaTestUtil.createTopic(new String[]{"ExternalTopic-4"}, 1);
         KafkaTestUtil.createTopic(new String[]{"SecondExternalTopic-4"}, 1);
@@ -672,7 +672,7 @@ public class SequencedMessagingTestCase {
 
         Assert.assertEquals(count, 30);
 
-        KafkaTestUtil.deleteTopic(new String[]{"ExternalTopic-4", "SecondExternalTopic-4" , "IntermediateTopic-4"});
+        KafkaTestUtil.deleteTopic(new String[]{"ExternalTopic-4", "SecondExternalTopic-4", "IntermediateTopic-4"});
         externalDataRelayApp.shutdown();
         dataReceiveApp.shutdown();
         Thread.sleep(2000);
@@ -680,7 +680,7 @@ public class SequencedMessagingTestCase {
 
     @Test(dependsOnMethods = "testWithMultipleSeqIdsAndMultiplePartitionsWithTopicWiseThreading")
     public void testWithMultipleSeqIdsSinglePartitionWithTopicWiseThreading() throws InterruptedException,
-                                                                    CannotRestoreSiddhiAppStateException {
+            CannotRestoreSiddhiAppStateException {
         LOG.info("Test to verify recovering process of a Siddhi node on a failure when Kafka is the event source");
         KafkaTestUtil.createTopic(new String[]{"ExternalTopic-5"}, 1);
         KafkaTestUtil.createTopic(new String[]{"SecondExternalTopic-5"}, 1);
@@ -790,7 +790,7 @@ public class SequencedMessagingTestCase {
 
         Assert.assertEquals(count, 30);
 
-        KafkaTestUtil.deleteTopic(new String[]{"ExternalTopic-5", "SecondExternalTopic-5" , "IntermediateTopic-5"});
+        KafkaTestUtil.deleteTopic(new String[]{"ExternalTopic-5", "SecondExternalTopic-5", "IntermediateTopic-5"});
         externalDataRelayApp.shutdown();
         dataReceiveApp.shutdown();
         Thread.sleep(2000);

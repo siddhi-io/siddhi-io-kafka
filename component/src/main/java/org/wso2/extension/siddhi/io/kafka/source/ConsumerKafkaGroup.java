@@ -18,8 +18,8 @@
 
 package org.wso2.extension.siddhi.io.kafka.source;
 
+import io.siddhi.core.stream.input.source.SourceEventListener;
 import org.apache.log4j.Logger;
-import org.wso2.siddhi.core.stream.input.source.SourceEventListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -88,9 +88,6 @@ public class ConsumerKafkaGroup {
         }
     }
 
-    public void setTopicOffsetMap(Map<String, Map<Integer, Long>> topicOffsetMap) {
-        this.topicOffsetMap = topicOffsetMap;
-    }
     void pause() {
         kafkaConsumerThreadList.forEach(KafkaConsumerThread::pause);
     }
@@ -132,6 +129,10 @@ public class ConsumerKafkaGroup {
             }
         }
         return topicOffsetMap;
+    }
+
+    public void setTopicOffsetMap(Map<String, Map<Integer, Long>> topicOffsetMap) {
+        this.topicOffsetMap = topicOffsetMap;
     }
 
     public Map<String, Map<SequenceKey, Integer>> getPerConsumerLastReceivedSeqNo() {

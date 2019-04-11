@@ -18,6 +18,7 @@
 
 package org.wso2.extension.siddhi.io.kafka.source;
 
+import io.siddhi.core.stream.input.source.SourceEventListener;
 import org.apache.kafka.clients.consumer.CommitFailedException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -25,7 +26,6 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.log4j.Logger;
 import org.wso2.extension.siddhi.io.kafka.sink.KafkaSink;
-import org.wso2.siddhi.core.stream.input.source.SourceEventListener;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -142,111 +142,111 @@ public class KafkaConsumerThread implements Runnable {
     public void run() {
         final Lock consumerLock = this.consumerLock;
         while (!inactive) {
-                if (paused) {
-                    lock.lock();
-                    try {
-                        condition.await();
-                    } catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                    } finally {
-                        lock.unlock();
+            if (paused) {
+                lock.lock();
+                try {
+                    condition.await();
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                } finally {
+                    lock.unlock();
+                }
+            }
+            // The time, in milliseconds, spent waiting in poll if data is not available. If 0, returns
+            // immediately with any records that are available now. Must not be negative
+            ConsumerRecords<byte[], byte[]> records = null;
+            try {
+                consumerLock.lock();
+                // TODO add a huge value because, when there are so many equal group ids, the group balancing
+                // takes time and if this value is small, there will be an CommitFailedException while
+                // trying to retrieve data
+                records = consumer.poll(100);
+            } catch (CommitFailedException ex) {
+                LOG.warn("Consumer poll() failed." + ex.getMessage(), ex);
+            } finally {
+                consumerLock.unlock();
+            }
+            if (null != records) {
+                for (ConsumerRecord record : records) {
+                    int partition = record.partition();
+                    Object event = record.value();
+                    Object eventBody = null;
+                    String header = null;
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Event received in Kafka Event Adaptor with offSet: " + record.offset()
+                                + ", key: " + record.key() + ", topic: " + record.topic() +
+                                ", partition: " + partition);
+                    }
+                    topicOffsetMap.get(record.topic()).put(record.partition(), record.offset());
+
+                    String transportSyncProperties = "topic:" + record.topic() + ",partition:" + record.partition()
+                            + ",offSet:" + record.offset();
+                    String[] transportSyncPropertiesArr = new String[]{transportSyncProperties};
+
+                    if (lastReceivedSeqNoMap == null) {
+                        sourceEventListener.onEvent(event, new String[0], transportSyncPropertiesArr);
+                    } else {
+                        if (isBinaryMessage) {
+                            byte[] byteEvents = (byte[]) event;
+                            int stringSize = ByteBuffer.wrap(byteEvents).getInt();
+                            header = new String(byteEvents, 4, stringSize - 1, Charset.defaultCharset());
+                            eventBody = Arrays.copyOfRange(byteEvents, stringSize + 4,
+                                    byteEvents.length);
+                        } else {
+                            String stringEvent = event.toString();
+                            int headerStartingIndex = stringEvent.indexOf(KafkaSink.SEQ_NO_HEADER_DELIMITER);
+                            eventBody = stringEvent.substring(headerStartingIndex + 1);
+                            if (headerStartingIndex > 0) {
+                                header = stringEvent.substring(0, headerStartingIndex);
+                            }
+                        }
+
+                        if (null != header && !header.isEmpty()) {
+                            String[] headerElements = header.split(KafkaSink.SEQ_NO_HEADER_FIELD_SEPERATOR);
+                            String sequenceId = headerElements[0];
+                            Integer seqNo = Integer.parseInt(headerElements[1]);
+                            SequenceKey sequenceKey = new SequenceKey(sequenceId, partition);
+                            Integer lastReceivedSeqNo = lastReceivedSeqNoMap.get(sequenceKey);
+
+                            if (lastReceivedSeqNo == null) {
+                                lastReceivedSeqNo = -1;
+                            }
+
+                            if (lastReceivedSeqNo < seqNo) {
+                                lastReceivedSeqNoMap.put(sequenceKey, seqNo);
+                                sourceEventListener.onEvent(eventBody, new String[0], transportSyncPropertiesArr);
+                                if (LOG.isDebugEnabled()) {
+                                    LOG.debug("Last Received SeqNo Updated to:" + seqNo + " for " + "SeqKey:["
+                                            + sequenceKey.toString() + "] in Kafka consumer thread:"
+                                            + consumerThreadId);
+                                }
+                            } else {
+                                if (LOG.isDebugEnabled()) {
+                                    LOG.debug("Duplicate Message arrived at Kafka Consumer Thread:"
+                                            + consumerThreadId + ". SeqKey:[" + sequenceKey.toString() + "]"
+                                            + ", Latest SeqNo:" + lastReceivedSeqNo
+                                            + ", this message SeqNo:" + seqNo + ". Ignoring the message.");
+                                }
+                            }
+
+                        } else {
+                            LOG.warn("'Sequenced' option is set to true in Kafka source configuration. "
+                                    + "But this message does not contain the sequence number in consumer thread :"
+                                    + consumerThreadId + ". Dropping the message");
+                        }
                     }
                 }
-                // The time, in milliseconds, spent waiting in poll if data is not available. If 0, returns
-                // immediately with any records that are available now. Must not be negative
-                ConsumerRecords<byte[], byte[]> records = null;
                 try {
                     consumerLock.lock();
-                    // TODO add a huge value because, when there are so many equal group ids, the group balancing
-                    // takes time and if this value is small, there will be an CommitFailedException while
-                    // trying to retrieve data
-                    records = consumer.poll(100);
-                } catch (CommitFailedException ex) {
-                    LOG.warn("Consumer poll() failed." + ex.getMessage(), ex);
+                    if (!records.isEmpty()) {
+                        consumer.commitAsync();
+                    }
+                } catch (CommitFailedException e) {
+                    LOG.error("Kafka commit failed for topic kafka_result_topic", e);
                 } finally {
                     consumerLock.unlock();
                 }
-                if (null != records) {
-                    for (ConsumerRecord record : records) {
-                        int partition = record.partition();
-                        Object event = record.value();
-                        Object eventBody = null;
-                        String header = null;
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Event received in Kafka Event Adaptor with offSet: " + record.offset()
-                                    + ", key: " + record.key() + ", topic: " + record.topic() +
-                                    ", partition: " + partition);
-                        }
-                        topicOffsetMap.get(record.topic()).put(record.partition(), record.offset());
-
-                        String transportSyncProperties = "topic:" + record.topic() + ",partition:" + record.partition()
-                                + ",offSet:" + record.offset();
-                        String[] transportSyncPropertiesArr = new String[]{transportSyncProperties};
-
-                        if (lastReceivedSeqNoMap == null) {
-                            sourceEventListener.onEvent(event, new String[0], transportSyncPropertiesArr);
-                        } else {
-                            if (isBinaryMessage) {
-                                byte[] byteEvents = (byte[]) event;
-                                int stringSize = ByteBuffer.wrap(byteEvents).getInt();
-                                header = new String(byteEvents, 4, stringSize - 1, Charset.defaultCharset());
-                                eventBody = Arrays.copyOfRange(byteEvents, stringSize + 4,
-                                        byteEvents.length);
-                            } else {
-                                String stringEvent = event.toString();
-                                int headerStartingIndex = stringEvent.indexOf(KafkaSink.SEQ_NO_HEADER_DELIMITER);
-                                eventBody = stringEvent.substring(headerStartingIndex + 1);
-                                if (headerStartingIndex > 0) {
-                                    header = stringEvent.substring(0, headerStartingIndex);
-                                }
-                            }
-
-                            if (null != header && !header.isEmpty()) {
-                                String[] headerElements = header.split(KafkaSink.SEQ_NO_HEADER_FIELD_SEPERATOR);
-                                String sequenceId = headerElements[0];
-                                Integer seqNo = Integer.parseInt(headerElements[1]);
-                                SequenceKey sequenceKey = new SequenceKey(sequenceId, partition);
-                                Integer lastReceivedSeqNo = lastReceivedSeqNoMap.get(sequenceKey);
-
-                                if (lastReceivedSeqNo == null) {
-                                    lastReceivedSeqNo = -1;
-                                }
-
-                                if (lastReceivedSeqNo < seqNo) {
-                                    lastReceivedSeqNoMap.put(sequenceKey, seqNo);
-                                    sourceEventListener.onEvent(eventBody, new String[0], transportSyncPropertiesArr);
-                                    if (LOG.isDebugEnabled()) {
-                                        LOG.debug("Last Received SeqNo Updated to:" + seqNo + " for " + "SeqKey:["
-                                                + sequenceKey.toString() + "] in Kafka consumer thread:"
-                                                + consumerThreadId);
-                                    }
-                                } else {
-                                    if (LOG.isDebugEnabled()) {
-                                        LOG.debug("Duplicate Message arrived at Kafka Consumer Thread:"
-                                                + consumerThreadId + ". SeqKey:[" + sequenceKey.toString() + "]"
-                                                + ", Latest SeqNo:" + lastReceivedSeqNo
-                                                + ", this message SeqNo:" + seqNo + ". Ignoring the message.");
-                                    }
-                                }
-
-                            } else {
-                                LOG.warn("'Sequenced' option is set to true in Kafka source configuration. "
-                                        + "But this message does not contain the sequence number in consumer thread :"
-                                        + consumerThreadId + ". Dropping the message");
-                            }
-                        }
-                    }
-                    try {
-                        consumerLock.lock();
-                        if (!records.isEmpty()) {
-                            consumer.commitAsync();
-                        }
-                    } catch (CommitFailedException e) {
-                        LOG.error("Kafka commit failed for topic kafka_result_topic", e);
-                    } finally {
-                        consumerLock.unlock();
-                    }
-                }
+            }
             try { //To avoid thread spin
                 Thread.sleep(1);
             } catch (InterruptedException e) {

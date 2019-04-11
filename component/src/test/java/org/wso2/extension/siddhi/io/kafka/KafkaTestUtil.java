@@ -42,17 +42,16 @@ import java.util.Properties;
  * Class defining the Constant for Kafka Test cases.
  */
 public class KafkaTestUtil {
+    public static final String ZK_SERVER_CON_STRING = "localhost:2181";
+    public static final String ZK_SERVER2_CON_STRING = "localhost:2182";
     private static final Logger log = Logger.getLogger(KafkaTestUtil.class);
+    private static final String kafkaLogDir = "tmp_kafka_dir";
+    private static final String kafkaLogDir2 = "tmp_kafka_dir2";
+    private static final long CLEANER_BUFFER_SIZE = 2 * 1024 * 1024L;
     private static TestingServer zkTestServer;
     private static TestingServer zkTestServer2;
     private static KafkaServerStartable kafkaServer;
     private static KafkaServerStartable kafkaServer2;
-    private static final String kafkaLogDir = "tmp_kafka_dir";
-    private static final String kafkaLogDir2 = "tmp_kafka_dir2";
-    public static final String ZK_SERVER_CON_STRING = "localhost:2181";
-    public static final String ZK_SERVER2_CON_STRING = "localhost:2182";
-    private static final long CLEANER_BUFFER_SIZE = 2 * 1024 * 1024L;
-
 
     public static void cleanLogDir() {
         try {
@@ -180,7 +179,7 @@ public class KafkaTestUtil {
         for (String topic : topics) {
             try {
                 AdminUtils.createTopic(zkUtils, topic, numOfPartitions, 1, new Properties(),
-                                       RackAwareMode.Enforced$.MODULE$);
+                        RackAwareMode.Enforced$.MODULE$);
             } catch (TopicExistsException e) {
                 log.warn("topic exists for: " + topic);
             }
@@ -205,7 +204,7 @@ public class KafkaTestUtil {
     public static void kafkaPublisher(String topics[], int numOfPartitions, int numberOfEventsPerTopic, boolean
             publishWithPartition, String bootstrapServers, boolean isXML) {
         kafkaPublisher(topics, numOfPartitions, numberOfEventsPerTopic, 1000, publishWithPartition,
-                       bootstrapServers, isXML);
+                bootstrapServers, isXML);
     }
 
     public static void kafkaPublisher(String topics[], int numOfPartitions, int numberOfEventsPerTopic, long sleep,
