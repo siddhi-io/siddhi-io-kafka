@@ -44,8 +44,8 @@
     </profiles>
 
     <properties>
-        <siddhi.version>4.4.8</siddhi.version>
-        <siddhi.version.range>[4.0.0,5.0.0)</siddhi.version.range>
+        <siddhi.version>5.0.0-m10</siddhi.version>
+        <siddhi.version.range>[5.0.0,6.0.0)</siddhi.version.range>
         <log4j.version>1.2.17.wso2v1</log4j.version>
         <testng.version>6.8</testng.version>
         <commons.logging.version>1.1.1</commons.logging.version>
@@ -54,9 +54,9 @@
         <zookeeper.version>3.4.0</zookeeper.version>
         <commons-io.version>2.5</commons-io.version>
         <kafka.client.version>0.10.0.0</kafka.client.version>
-        <xml.mapper.version>4.0.18</xml.mapper.version>
-        <text.mapper.version>1.0.22</text.mapper.version>
-        <binary.mapper.version>1.0.15</binary.mapper.version>
+        <xml.mapper.version>5.0.0</xml.mapper.version>
+        <text.mapper.version>2.0.0</text.mapper.version>
+        <binary.mapper.version>2.0.0</binary.mapper.version>
         <jacoco.version>0.7.9</jacoco.version>
 
         <mavan.findbugsplugin.exclude.file>findbugs-exclude.xml</mavan.findbugsplugin.exclude.file>
@@ -74,18 +74,18 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.wso2.siddhi</groupId>
-                <artifactId>siddhi-core</artifactId>
-                <version>${siddhi.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.siddhi</groupId>
+                <groupId>io.siddhi</groupId>
                 <artifactId>siddhi-query-api</artifactId>
                 <version>${siddhi.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.siddhi</groupId>
+                <groupId>io.siddhi</groupId>
                 <artifactId>siddhi-annotations</artifactId>
+                <version>${siddhi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.siddhi</groupId>
+                <artifactId>siddhi-core</artifactId>
                 <version>${siddhi.version}</version>
             </dependency>
             <dependency>
