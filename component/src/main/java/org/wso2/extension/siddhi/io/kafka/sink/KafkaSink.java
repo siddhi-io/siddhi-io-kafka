@@ -292,7 +292,7 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
     }
 
     @Override
-    protected ServiceDeploymentInfo exposedServiceDeploymentInfo() {
+    protected ServiceDeploymentInfo exposeServiceDeploymentInfo() {
         return null;
     }
 
