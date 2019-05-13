@@ -80,7 +80,7 @@ import java.util.concurrent.ScheduledExecutorService;
                         description = " This specifies whether the Kafka source is to be run on a single thread," +
                                 " or in multiple threads based on a condition. Possible values are as follows:\n" +
                                 "`single.thread`: To run the Kafka source on a single thread.\n" +
-                                "`topic-wise`: To use a separate thread per topic.\n" +
+                                "`topic.wise`: To use a separate thread per topic.\n" +
                                 "`partition.wise`: To use a separate thread per partition.",
                         type = {DataType.STRING}),
                 @Parameter(name = "partition.no.list",
