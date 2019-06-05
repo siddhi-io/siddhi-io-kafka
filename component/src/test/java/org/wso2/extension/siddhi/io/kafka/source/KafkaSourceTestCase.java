@@ -697,10 +697,11 @@ public class KafkaSourceTestCase {
             List<Long> expectedValues = new ArrayList<>(2);
             expectedValues.add(0L);
             expectedValues.add(0L);
+            Thread.sleep(3000);
+            AssertJUnit.assertEquals(2, count);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
                     receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
-            AssertJUnit.assertEquals(2, count);
             KafkaTestUtil.deleteTopic(topics);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
