@@ -20,7 +20,7 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
 <suite name="Siddhi-Execution-Kafka_Test-Suite" parallel="false" thread-count="1">
-    <test name="siddhi-execution-kafka-unit-tests" preserve-order="true">
+    <test name="siddhi-execution-kafka-unit-tests" preserve-order="true" parallel="false">
         <classes>
             <class name="org.wso2.extension.siddhi.io.kafka.SequencedMessagingTestCase" />
             <class name="org.wso2.extension.siddhi.io.kafka.sink.KafkaSinkTestCase" />
