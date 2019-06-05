@@ -162,7 +162,7 @@ public class KafkaMultiDCSinkTestCases {
         fooStream.send(new Object[]{"WSO2", 55.6f, 100L});
         fooStream.send(new Object[]{"WSO2", 75.6f, 102L});
         fooStream.send(new Object[]{"WSO2", 57.6f, 103L});
-        Thread.sleep(4000);
+        Thread.sleep(6000);
 
         Assert.assertTrue(count == 6);
         sourceOneApp.shutdown();
@@ -176,7 +176,7 @@ public class KafkaMultiDCSinkTestCases {
     Even if one of the brokers are failing publishing should not be stopped for the other broker. Therefore, one
     siddhi app must receive events.
      */
-//    @Test (dependsOnMethods = "testMultiDCSinkWithBothBrokersRunning")
+    @Test (dependsOnMethods = "testMultiDCSinkWithBothBrokersRunning")
     public void testMultiDCSinkWithOneBrokersFailing() throws InterruptedException {
         LOG.info("Creating test for publishing events for static topic without a partition");
         String topics[] = new String[]{"myTopic"};
