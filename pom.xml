@@ -26,7 +26,7 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
 
-    <groupId>org.wso2.extension.siddhi.io.kafka</groupId>
+    <groupId>io.siddhi.extension.io.kafka</groupId>
     <artifactId>siddhi-io-kafka-parent</artifactId>
     <version>5.0.2-SNAPSHOT</version>
     <name>Siddhi IO Kafka Extension Parent</name>
@@ -54,9 +54,9 @@
         <zookeeper.version>3.4.0</zookeeper.version>
         <commons-io.version>2.5</commons-io.version>
         <kafka.client.version>0.10.0.0</kafka.client.version>
-        <xml.mapper.version>5.0.0</xml.mapper.version>
-        <text.mapper.version>2.0.0</text.mapper.version>
-        <binary.mapper.version>2.0.0</binary.mapper.version>
+        <xml.mapper.version>5.0.3</xml.mapper.version>
+        <text.mapper.version>2.0.2</text.mapper.version>
+        <binary.mapper.version>2.0.2</binary.mapper.version>
         <jacoco.version>0.7.9</jacoco.version>
 
         <mavan.findbugsplugin.exclude.file>findbugs-exclude.xml</mavan.findbugsplugin.exclude.file>
@@ -146,19 +146,19 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.wso2.extension.siddhi.map.xml</groupId>
+                <groupId>io.siddhi.extension.map.xml</groupId>
                 <artifactId>siddhi-map-xml</artifactId>
                 <version>${xml.mapper.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.wso2.extension.siddhi.map.text</groupId>
+                <groupId>io.siddhi.extension.map.text</groupId>
                 <artifactId>siddhi-map-text</artifactId>
                 <version>${text.mapper.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.wso2.extension.siddhi.map.binary</groupId>
+                <groupId>io.siddhi.extension.map.binary</groupId>
                 <artifactId>siddhi-map-binary</artifactId>
                 <version>${binary.mapper.version}</version>
                 <scope>test</scope>
