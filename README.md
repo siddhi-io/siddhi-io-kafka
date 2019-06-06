@@ -67,7 +67,7 @@ extension you can replace the component <a target="_blank" href="https://github.
 
 ```
      <dependency>
-        <groupId>org.wso2.extension.siddhi.io.kafka</groupId>
+        <groupId>io.siddhi.extension.io.kafka</groupId>
         <artifactId>siddhi-io-kafka</artifactId>
         <version>x.x.x</version>
      </dependency>

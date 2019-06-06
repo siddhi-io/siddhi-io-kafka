@@ -19,7 +19,7 @@
 
 <FindBugsFilter>
     <Match>
-        <Package name="~org\.wso2\.extension\.siddhi\.io\.kafka.*"/>
+        <Package name="~io\.siddhi\.extension\.io\.kafka.*"/>
         <Bug pattern="SIC_INNER_SHOULD_BE_STATIC"/>
     </Match>
 </FindBugsFilter>
