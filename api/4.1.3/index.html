@@ -943,7 +943,7 @@
                 
                 <h1 id="api-docs-v413">API Docs - v4.1.3</h1>
 <h2 id="sink">Sink</h2>
-<h3 id="kafka-sink">kafka <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sink">(Sink)</a></em></h3>
+<h3 id="kafka-sink">kafka <em><a target="_blank" href="https://siddhi.io/en/v4.x/docs/query-guide/#sink">(Sink)</a></em></h3>
 <p style="word-wrap: break-word">A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.<br>To configure a sink to use the Kafka transport, the <code>type</code> parameter should have <code>kafka</code> as its value.</p>
 
 <p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
@@ -1051,7 +1051,7 @@ from FooStream select symbol, price, volume insert into BarStream;
 
 <p style="word-wrap: break-word">This query publishes dynamic topic and partitions that are taken from the Siddhi event. The value for <code>partition.no</code> is taken from the <code>volume</code> attribute, and the topic value is taken from the <code>symbol</code> attribute.</p>
 
-<h3 id="kafkamultidc-sink">kafkaMultiDC <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sink">(Sink)</a></em></h3>
+<h3 id="kafkamultidc-sink">kafkaMultiDC <em><a target="_blank" href="https://siddhi.io/en/v4.x/docs/query-guide/#sink">(Sink)</a></em></h3>
 <p style="word-wrap: break-word">A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.<br>To configure a sink to publish events via the Kafka transport, and using two Kafka brokers to publish events to the same topic, the <code>type</code> parameter must have <code>kafkaMultiDC</code> as its value.</p>
 
 <p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
@@ -1138,7 +1138,7 @@ from FooStream select symbol, price, volume insert into BarStream;
 <p style="word-wrap: break-word">This query publishes to the  default (i.e., 0th) partition of the brokers in two data centers </p>
 
 <h2 id="source">Source</h2>
-<h3 id="kafka-source">kafka <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#source">(Source)</a></em></h3>
+<h3 id="kafka-source">kafka <em><a target="_blank" href="https://siddhi.io/en/v4.x/docs/query-guide/#source">(Source)</a></em></h3>
 <p style="word-wrap: break-word">A Kafka source receives events to be processed by WSO2 SP from a topic with a partition for a Kafka cluster. The events received can be in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic.</p>
 
 <p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
@@ -1258,7 +1258,7 @@ from FooStream select symbol, price, volume insert into BarStream;
 
 <p style="word-wrap: break-word">This Kafka source configuration listens to the <code>kafka_topic</code> topic for the default partition because no <code>partition.no.list</code> is defined. Only one thread is created for the topic. The events are received in the XML format, mapped to a Siddhi event, and sent to a stream named <code>FooStream</code>.</p>
 
-<h3 id="kafkamultidc-source">kafkaMultiDC <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#source">(Source)</a></em></h3>
+<h3 id="kafkamultidc-source">kafkaMultiDC <em><a target="_blank" href="https://siddhi.io/en/v4.x/docs/query-guide/#source">(Source)</a></em></h3>
 <p style="word-wrap: break-word">The Kafka Multi Data Center(DC) Source receives records from the same topic in brokers deployed in two different kafka cluster. It will filter out all duplicate messages and try to ensurethat the events are received in the correct order by using sequence numbers. events are received in format such as <code>text</code>, <code>XML</code> JSON<code> and </code>Binary`.The Kafka Source will create the default partition '0' for a given topic, if the topic is not already been created in the Kafka cluster.</p>
 
 <p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
