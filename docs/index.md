@@ -8,7 +8,7 @@ Siddhi IO Kafka
   [![GitHub Last Commit](https://img.shields.io/github/last-commit/siddhi-io/siddhi-io-kafka.svg)](https://github.com/siddhi-io/siddhi-io-kafka/commits/master)
   [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-The **siddhi-io-kafka extension** is an extension to <a target="_blank" href="https://wso2.github.io/siddhi">Siddhi</a> that receives and publishes events via Kafka and HTTPS transports, calls external services, and serves incoming requests and provide synchronous responses.
+The **siddhi-io-kafka extension** is an extension to <a target="_blank" href="https://wso2.github.io/siddhi">Siddhi</a> that receives and publishes events from and to Kafka.
 
 For information on <a target="_blank" href="https://siddhi.io/">Siddhi</a> and it's features refer <a target="_blank" href="https://siddhi.io/redirect/docs.html">Siddhi Documentation</a>. 
 
