@@ -2,7 +2,7 @@ Siddhi IO Kafka
 ======================================
 
   [![Jenkins Build Status](https://wso2.org/jenkins/job/siddhi/job/siddhi-io-kafka/badge/icon)](https://wso2.org/jenkins/job/siddhi/job/siddhi-io-kafka/)
-  [![GitHub Release](https://img.shields.io/github/release/siddhi-io/siddhi-io-kafka/all.svg)](https://github.com/siddhi-io/siddhi-io-kafka/releases)
+  [![GitHub Release](https://img.shields.io/github/release/siddhi-io/siddhi-io-kafka.svg)](https://github.com/siddhi-io/siddhi-io-kafka/releases)
   [![GitHub Release Date](https://img.shields.io/github/release-date/siddhi-io/siddhi-io-kafka.svg)](https://github.com/siddhi-io/siddhi-io-kafka/releases)
   [![GitHub Open Issues](https://img.shields.io/github/issues-raw/siddhi-io/siddhi-io-kafka.svg)](https://github.com/siddhi-io/siddhi-io-kafka/issues)
   [![GitHub Last Commit](https://img.shields.io/github/last-commit/siddhi-io/siddhi-io-kafka.svg)](https://github.com/siddhi-io/siddhi-io-kafka/commits/master)
