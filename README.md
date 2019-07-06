@@ -19,7 +19,7 @@ For information on <a target="_blank" href="https://siddhi.io/">Siddhi</a> and i
 
 ## Latest API Docs 
 
-Latest API Docs is <a target="_blank" href="https://siddhi-io.github.io/siddhi-io-kafka/api/2.0.4">2.0.4</a>.
+Latest API Docs is <a target="_blank" href="https://siddhi-io.github.io/siddhi-io-kafka/api/5.0.2">5.0.2</a>.
 
 ## Features
 
