@@ -102,7 +102,7 @@ import java.util.concurrent.ScheduledExecutorService;
                         type = {DataType.BOOL},
                         optional = true,
                         defaultValue = "false"),
-                @Parameter(name = "topic.offset.map",
+                @Parameter(name = "topic.offsets.map",
                         description = "This parameter specifies reading offsets for each topic and partition. " +
                                 "The value for this parameter is specified in the following format: \n " +
                                 "`<topic>=<offset>,<topic>=<offset>,`\n " +
@@ -171,7 +171,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     public static final String ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS = "bootstrap.servers";
     public static final String ADAPTOR_SUBSCRIBER_PARTITION_NO_LIST = "partition.no.list";
     public static final String ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
-    public static final String TOPIC_OFFSET_MAP = "topic.offset.map";
+    public static final String TOPIC_OFFSET_MAP = "topic.offsets.map";
     public static final String THREADING_OPTION = "threading.option";
     public static final String SEQ_ENABLED = "seq.enabled";
     public static final String HEADER_SEPARATOR = ",";
