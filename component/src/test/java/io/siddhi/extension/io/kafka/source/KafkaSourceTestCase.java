@@ -23,6 +23,7 @@ import io.siddhi.core.SiddhiManager;
 import io.siddhi.core.event.Event;
 import io.siddhi.core.exception.SiddhiAppCreationException;
 import io.siddhi.core.stream.output.StreamCallback;
+import io.siddhi.core.util.SiddhiTestHelper;
 import io.siddhi.extension.io.kafka.KafkaTestUtil;
 import io.siddhi.query.api.exception.SiddhiAppValidationException;
 import org.I0Itec.zkclient.exception.ZkTimeoutException;
@@ -697,7 +698,7 @@ public class KafkaSourceTestCase {
             List<Long> expectedValues = new ArrayList<>(2);
             expectedValues.add(0L);
             expectedValues.add(0L);
-            Thread.sleep(5000);
+            SiddhiTestHelper.waitForEvents(1000, 2, count, 20000);
             AssertJUnit.assertEquals(2, count);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
                     receivedEventNameList);
