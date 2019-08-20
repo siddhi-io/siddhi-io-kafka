@@ -698,7 +698,7 @@ public class KafkaSourceTestCase {
             List<Long> expectedValues = new ArrayList<>(2);
             expectedValues.add(0L);
             expectedValues.add(0L);
-            SiddhiTestHelper.waitForEvents(1000, 2, count, 20000);
+            SiddhiTestHelper.waitForEvents(5000, 2, count, 60000);
             AssertJUnit.assertEquals(2, count);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
                     receivedEventNameList);
