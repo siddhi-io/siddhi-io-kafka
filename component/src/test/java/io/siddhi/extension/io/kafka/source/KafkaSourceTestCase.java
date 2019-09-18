@@ -37,6 +37,7 @@ import org.testng.annotations.Test;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Class implementing the Test cases for Kafka Source.
@@ -47,6 +48,7 @@ public class KafkaSourceTestCase {
     private volatile boolean eventArrived;
     private volatile List<String> receivedEventNameList;
     private volatile List<Long> receivedValueList;
+    private ReentrantLock lock = new ReentrantLock();
 
     @BeforeClass
     public static void init() throws Exception {
@@ -670,24 +672,34 @@ public class KafkaSourceTestCase {
             siddhiAppRuntime.addCallback("BarStream", new StreamCallback() {
                 @Override
                 public void receive(Event[] events) {
-                    for (Event event : events) {
-                        log.info(event);
-                        eventArrived = true;
-                        count++;
-                        receivedEventNameList.add(event.getData(0).toString());
-                        receivedValueList.add((long) event.getData(2));
+                    lock.lock();
+                    try {
+                        for (Event event : events) {
+                            log.info(event);
+                            eventArrived = true;
+                            count++;
+                            receivedEventNameList.add(event.getData(0).toString());
+                            receivedValueList.add((long) event.getData(2));
+                        }
+                    } finally {
+                        lock.unlock();
                     }
                 }
             });
             siddhiAppRuntime.addCallback("BarStream2", new StreamCallback() {
                 @Override
                 public void receive(Event[] events) {
-                    for (Event event : events) {
-                        log.info(event);
-                        eventArrived = true;
-                        count++;
-                        receivedEventNameList.add(event.getData(0).toString());
-                        receivedValueList.add((long) event.getData(2));
+                    lock.lock();
+                    try {
+                        for (Event event : events) {
+                            log.info(event);
+                            eventArrived = true;
+                            count++;
+                            receivedEventNameList.add(event.getData(0).toString());
+                            receivedValueList.add((long) event.getData(2));
+                        }
+                    } finally {
+                        lock.unlock();
                     }
                 }
             });
