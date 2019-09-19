@@ -193,6 +193,8 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     private String topicOffsetMapConfig;
     private SiddhiAppContext siddhiAppContext;
     private KafkaSourceState kafkaSourceState;
+    private String threadingOption;
+    private SourceEventListener sourceEventListener;
 
     @Override
     public StateFactory<KafkaSourceState> init(SourceEventListener sourceEventListener, OptionHolder optionHolder,
@@ -200,10 +202,10 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                                                SiddhiAppContext siddhiAppContext) {
         this.siddhiAppContext = siddhiAppContext;
         this.optionHolder = optionHolder;
-        ScheduledExecutorService executorService = siddhiAppContext.getScheduledExecutorService();
+        this.sourceEventListener = sourceEventListener;
         bootstrapServers = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS);
         groupID = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_GROUP_ID);
-        String threadingOption = optionHolder.validateAndGetStaticValue(THREADING_OPTION);
+        threadingOption = optionHolder.validateAndGetStaticValue(THREADING_OPTION);
         String partitionList = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_PARTITION_NO_LIST, null);
         partitions = (partitionList != null) ? partitionList.split(KafkaIOUtils.HEADER_SEPARATOR) : null;
         String topicList = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_TOPIC);
@@ -214,13 +216,9 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                 "false"));
         topicOffsetMapConfig = optionHolder.validateAndGetStaticValue(TOPIC_OFFSET_MAP, null);
         if (PARTITION_WISE.equals(threadingOption) && null == partitions) {
-            throw new SiddhiAppValidationException("Threading option is selected as 'partition.wise' but there are no"
+            throw new SiddhiAppValidationException("Threading option is selected as consu'partition.wise' but there are no"
                     + " partitions given");
         }
-
-        consumerKafkaGroup = new ConsumerKafkaGroup(topics, partitions,
-                KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs, isBinaryMessage),
-                threadingOption, executorService, isBinaryMessage, sourceEventListener);
 
         return () -> new KafkaSourceState(seqEnabled);
     }
@@ -234,6 +232,11 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     public void connect(ConnectionCallback connectionCallback, KafkaSourceState kafkaSourceState)
             throws ConnectionUnavailableException {
         try {
+            ScheduledExecutorService executorService = siddhiAppContext.getScheduledExecutorService();
+            consumerKafkaGroup = new ConsumerKafkaGroup(topics, partitions,
+                    KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs, isBinaryMessage),
+                    threadingOption, executorService, isBinaryMessage, sourceEventListener);
+
             checkTopicsAvailableInCluster();
             checkPartitionsAvailableForTheTopicsInCluster();
             this.kafkaSourceState = kafkaSourceState;
