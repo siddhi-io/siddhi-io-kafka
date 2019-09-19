@@ -216,7 +216,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                 "false"));
         topicOffsetMapConfig = optionHolder.validateAndGetStaticValue(TOPIC_OFFSET_MAP, null);
         if (PARTITION_WISE.equals(threadingOption) && null == partitions) {
-            throw new SiddhiAppValidationException("Threading option is selected as consu'partition.wise' but " +
+            throw new SiddhiAppValidationException("Threading option is selected as 'partition.wise' but " +
                     "there are no partitions given");
         }
 
