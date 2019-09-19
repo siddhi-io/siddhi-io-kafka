@@ -34,6 +34,7 @@ import io.siddhi.core.util.config.ConfigReader;
 import io.siddhi.core.util.snapshot.state.State;
 import io.siddhi.core.util.snapshot.state.StateFactory;
 import io.siddhi.core.util.transport.OptionHolder;
+import io.siddhi.extension.io.kafka.KafkaIOUtils;
 import io.siddhi.query.api.exception.SiddhiAppValidationException;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -164,33 +165,28 @@ import java.util.concurrent.ScheduledExecutorService;
 public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements SourceSyncCallback {
 
     public static final String SINGLE_THREADED = "single.thread";
-    public static final String TOPIC_WISE = "topic.wise";
-    public static final String PARTITION_WISE = "partition.wise";
+    static final String TOPIC_WISE = "topic.wise";
+    static final String PARTITION_WISE = "partition.wise";
     public static final String ADAPTOR_SUBSCRIBER_TOPIC = "topic.list";
     public static final String ADAPTOR_SUBSCRIBER_GROUP_ID = "group.id";
     public static final String ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS = "bootstrap.servers";
     public static final String ADAPTOR_SUBSCRIBER_PARTITION_NO_LIST = "partition.no.list";
     public static final String ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
-    public static final String TOPIC_OFFSET_MAP = "topic.offsets.map";
+    private static final String TOPIC_OFFSET_MAP = "topic.offsets.map";
     public static final String THREADING_OPTION = "threading.option";
     public static final String SEQ_ENABLED = "seq.enabled";
-    public static final String HEADER_SEPARATOR = ",";
-    public static final String ENTRY_SEPARATOR = ":";
-    public static final String LAST_RECEIVED_SEQ_NO_KEY = "lastReceivedSeqNo";
+    private static final String LAST_RECEIVED_SEQ_NO_KEY = "lastReceivedSeqNo";
     public static final String IS_BINARY_MESSAGE = "is.binary.message";
     private static final Logger LOG = Logger.getLogger(KafkaSource.class);
     private static final String TOPIC = "topic";
     private static final String PARTITION = "partition";
     private static final String OFFSET = "offSet";
-    private SourceEventListener sourceEventListener;
-    private ScheduledExecutorService executorService;
     private OptionHolder optionHolder;
     private ConsumerKafkaGroup consumerKafkaGroup;
     private String bootstrapServers;
     private String groupID;
-    private String threadingOption;
-    private String partitions[];
-    private String topics[];
+    private String[] partitions;
+    private String[] topics;
     private String optionalConfigs;
     private boolean seqEnabled = false;
     private boolean isBinaryMessage;
@@ -198,85 +194,20 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     private SiddhiAppContext siddhiAppContext;
     private KafkaSourceState kafkaSourceState;
 
-    private static Properties createConsumerConfig(String zkServerList, String groupId, String optionalConfigs,
-                                                   boolean isBinaryMessage) {
-        Properties props = new Properties();
-        props.put(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS, zkServerList);
-        props.put(ADAPTOR_SUBSCRIBER_GROUP_ID, groupId);
-
-        //If it stops heart-beating for a period of time longer than session.timeout.ms then it will be considered dead
-        // and its partitions will be assigned to another process
-        props.put("session.timeout.ms", "30000");
-        props.put("enable.auto.commit", "false");
-        props.put("auto.offset.reset", "earliest");
-        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-
-        if (!isBinaryMessage) {
-            props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        } else {
-            props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
-        }
-
-        if (optionalConfigs != null && !optionalConfigs.isEmpty()) {
-            String[] optionalProperties = optionalConfigs.split(HEADER_SEPARATOR);
-            if (optionalProperties.length > 0) {
-                for (String header : optionalProperties) {
-                    try {
-                        String[] configPropertyWithValue = header.split(ENTRY_SEPARATOR, 2);
-                        props.put(configPropertyWithValue[0], configPropertyWithValue[1]);
-                    } catch (Exception e) {
-                        LOG.warn("Optional property '" + header + "' is not defined in the correct format.", e);
-                    }
-                }
-            }
-        }
-        return props;
-    }
-
-    private static Properties createProducerConfig(String zkServerList, String optionalConfigs,
-                                                   boolean isBinaryMessage) {
-        Properties configProperties = new Properties();
-        configProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, zkServerList);
-        configProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-                "org.apache.kafka.common.serialization.ByteArraySerializer");
-        if (optionalConfigs != null && !optionalConfigs.isEmpty()) {
-            String[] optionalProperties = optionalConfigs.split(HEADER_SEPARATOR);
-            if (optionalProperties.length > 0) {
-                for (String header : optionalProperties) {
-                    try {
-                        String[] configPropertyWithValue = header.split(ENTRY_SEPARATOR, 2);
-                        configProperties.put(configPropertyWithValue[0], configPropertyWithValue[1]);
-                    } catch (Exception e) {
-                        LOG.warn("Optional property '" + header + "' is not defined in the correct format.", e);
-                    }
-                }
-            }
-        }
-        if (!isBinaryMessage) {
-            configProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                    "org.apache.kafka.common.serialization.StringSerializer");
-        } else {
-            configProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                    "org.apache.kafka.common.serialization.ByteArraySerializer");
-        }
-        return configProperties;
-    }
-
     @Override
     public StateFactory<KafkaSourceState> init(SourceEventListener sourceEventListener, OptionHolder optionHolder,
                                                String[] strings, ConfigReader configReader,
                                                SiddhiAppContext siddhiAppContext) {
         this.siddhiAppContext = siddhiAppContext;
-        this.sourceEventListener = sourceEventListener;
         this.optionHolder = optionHolder;
-        this.executorService = siddhiAppContext.getScheduledExecutorService();
+        ScheduledExecutorService executorService = siddhiAppContext.getScheduledExecutorService();
         bootstrapServers = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS);
         groupID = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_GROUP_ID);
-        threadingOption = optionHolder.validateAndGetStaticValue(THREADING_OPTION);
+        String threadingOption = optionHolder.validateAndGetStaticValue(THREADING_OPTION);
         String partitionList = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_PARTITION_NO_LIST, null);
-        partitions = (partitionList != null) ? partitionList.split(HEADER_SEPARATOR) : null;
+        partitions = (partitionList != null) ? partitionList.split(KafkaIOUtils.HEADER_SEPARATOR) : null;
         String topicList = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_TOPIC);
-        topics = topicList.split(HEADER_SEPARATOR);
+        topics = topicList.split(KafkaIOUtils.HEADER_SEPARATOR);
         seqEnabled = optionHolder.validateAndGetStaticValue(SEQ_ENABLED, "false").equalsIgnoreCase("true");
         optionalConfigs = optionHolder.validateAndGetStaticValue(ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES, null);
         isBinaryMessage = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(IS_BINARY_MESSAGE,
@@ -286,8 +217,6 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
             throw new SiddhiAppValidationException("Threading option is selected as 'partition.wise' but there are no"
                     + " partitions given");
         }
-        checkTopicsAvailableInCluster();
-        checkPartitionsAvailableForTheTopicsInCluster();
 
         consumerKafkaGroup = new ConsumerKafkaGroup(topics, partitions,
                 KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs, isBinaryMessage),
@@ -304,18 +233,27 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     @Override
     public void connect(ConnectionCallback connectionCallback, KafkaSourceState kafkaSourceState)
             throws ConnectionUnavailableException {
-        this.kafkaSourceState = kafkaSourceState;
-        // If state does not contain the topic offset map try to read it from the config
-        if (!kafkaSourceState.isRestored && topicOffsetMapConfig != null) {
-            synchronized (kafkaSourceState) {
-                kafkaSourceState.topicOffsetMap = readTopicOffsetsConfig(topicOffsetMapConfig);
+        try {
+            checkTopicsAvailableInCluster();
+            checkPartitionsAvailableForTheTopicsInCluster();
+            this.kafkaSourceState = kafkaSourceState;
+            // If state does not contain the topic offset map try to read it from the config
+            if (!kafkaSourceState.isRestored && topicOffsetMapConfig != null) {
+                synchronized (kafkaSourceState) {
+                    kafkaSourceState.topicOffsetMap = readTopicOffsetsConfig(topicOffsetMapConfig);
+                }
+                consumerKafkaGroup.setKafkaSourceState(kafkaSourceState);
+                consumerKafkaGroup.restoreState();
+            } else {
+                consumerKafkaGroup.setKafkaSourceState(kafkaSourceState);
             }
-            consumerKafkaGroup.setKafkaSourceState(kafkaSourceState);
-            consumerKafkaGroup.restoreState();
-        } else {
-            consumerKafkaGroup.setKafkaSourceState(kafkaSourceState);
+            consumerKafkaGroup.run();
+        } catch (SiddhiAppValidationException | SiddhiAppCreationException e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new ConnectionUnavailableException("Error when initiating connection with Kafka server: " +
+                    bootstrapServers + " in Siddhi App: " + siddhiAppContext.getName(), e);
         }
-        consumerKafkaGroup.run();
     }
 
     @Override
@@ -354,6 +292,41 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         }
     }
 
+    @Override
+    public void update(String[] transportSyncProperties) {
+        //here we are handling out of order events which could occur
+        for (String propertiesStr : transportSyncProperties) {
+            String[] properties = propertiesStr.split(",");
+            String topic = "";
+            Integer partition = 0;
+            for (String property : properties) {
+                String[] keyValues = property.split(":");
+                if (keyValues[0].equals(TOPIC)) {
+                    topic = keyValues[1];
+                    kafkaSourceState.topicOffsetMap.computeIfAbsent(keyValues[1], k -> new HashMap<>());
+                } else if (keyValues[0].equals(PARTITION)) {
+                    Map<Integer, Long> partitionOffsetMap = kafkaSourceState.topicOffsetMap.get(topic);
+                    if (null == partitionOffsetMap.get(Integer.valueOf(keyValues[1]))) {
+                        partition = Integer.valueOf(keyValues[1]);
+                        partitionOffsetMap.put(partition, 0L);
+                    }
+                } else if (keyValues[0].equals(OFFSET)) {
+                    Map<Integer, Long> partitionOffsetMap = kafkaSourceState.topicOffsetMap.get(topic);
+                    long savedOffsetValue = partitionOffsetMap.get(partition);
+                    Long offsetValue = Long.valueOf(keyValues[1]);
+                    if (offsetValue > savedOffsetValue) {
+                        partitionOffsetMap.put(partition, offsetValue);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    protected ServiceDeploymentInfo exposeServiceDeploymentInfo() {
+        return null;
+    }
+
     private Map<String, Map<Integer, Long>> readTopicOffsetsConfig(String topicOffsetsConfig) {
         Map<String, Map<Integer, Long>> perTopicPerPartitionOffset = new HashMap<>();
         String[] topicOffsets = topicOffsetsConfig.split(",");
@@ -385,49 +358,43 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                 isBinaryMessage);
         props.put("group.id", "test-consumer-group");
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
-        try {
-            Map<String, List<PartitionInfo>> testTopicList = consumer.listTopics();
-            boolean topicsAvailable = true;
-            StringBuilder invalidTopics = new StringBuilder("");
-            for (String topic : topics) {
-                boolean topicAvailable = false;
-                for (Map.Entry<String, List<PartitionInfo>> entry : testTopicList.entrySet()) {
-                    if (entry.getKey().equals(topic)) {
-                        topicAvailable = true;
-                    }
-                }
-                if (!topicAvailable) {
-                    topicsAvailable = false;
-                    if ("".equals(invalidTopics.toString())) {
-                        invalidTopics.append(topic);
-                    } else {
-                        invalidTopics.append(',').append(topic);
-                    }
-                    LOG.warn("Topic, " + topic + " is not available.");
+        Map<String, List<PartitionInfo>> testTopicList = consumer.listTopics();
+        boolean topicsAvailable = true;
+        StringBuilder invalidTopics = new StringBuilder("");
+        for (String topic : topics) {
+            boolean topicAvailable = false;
+            for (Map.Entry<String, List<PartitionInfo>> entry : testTopicList.entrySet()) {
+                if (entry.getKey().equals(topic)) {
+                    topicAvailable = true;
                 }
             }
-            if (null != partitions && !(partitions.length == 1 && partitions[0].equals("0")) && !topicsAvailable) {
-                String errorMessage = "Topic(s) " + invalidTopics + " aren't available. Topics won't be created "
-                        + "since there are partition numbers defined in the query.";
-                LOG.error(errorMessage);
-                throw new SiddhiAppValidationException("Topic(s) " + invalidTopics + " aren't available. "
-                        + "Topics won't be created since there "
-                        + "are partition numbers defined in the query.");
-            } else if (!topicsAvailable) {
-                if (siddhiAppContext.isTransportChannelCreationEnabled()) {
-                    LOG.warn("Topic(s) " + invalidTopics + " aren't available. "
-                            + "These Topics will be created with the default partition.");
+            if (!topicAvailable) {
+                topicsAvailable = false;
+                if ("".equals(invalidTopics.toString())) {
+                    invalidTopics.append(topic);
                 } else {
-                    throw new SiddhiAppCreationException("Topic(s) " + invalidTopics + " creation failed. " +
-                            "User has disabled topic creation by setting " +
-                            SiddhiConstants.TRANSPORT_CHANNEL_CREATION_IDENTIFIER +
-                            " property to false. Hence Siddhi App deployment will be aborted.");
+                    invalidTopics.append(',').append(topic);
                 }
+                LOG.warn("Topic, " + topic + " is not available.");
             }
-        } catch (NullPointerException ex) {
-            //calling super class logs the exception and retry
-            throw new SiddhiAppValidationException("Exception when connecting to kafka servers: "
-                    + sourceEventListener.getStreamDefinition().getId(), ex);
+        }
+        if (null != partitions && !(partitions.length == 1 && partitions[0].equals("0")) && !topicsAvailable) {
+            String errorMessage = "Topic(s) " + invalidTopics + " aren't available. Topics won't be created "
+                    + "since there are partition numbers defined in the query.";
+            LOG.error(errorMessage);
+            throw new SiddhiAppValidationException("Topic(s) " + invalidTopics + " aren't available. "
+                    + "Topics won't be created since there "
+                    + "are partition numbers defined in the query.");
+        } else if (!topicsAvailable) {
+            if (siddhiAppContext.isTransportChannelCreationEnabled()) {
+                LOG.warn("Topic(s) " + invalidTopics + " aren't available. "
+                        + "These Topics will be created with the default partition.");
+            } else {
+                throw new SiddhiAppCreationException("Topic(s) " + invalidTopics + " creation failed. " +
+                        "User has disabled topic creation by setting " +
+                        SiddhiConstants.TRANSPORT_CHANNEL_CREATION_IDENTIFIER +
+                        " property to false. Hence Siddhi App deployment will be aborted.");
+            }
         }
     }
 
@@ -467,40 +434,47 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         }
     }
 
-    @Override
-    public void update(String[] transportSyncProperties) {
-        //here we are handling out of order events which could occur
-        for (String propertiesStr : transportSyncProperties) {
-            String[] properties = propertiesStr.split(",");
-            String topic = "";
-            Integer partition = 0;
-            for (String property : properties) {
-                String[] keyValues = property.split(":");
-                if (keyValues[0].equals(TOPIC)) {
-                    topic = keyValues[1];
-                    kafkaSourceState.topicOffsetMap.computeIfAbsent(keyValues[1], k -> new HashMap<>());
-                } else if (keyValues[0].equals(PARTITION)) {
-                    Map<Integer, Long> partitionOffsetMap = kafkaSourceState.topicOffsetMap.get(topic);
-                    if (null == partitionOffsetMap.get(Integer.valueOf(keyValues[1]))) {
-                        partition = Integer.valueOf(keyValues[1]);
-                        partitionOffsetMap.put(partition, 0L);
-                    }
-                } else if (keyValues[0].equals(OFFSET)) {
-                    Map<Integer, Long> partitionOffsetMap = kafkaSourceState.topicOffsetMap.get(topic);
-                    long savedOffsetValue = partitionOffsetMap.get(partition);
-                    Long offsetValue = Long.valueOf(keyValues[1]);
-                    if (offsetValue > savedOffsetValue) {
-                        partitionOffsetMap.put(partition, offsetValue);
-                    }
-                }
-            }
+    private static Properties createConsumerConfig(String zkServerList, String groupId, String optionalConfigs,
+                                                   boolean isBinaryMessage) {
+        Properties props = new Properties();
+        props.put(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS, zkServerList);
+        props.put(ADAPTOR_SUBSCRIBER_GROUP_ID, groupId);
+
+        //If it stops heart-beating for a period of time longer than session.timeout.ms then it will be considered dead
+        // and its partitions will be assigned to another process
+        props.put("session.timeout.ms", "30000");
+        props.put("enable.auto.commit", "false");
+        props.put("auto.offset.reset", "earliest");
+        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+
+        if (!isBinaryMessage) {
+            props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        } else {
+            props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
         }
+
+        KafkaIOUtils.splitHeaderValues(optionalConfigs, props);
+        return props;
     }
 
-    @Override
-    protected ServiceDeploymentInfo exposeServiceDeploymentInfo() {
-        return null;
+    private static Properties createProducerConfig(String zkServerList, String optionalConfigs,
+                                                   boolean isBinaryMessage) {
+        Properties configProperties = new Properties();
+        configProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, zkServerList);
+        configProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+                "org.apache.kafka.common.serialization.ByteArraySerializer");
+        KafkaIOUtils.splitHeaderValues(optionalConfigs, configProperties);
+
+        if (!isBinaryMessage) {
+            configProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                    "org.apache.kafka.common.serialization.StringSerializer");
+        } else {
+            configProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                    "org.apache.kafka.common.serialization.ByteArraySerializer");
+        }
+        return configProperties;
     }
+
 
     /**
      * State class for Kafka source.

@@ -21,10 +21,11 @@ package io.siddhi.extension.io.kafka.source;
 import io.siddhi.core.SiddhiAppRuntime;
 import io.siddhi.core.SiddhiManager;
 import io.siddhi.core.event.Event;
-import io.siddhi.core.exception.SiddhiAppCreationException;
+import io.siddhi.core.stream.input.source.Source;
 import io.siddhi.core.stream.output.StreamCallback;
 import io.siddhi.core.util.SiddhiTestHelper;
 import io.siddhi.extension.io.kafka.KafkaTestUtil;
+import io.siddhi.extension.io.kafka.UnitTestAppender;
 import io.siddhi.query.api.exception.SiddhiAppValidationException;
 import org.I0Itec.zkclient.exception.ZkTimeoutException;
 import org.apache.log4j.Logger;
@@ -124,12 +125,15 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test(expectedExceptions = SiddhiAppCreationException.class, dependsOnMethods = "testKafkaSingleTopicSource")
-    public void testTransportCreationDisabledProperty() {
+    @Test(dependsOnMethods = "testKafkaSingleTopicSource")
+    public void testTransportCreationDisabledProperty() throws InterruptedException {
         receivedEventNameList = new ArrayList<>(2);
         receivedValueList = new ArrayList<>(2);
         SiddhiManager siddhiManager = new SiddhiManager();
-        siddhiManager.createSiddhiAppRuntime(
+        Logger logger = Logger.getLogger(Source.class);
+        UnitTestAppender appender = new UnitTestAppender();
+        logger.addAppender(appender);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                 "@App:name('TestExecutionPlan') @App:transportChannelCreationEnabled('false')" +
                         "define stream BarStream (symbol string, price float, volume long); " +
                         "@info(name = 'query1') " +
@@ -138,6 +142,15 @@ public class KafkaSourceTestCase {
                         "@map(type='xml'))" +
                         "Define stream FooStream (symbol string, price float, volume long);" +
                         "from FooStream select symbol, price, volume insert into BarStream;");
+
+        siddhiAppRuntime.start();
+        Thread.sleep(5000);
+        if (appender.getMessages() != null) {
+            AssertJUnit.assertTrue(appender.getMessages().contains("Error on 'TestExecutionPlan'. Topic(s) " +
+                    "single_topic creation failed. User has disabled topic creation by setting " +
+                    "transportChannelCreationEnabled property to false. Hence Siddhi App deployment will be aborted"));
+        }
+        logger.removeAppender(appender);
 
     }
 
@@ -277,8 +290,7 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test(expectedExceptions = SiddhiAppValidationException.class,
-            dependsOnMethods = "testKafkaSingleTopicWithSpecificSubscribeSource")
+    @Test(dependsOnMethods = "testKafkaSingleTopicWithSpecificSubscribeSource")
     public void testKafkaSpecificSubscribeForUnavailablePartitionSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
@@ -287,6 +299,9 @@ public class KafkaSourceTestCase {
             String topics[] = new String[]{"topic_without_some_partition"};
             KafkaTestUtil.createTopic(topics, 2);
             SiddhiManager siddhiManager = new SiddhiManager();
+            Logger logger = Logger.getLogger(Source.class);
+            UnitTestAppender appender = new UnitTestAppender();
+            logger.addAppender(appender);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -299,6 +314,13 @@ public class KafkaSourceTestCase {
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
             siddhiAppRuntime.start();
+            Thread.sleep(5000);
+            if (appender.getMessages() != null) {
+                AssertJUnit.assertTrue(appender.getMessages().contains("Error on 'TestExecutionPlan'. Partition " +
+                        "number(s) 2 aren't available for the topic: topic_without_some_partition Error while " +
+                        "connecting at Source 'kafka' at 'FooStream'."));
+            }
+            logger.removeAppender(appender);
             KafkaTestUtil.deleteTopic(topics);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {

@@ -32,6 +32,7 @@ import io.siddhi.core.util.snapshot.state.StateFactory;
 import io.siddhi.core.util.transport.DynamicOptions;
 import io.siddhi.core.util.transport.Option;
 import io.siddhi.core.util.transport.OptionHolder;
+import io.siddhi.extension.io.kafka.KafkaIOUtils;
 import io.siddhi.query.api.definition.StreamDefinition;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -137,44 +138,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 )
 public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
 
-    public static final String LAST_SENT_SEQ_NO_PERSIST_KEY = "lastSentSequenceNo";
+    private static final String LAST_SENT_SEQ_NO_PERSIST_KEY = "lastSentSequenceNo";
     public static final String SEQ_NO_HEADER_DELIMITER = "~";
     public static final String SEQ_NO_HEADER_FIELD_SEPERATOR = ":";
     protected static final String KAFKA_PUBLISH_TOPIC = "topic";
-    protected static final String KAFKA_BROKER_LIST = "bootstrap.servers";
+    private static final String KAFKA_BROKER_LIST = "bootstrap.servers";
     protected static final String KAFKA_MESSAGE_KEY = "key";
-    protected static final String KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
-    protected static final String HEADER_SEPARATOR = ",";
-    protected static final String ENTRY_SEPARATOR = ":";
+    private static final String KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
     protected static final String KAFKA_PARTITION_NO = "partition.no";
-    protected static final String SEQ_ID = "sequence.id";
-    protected static final String IS_BINARY_MESSAGE = "is.binary.message";
+    private static final String SEQ_ID = "sequence.id";
+    private static final String IS_BINARY_MESSAGE = "is.binary.message";
     private static final Logger LOG = Logger.getLogger(KafkaSink.class);
-    protected Option topicOption = null;
+    private Option topicOption = null;
     protected String bootstrapServers;
     protected String optionalConfigs;
-    protected Option partitionOption;
-    protected Boolean isSequenced = false;
+    private Option partitionOption;
+    private Boolean isSequenced = false;
     protected String sequenceId = null;
     protected Boolean isBinaryMessage;
     protected Option keyOption;
     private Producer<String, Object> producer;
-
-    public static void readOptionalConfigs(Properties props, String optionalConfigs) {
-        if (optionalConfigs != null && !optionalConfigs.isEmpty()) {
-            String[] optionalProperties = optionalConfigs.split(HEADER_SEPARATOR);
-            if (optionalProperties.length > 0) {
-                for (String header : optionalProperties) {
-                    try {
-                        String[] configPropertyWithValue = header.split(ENTRY_SEPARATOR, 2);
-                        props.put(configPropertyWithValue[0], configPropertyWithValue[1]);
-                    } catch (Exception e) {
-                        LOG.warn("Optional property '" + header + "' is not defined in the correct format.", e);
-                    }
-                }
-            }
-        }
-    }
 
     @Override
     protected StateFactory<KafkaSinkState> init(StreamDefinition outputStreamDefinition, OptionHolder optionHolder,
@@ -267,8 +250,7 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
             props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
         }
 
-        readOptionalConfigs(props, optionalConfigs);
-
+        KafkaIOUtils.splitHeaderValues(optionalConfigs, props);
         producer = new KafkaProducer<>(props);
         LOG.info("Kafka producer created.");
     }
