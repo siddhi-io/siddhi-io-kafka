@@ -28,7 +28,7 @@
 
     <groupId>io.siddhi.extension.io.kafka</groupId>
     <artifactId>siddhi-io-kafka-parent</artifactId>
-    <version>5.0.4</version>
+    <version>5.0.5-SNAPSHOT</version>
     <name>Siddhi IO Kafka Extension Parent</name>
 
     <profiles>
@@ -68,7 +68,7 @@
         <url>https://github.com/siddhi-io/siddhi-io-kafka.git</url>
         <developerConnection>scm:git:https://github.com/siddhi-io/siddhi-io-kafka.git
         </developerConnection>
-        <tag>v5.0.4</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <dependencyManagement>
