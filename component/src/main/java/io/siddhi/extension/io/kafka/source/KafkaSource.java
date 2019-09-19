@@ -24,7 +24,7 @@ import io.siddhi.annotation.Parameter;
 import io.siddhi.annotation.util.DataType;
 import io.siddhi.core.config.SiddhiAppContext;
 import io.siddhi.core.exception.ConnectionUnavailableException;
-import io.siddhi.core.exception.SiddhiAppCreationException;
+import io.siddhi.core.exception.SiddhiAppRuntimeException;
 import io.siddhi.core.stream.ServiceDeploymentInfo;
 import io.siddhi.core.stream.input.source.Source;
 import io.siddhi.core.stream.input.source.SourceEventListener;
@@ -251,7 +251,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                 consumerKafkaGroup.setKafkaSourceState(kafkaSourceState);
             }
             consumerKafkaGroup.run();
-        } catch (SiddhiAppValidationException | SiddhiAppCreationException e) {
+        } catch (SiddhiAppRuntimeException e) {
             throw e;
         } catch (Throwable e) {
             throw new ConnectionUnavailableException("Error when initiating connection with Kafka server: " +
@@ -356,7 +356,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         return perTopicPerPartitionOffset;
     }
 
-    private void checkTopicsAvailableInCluster() throws SiddhiAppValidationException {
+    private void checkTopicsAvailableInCluster() {
         Properties props = KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
                 isBinaryMessage);
         props.put("group.id", "test-consumer-group");
@@ -385,7 +385,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
             String errorMessage = "Topic(s) " + invalidTopics + " aren't available. Topics won't be created "
                     + "since there are partition numbers defined in the query.";
             LOG.error(errorMessage);
-            throw new SiddhiAppValidationException("Topic(s) " + invalidTopics + " aren't available. "
+            throw new SiddhiAppRuntimeException("Topic(s) " + invalidTopics + " aren't available. "
                     + "Topics won't be created since there "
                     + "are partition numbers defined in the query.");
         } else if (!topicsAvailable) {
@@ -393,7 +393,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                 LOG.warn("Topic(s) " + invalidTopics + " aren't available. "
                         + "These Topics will be created with the default partition.");
             } else {
-                throw new SiddhiAppCreationException("Topic(s) " + invalidTopics + " creation failed. " +
+                throw new SiddhiAppRuntimeException("Topic(s) " + invalidTopics + " creation failed. " +
                         "User has disabled topic creation by setting " +
                         SiddhiConstants.TRANSPORT_CHANNEL_CREATION_IDENTIFIER +
                         " property to false. Hence Siddhi App deployment will be aborted.");
@@ -401,7 +401,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         }
     }
 
-    private void checkPartitionsAvailableForTheTopicsInCluster() throws SiddhiAppValidationException {
+    private void checkPartitionsAvailableForTheTopicsInCluster() {
         //checking whether the defined partitions are available in the defined topic
         Properties configProperties = createProducerConfig(bootstrapServers, optionalConfigs, isBinaryMessage);
         org.apache.kafka.clients.producer.Producer producer = new KafkaProducer(configProperties);
@@ -429,7 +429,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                     }
                 }
                 if (!partitionsAvailable) {
-                    throw new SiddhiAppValidationException(
+                    throw new SiddhiAppRuntimeException(
                             "Partition number(s) " + invalidPartitions + " aren't available for "
                                     + "the topic: " + topic);
                 }
