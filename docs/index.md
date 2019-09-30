@@ -35,8 +35,8 @@ Following JARs are needed from `<KAFKA_HOME>/libs` directory.
  - kafka_2.11-*.jar
  - kafka-clients-*.jar
  - metrics-core-*.jar
- - scala-library-2.11.8.jar
- - scala-parser-combinators_2.11*.jar (if exist)
+ - scala-library-2.11.*.jar
+ - scala-parser-combinators_2.11.*.jar (if exists)
  - zkclient-*.jar
  - zookeeper-*.jar 
 
