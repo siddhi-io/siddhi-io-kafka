@@ -21,9 +21,11 @@ package io.siddhi.extension.io.kafka.source;
 import io.siddhi.core.SiddhiAppRuntime;
 import io.siddhi.core.SiddhiManager;
 import io.siddhi.core.event.Event;
-import io.siddhi.core.exception.SiddhiAppCreationException;
+import io.siddhi.core.stream.input.source.Source;
 import io.siddhi.core.stream.output.StreamCallback;
+import io.siddhi.core.util.SiddhiTestHelper;
 import io.siddhi.extension.io.kafka.KafkaTestUtil;
+import io.siddhi.extension.io.kafka.UnitTestAppender;
 import io.siddhi.query.api.exception.SiddhiAppValidationException;
 import org.I0Itec.zkclient.exception.ZkTimeoutException;
 import org.apache.log4j.Logger;
@@ -36,6 +38,7 @@ import org.testng.annotations.Test;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Class implementing the Test cases for Kafka Source.
@@ -46,6 +49,7 @@ public class KafkaSourceTestCase {
     private volatile boolean eventArrived;
     private volatile List<String> receivedEventNameList;
     private volatile List<Long> receivedValueList;
+    private ReentrantLock lock = new ReentrantLock();
 
     @BeforeClass
     public static void init() throws Exception {
@@ -110,6 +114,7 @@ public class KafkaSourceTestCase {
             List<Long> expectedValues = new ArrayList<>(2);
             expectedValues.add(0L);
             expectedValues.add(1L);
+            SiddhiTestHelper.waitForEvents(2000, 2, count, 20000);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
                     receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
@@ -121,12 +126,15 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test(expectedExceptions = SiddhiAppCreationException.class, dependsOnMethods = "testKafkaSingleTopicSource")
-    public void testTransportCreationDisabledProperty() {
+    @Test(dependsOnMethods = "testKafkaSingleTopicSource")
+    public void testTransportCreationDisabledProperty() throws InterruptedException {
         receivedEventNameList = new ArrayList<>(2);
         receivedValueList = new ArrayList<>(2);
         SiddhiManager siddhiManager = new SiddhiManager();
-        siddhiManager.createSiddhiAppRuntime(
+        Logger logger = Logger.getLogger(Source.class);
+        UnitTestAppender appender = new UnitTestAppender();
+        logger.addAppender(appender);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                 "@App:name('TestExecutionPlan') @App:transportChannelCreationEnabled('false')" +
                         "define stream BarStream (symbol string, price float, volume long); " +
                         "@info(name = 'query1') " +
@@ -135,6 +143,15 @@ public class KafkaSourceTestCase {
                         "@map(type='xml'))" +
                         "Define stream FooStream (symbol string, price float, volume long);" +
                         "from FooStream select symbol, price, volume insert into BarStream;");
+
+        siddhiAppRuntime.start();
+        Thread.sleep(5000);
+        if (appender.getMessages() != null) {
+            AssertJUnit.assertTrue(appender.getMessages().contains("Error on 'TestExecutionPlan'. Topic(s) " +
+                    "single_topic creation failed. User has disabled topic creation by setting " +
+                    "transportChannelCreationEnabled property to false. Hence Siddhi App deployment will be aborted"));
+        }
+        logger.removeAppender(appender);
 
     }
 
@@ -274,8 +291,7 @@ public class KafkaSourceTestCase {
         }
     }
 
-    @Test(expectedExceptions = SiddhiAppValidationException.class,
-            dependsOnMethods = "testKafkaSingleTopicWithSpecificSubscribeSource")
+    @Test(dependsOnMethods = "testKafkaSingleTopicWithSpecificSubscribeSource")
     public void testKafkaSpecificSubscribeForUnavailablePartitionSource() throws InterruptedException {
         try {
             log.info("-------------------------------------------------------------------------------------------");
@@ -284,6 +300,9 @@ public class KafkaSourceTestCase {
             String topics[] = new String[]{"topic_without_some_partition"};
             KafkaTestUtil.createTopic(topics, 2);
             SiddhiManager siddhiManager = new SiddhiManager();
+            Logger logger = Logger.getLogger(Source.class);
+            UnitTestAppender appender = new UnitTestAppender();
+            logger.addAppender(appender);
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -296,6 +315,13 @@ public class KafkaSourceTestCase {
                             "Define stream FooStream (symbol string, price float, volume long);" +
                             "from FooStream select symbol, price, volume insert into BarStream;");
             siddhiAppRuntime.start();
+            Thread.sleep(5000);
+            if (appender.getMessages() != null) {
+                AssertJUnit.assertTrue(appender.getMessages().contains("Error on 'TestExecutionPlan'. Partition " +
+                        "number(s) 2 aren't available for the topic: topic_without_some_partition Error while " +
+                        "connecting at Source 'kafka' at 'FooStream'."));
+            }
+            logger.removeAppender(appender);
             KafkaTestUtil.deleteTopic(topics);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
@@ -488,6 +514,7 @@ public class KafkaSourceTestCase {
                 }
             });
             siddhiAppRuntime.start();
+            Thread.sleep(5000);
             KafkaTestUtil.kafkaPublisher(topics, 1, 2, false, null, true);
             Thread.sleep(300);
             List<String> expectedNames = new ArrayList<>(2);
@@ -500,6 +527,8 @@ public class KafkaSourceTestCase {
             expectedValues.add(1L);
             expectedValues.add(0L);
             expectedValues.add(1L);
+
+            SiddhiTestHelper.waitForEvents(2000, 4, count, 15000);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
                     receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
@@ -666,29 +695,39 @@ public class KafkaSourceTestCase {
             siddhiAppRuntime.addCallback("BarStream", new StreamCallback() {
                 @Override
                 public void receive(Event[] events) {
-                    for (Event event : events) {
-                        log.info(event);
-                        eventArrived = true;
-                        count++;
-                        receivedEventNameList.add(event.getData(0).toString());
-                        receivedValueList.add((long) event.getData(2));
+                    lock.lock();
+                    try {
+                        for (Event event : events) {
+                            log.info(event);
+                            eventArrived = true;
+                            count++;
+                            receivedEventNameList.add(event.getData(0).toString());
+                            receivedValueList.add((long) event.getData(2));
+                        }
+                    } finally {
+                        lock.unlock();
                     }
                 }
             });
             siddhiAppRuntime.addCallback("BarStream2", new StreamCallback() {
                 @Override
                 public void receive(Event[] events) {
-                    for (Event event : events) {
-                        log.info(event);
-                        eventArrived = true;
-                        count++;
-                        receivedEventNameList.add(event.getData(0).toString());
-                        receivedValueList.add((long) event.getData(2));
+                    lock.lock();
+                    try {
+                        for (Event event : events) {
+                            log.info(event);
+                            eventArrived = true;
+                            count++;
+                            receivedEventNameList.add(event.getData(0).toString());
+                            receivedValueList.add((long) event.getData(2));
+                        }
+                    } finally {
+                        lock.unlock();
                     }
                 }
             });
             siddhiAppRuntime.start();
-            Thread.sleep(2000);
+            Thread.sleep(5000);
             KafkaTestUtil.kafkaPublisher(topics, 1, 1, false, null, true);
             Thread.sleep(1000);
             List<String> expectedNames = new ArrayList<>(2);
@@ -697,7 +736,7 @@ public class KafkaSourceTestCase {
             List<Long> expectedValues = new ArrayList<>(2);
             expectedValues.add(0L);
             expectedValues.add(0L);
-            Thread.sleep(5000);
+            SiddhiTestHelper.waitForEvents(5000, 2, count, 60000);
             AssertJUnit.assertEquals(2, count);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
                     receivedEventNameList);

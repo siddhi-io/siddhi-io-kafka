@@ -23,6 +23,7 @@ import io.siddhi.core.SiddhiManager;
 import io.siddhi.core.event.Event;
 import io.siddhi.core.stream.input.InputHandler;
 import io.siddhi.core.stream.output.StreamCallback;
+import io.siddhi.core.util.SiddhiTestHelper;
 import io.siddhi.extension.io.kafka.KafkaTestUtil;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
@@ -162,9 +163,9 @@ public class KafkaMultiDCSinkTestCases {
         fooStream.send(new Object[]{"WSO2", 55.6f, 100L});
         fooStream.send(new Object[]{"WSO2", 75.6f, 102L});
         fooStream.send(new Object[]{"WSO2", 57.6f, 103L});
-        Thread.sleep(6000);
 
-        Assert.assertTrue(count == 6);
+        SiddhiTestHelper.waitForEvents(8000, 2, count, 40000);
+        Assert.assertEquals(6, count);
         sourceOneApp.shutdown();
         sourceTwoApp.shutdown();
         siddhiAppRuntimeSink.shutdown();

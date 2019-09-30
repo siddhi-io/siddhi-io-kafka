@@ -28,6 +28,7 @@ import io.siddhi.core.util.config.ConfigReader;
 import io.siddhi.core.util.snapshot.state.StateFactory;
 import io.siddhi.core.util.transport.DynamicOptions;
 import io.siddhi.core.util.transport.OptionHolder;
+import io.siddhi.extension.io.kafka.KafkaIOUtils;
 import io.siddhi.extension.io.kafka.sink.KafkaSink;
 import io.siddhi.query.api.definition.StreamDefinition;
 import io.siddhi.query.api.exception.SiddhiAppValidationException;
@@ -160,7 +161,7 @@ public class KafkaMultiDCSink extends KafkaSink {
             props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
         }
 
-        readOptionalConfigs(props, optionalConfigs);
+        KafkaIOUtils.splitHeaderValues(optionalConfigs, props);
 
         String[] bootstrapServersList = bootstrapServers.split(",");
         for (int index = 0; index < bootstrapServersList.length; index++) {
