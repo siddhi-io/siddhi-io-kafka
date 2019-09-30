@@ -2,20 +2,20 @@ Siddhi IO Kafka
 ======================================
 
   [![Jenkins Build Status](https://wso2.org/jenkins/job/siddhi/job/siddhi-io-kafka/badge/icon)](https://wso2.org/jenkins/job/siddhi/job/siddhi-io-kafka/)
-  [![GitHub (pre-)Release](https://img.shields.io/github/release/siddhi-io/siddhi-io-kafka/all.svg)](https://github.com/siddhi-io/siddhi-io-kafka/releases)
-  [![GitHub (Pre-)Release Date](https://img.shields.io/github/release-date-pre/siddhi-io/siddhi-io-kafka.svg)](https://github.com/siddhi-io/siddhi-io-kafka/releases)
+  [![GitHub Release](https://img.shields.io/github/release/siddhi-io/siddhi-io-kafka.svg)](https://github.com/siddhi-io/siddhi-io-kafka/releases)
+  [![GitHub Release Date](https://img.shields.io/github/release-date/siddhi-io/siddhi-io-kafka.svg)](https://github.com/siddhi-io/siddhi-io-kafka/releases)
   [![GitHub Open Issues](https://img.shields.io/github/issues-raw/siddhi-io/siddhi-io-kafka.svg)](https://github.com/siddhi-io/siddhi-io-kafka/issues)
   [![GitHub Last Commit](https://img.shields.io/github/last-commit/siddhi-io/siddhi-io-kafka.svg)](https://github.com/siddhi-io/siddhi-io-kafka/commits/master)
   [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-The **siddhi-io-kafka extension** is an extension to <a target="_blank" href="https://wso2.github.io/siddhi">Siddhi</a> that receives and publishes events via Kafka and HTTPS transports, calls external services, and serves incoming requests and provide synchronous responses.
+The **siddhi-io-kafka extension** is an extension to <a target="_blank" href="https://wso2.github.io/siddhi">Siddhi</a> that receives and publishes events from and to Kafka.
 
 For information on <a target="_blank" href="https://siddhi.io/">Siddhi</a> and it's features refer <a target="_blank" href="https://siddhi.io/redirect/docs.html">Siddhi Documentation</a>. 
 
 ## Download
 
 * Versions 5.x and above with group id `io.siddhi.extension.*` from <a target="_blank" href="https://mvnrepository.com/artifact/io.siddhi.extension.io.kafka/siddhi-io-kafka/">here</a>.
-* Versions 4.x and lower with group id `org.wso2.extension.siddhi.*` from <a target="_blank" href="https://mvnrepository.com/artifact/org.wso2.extension.siddhi.execution.string/siddhi-io-kafka">here</a>.
+* Versions 4.x and lower with group id `org.wso2.extension.siddhi.*` from <a target="_blank" href="https://mvnrepository.com/artifact/org.wso2.extension.siddhi.io.kafka/siddhi-io-kafka">here</a>.
 
 ## Latest API Docs 
 
@@ -35,8 +35,8 @@ Following JARs are needed from `<KAFKA_HOME>/libs` directory.
  - kafka_2.11-*.jar
  - kafka-clients-*.jar
  - metrics-core-*.jar
- - scala-library-2.11.8.jar
- - scala-parser-combinators_2.11*.jar (if exist)
+ - scala-library-2.11.*.jar
+ - scala-parser-combinators_2.11.*.jar (if exists)
  - zkclient-*.jar
  - zookeeper-*.jar 
 
