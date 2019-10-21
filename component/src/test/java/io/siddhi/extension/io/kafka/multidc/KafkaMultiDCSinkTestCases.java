@@ -79,7 +79,7 @@ public class KafkaMultiDCSinkTestCases {
     @Test
     public void testMultiDCSinkWithBothBrokersRunning() throws InterruptedException {
         LOG.info("Creating test for publishing events for static topic without a partition");
-        String topics[] = new String[]{"myTopic"};
+        String[] topics = new String[]{"myTopic"};
         KafkaTestUtil.createTopic(KafkaTestUtil.ZK_SERVER_CON_STRING, topics, 1);
         KafkaTestUtil.createTopic(KafkaTestUtil.ZK_SERVER2_CON_STRING, topics, 1);
         Thread.sleep(4000);
@@ -154,7 +154,7 @@ public class KafkaMultiDCSinkTestCases {
         fooStream.send(new Object[]{"WSO2", 57.6f, 103L});
 
         SiddhiTestHelper.waitForEvents(8000, 2, count, 40000);
-        Assert.assertEquals(6, count);
+        Assert.assertEquals(6, count.get());
         sourceOneApp.shutdown();
         sourceTwoApp.shutdown();
         siddhiAppRuntimeSink.shutdown();
