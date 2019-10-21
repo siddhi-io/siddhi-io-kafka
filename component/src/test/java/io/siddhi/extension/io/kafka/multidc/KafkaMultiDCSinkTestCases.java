@@ -33,21 +33,17 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Class implementing the Test cases for KafkaMultiDCSink.
  */
 public class KafkaMultiDCSinkTestCases {
-    static final Logger LOG = Logger.getLogger(KafkaMultiDCSinkTestCases.class);
+    private static final Logger LOG = Logger.getLogger(KafkaMultiDCSinkTestCases.class);
     private static ExecutorService executorService;
-    private volatile int count;
-    private volatile boolean eventArrived;
-    private volatile List<String> receivedEventNameList;
-    private volatile List<Long> receivedValueList;
+    private AtomicInteger count;
 
     @BeforeClass
     public static void init() throws Exception {
@@ -77,8 +73,7 @@ public class KafkaMultiDCSinkTestCases {
 
     @BeforeMethod
     public void reset() {
-        count = 0;
-        eventArrived = false;
+        count = new AtomicInteger(0);
     }
 
     @Test
@@ -88,8 +83,6 @@ public class KafkaMultiDCSinkTestCases {
         KafkaTestUtil.createTopic(KafkaTestUtil.ZK_SERVER_CON_STRING, topics, 1);
         KafkaTestUtil.createTopic(KafkaTestUtil.ZK_SERVER2_CON_STRING, topics, 1);
         Thread.sleep(4000);
-        receivedEventNameList = new ArrayList<>(3);
-        receivedValueList = new ArrayList<>(3);
 
         SiddhiManager sourceOneSiddhiManager = new SiddhiManager();
         SiddhiAppRuntime sourceOneApp = sourceOneSiddhiManager.createSiddhiAppRuntime(
@@ -105,13 +98,10 @@ public class KafkaMultiDCSinkTestCases {
 
         sourceOneApp.addCallback("BarStream2", new StreamCallback() {
             @Override
-            public synchronized void receive(Event[] events) {
+            public void receive(Event[] events) {
                 for (Event event : events) {
                     LOG.info(event);
-                    eventArrived = true;
-                    count++;
-                    receivedEventNameList.add(event.getData(0).toString());
-                    receivedValueList.add((long) event.getData(2));
+                    count.getAndIncrement();
                 }
             }
         });
@@ -132,11 +122,10 @@ public class KafkaMultiDCSinkTestCases {
 
         sourceTwoApp.addCallback("BarStream2", new StreamCallback() {
             @Override
-            public synchronized void receive(Event[] events) {
+            public void receive(Event[] events) {
                 for (Event event : events) {
                     LOG.info(event);
-                    eventArrived = true;
-                    count++;
+                    count.getAndIncrement();
                 }
             }
         });
@@ -204,7 +193,7 @@ public class KafkaMultiDCSinkTestCases {
             public synchronized void receive(Event[] events) {
                 for (Event event : events) {
                     LOG.info(event);
-                    count++;
+                    count.getAndIncrement();
                 }
             }
         });
@@ -233,7 +222,7 @@ public class KafkaMultiDCSinkTestCases {
         fooStream.send(new Object[]{"WSO2", 57.6f, 103L});
         Thread.sleep(4000);
 
-        Assert.assertTrue(count == 3);
+        Assert.assertEquals(3, count.get());
         sourceOneApp.shutdown();
         siddhiAppRuntimeSink.shutdown();
 
