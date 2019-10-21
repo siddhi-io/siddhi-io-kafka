@@ -514,7 +514,7 @@ public class KafkaSourceTestCase {
                 }
             });
             siddhiAppRuntime.start();
-            Thread.sleep(5000);
+            Thread.sleep(10000);
             KafkaTestUtil.kafkaPublisher(topics, 1, 2, false, null, true);
             Thread.sleep(300);
             List<String> expectedNames = new ArrayList<>(2);
@@ -528,7 +528,7 @@ public class KafkaSourceTestCase {
             expectedValues.add(0L);
             expectedValues.add(1L);
 
-            SiddhiTestHelper.waitForEvents(2000, 4, count, 15000);
+            SiddhiTestHelper.waitForEvents(5000, 4, count, 15000);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
                     receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
