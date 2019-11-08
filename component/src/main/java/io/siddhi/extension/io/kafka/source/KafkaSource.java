@@ -117,7 +117,7 @@ import java.util.concurrent.ScheduledExecutorService;
                         optional = true,
                         defaultValue = "null"),
                 @Parameter(name = "enable.auto.commit",
-                        description = "This parameter specifies whether to commit offsets automatically.`\n "
+                        description = "This parameter specifies whether to commit offsets automatically. \n"
                                 + "By default, as the Siddhi Kafka source reads messages from Kafka, "
                                 + "it will periodically(Default value is set to 1000ms. You can configure it with "
                                 + "`auto.commit.interval.ms` property as an `optional.configuration`) "
@@ -125,7 +125,7 @@ import java.util.concurrent.ScheduledExecutorService;
                                 + "for the partitions it is reading from back to Kafka. "
                                 + "To guarantee at-least-once processing, we recommend you to enable "
                                 + "Siddhi Periodic State Persistence when `enable.auto.commit` property "
-                                + "is set to `true`.\n "
+                                + "is set to `true`. \n"
                                 + "When you would like more control over exactly when offsets are committed, you can "
                                 + "set `enable.auto.commit` to false and Siddhi will commit the offset once the "
                                 + "records are successfully processed at the Source. "
