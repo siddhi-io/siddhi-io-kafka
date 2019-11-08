@@ -114,7 +114,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="#api-docs-v504" tabindex="1" class="md-skip">
+      <a href="#api-docs-v505" tabindex="1" class="md-skip">
         Skip to content
       </a>
     
@@ -372,6 +372,18 @@
   
 </nav>
     
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../5.0.5/" title="5.0.5" class="md-nav__link">
+      5.0.5
+    </a>
   </li>
 
         
@@ -965,7 +977,7 @@
                   <a href="https://github.com/siddhi-io/siddhi-io-kafka/blob/master/api/latest.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                <h1 id="api-docs-v504">API Docs - v5.0.4</h1>
+                <h1 id="api-docs-v505">API Docs - v5.0.5</h1>
 <div class="admonition info">
 <p class="admonition-title">Tested Siddhi Core version: <em><a target="_blank" href="http://siddhi.io/en/v5.1/docs/query-guide/">5.1.2</a></em></p>
 <p>It could also support other Siddhi Core minor versions.</p>
@@ -1185,7 +1197,7 @@ from FooStream select symbol, price, volume insert into BarStream;
 <p style="word-wrap: break-word;margin: 0;">A Kafka source receives events to be processed by WSO2 SP from a topic with a partition for a Kafka cluster. The events received can be in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic.</p>
 <p></p>
 <span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
-<pre><code>@source(type=&quot;kafka&quot;, bootstrap.servers=&quot;&lt;STRING&gt;&quot;, topic.list=&quot;&lt;STRING&gt;&quot;, group.id=&quot;&lt;STRING&gt;&quot;, threading.option=&quot;&lt;STRING&gt;&quot;, partition.no.list=&quot;&lt;STRING&gt;&quot;, seq.enabled=&quot;&lt;BOOL&gt;&quot;, is.binary.message=&quot;&lt;BOOL&gt;&quot;, topic.offsets.map=&quot;&lt;STRING&gt;&quot;, optional.configuration=&quot;&lt;STRING&gt;&quot;, @map(...)))
+<pre><code>@source(type=&quot;kafka&quot;, bootstrap.servers=&quot;&lt;STRING&gt;&quot;, topic.list=&quot;&lt;STRING&gt;&quot;, group.id=&quot;&lt;STRING&gt;&quot;, threading.option=&quot;&lt;STRING&gt;&quot;, partition.no.list=&quot;&lt;STRING&gt;&quot;, seq.enabled=&quot;&lt;BOOL&gt;&quot;, is.binary.message=&quot;&lt;BOOL&gt;&quot;, topic.offsets.map=&quot;&lt;STRING&gt;&quot;, enable.auto.commit=&quot;&lt;BOOL&gt;&quot;, optional.configuration=&quot;&lt;STRING&gt;&quot;, @map(...)))
 </code></pre>
 
 <p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
@@ -1259,6 +1271,14 @@ from FooStream select symbol, price, volume insert into BarStream;
         <td style="vertical-align: top; word-wrap: break-word"><p style="word-wrap: break-word;margin: 0;">This parameter specifies reading offsets for each topic and partition. The value for this parameter is specified in the following format: <br>&nbsp;<code>&lt;topic&gt;=&lt;offset&gt;,&lt;topic&gt;=&lt;offset&gt;,</code><br>&nbsp;&nbsp;When an offset is defined for a topic, the Kafka source skips reading the message with the number specified as the offset as well as all the messages sent previous to that message. If the offset is not defined for a specific topic it reads messages from the beginning. <br>e.g., <code>stocks=100,trades=50</code> reads from the 101th message of the <code>stocks</code> topic, and from the 51st message of the <code>trades</code> topic.</p></td>
         <td style="vertical-align: top">null</td>
         <td style="vertical-align: top">STRING</td>
+        <td style="vertical-align: top">Yes</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">enable.auto.commit</td>
+        <td style="vertical-align: top; word-wrap: break-word"><p style="word-wrap: break-word;margin: 0;">This parameter specifies whether to commit offsets automatically. <br>By default, as the Siddhi Kafka source reads messages from Kafka, it will periodically(Default value is set to 1000ms. You can configure it with <code>auto.commit.interval.ms</code> property as an <code>optional.configuration</code>) commit its current offset (defined as the offset of the next message to be read) for the partitions it is reading from back to Kafka. To guarantee at-least-once processing, we recommend you to enable Siddhi Periodic State Persistence when <code>enable.auto.commit</code> property is set to <code>true</code>. <br>When you would like more control over exactly when offsets are committed, you can set <code>enable.auto.commit</code> to false and Siddhi will commit the offset once the records are successfully processed at the Source. When <code>enable.auto.commit</code> is set to <code>false</code>, manual committing would introduce a latency during consumption.</p></td>
+        <td style="vertical-align: top">true</td>
+        <td style="vertical-align: top">BOOL</td>
         <td style="vertical-align: top">Yes</td>
         <td style="vertical-align: top">No</td>
     </tr>
@@ -1427,13 +1447,13 @@ from FooStream select symbol, price, volume insert into BarStream;
           </a>
         
         
-          <a href="../5.0.4/" title="5.0.4" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="../5.0.5/" title="5.0.5" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                5.0.4
+                5.0.5
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">
