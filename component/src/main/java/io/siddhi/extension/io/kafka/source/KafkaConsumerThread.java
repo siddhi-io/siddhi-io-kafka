@@ -57,19 +57,21 @@ public class KafkaConsumerThread implements Runnable {
     private String consumerThreadId;
     private boolean isPartitionWiseThreading = false;
     private boolean isBinaryMessage = false;
+    private boolean enableAutoCommit = true;
     private ReentrantLock lock;
     private Condition condition;
     private KafkaSource.KafkaSourceState kafkaSourceState;
 
     KafkaConsumerThread(SourceEventListener sourceEventListener, String[] topics, String[] partitions,
                         Properties props,
-                        boolean isPartitionWiseThreading, boolean isBinaryMessage) {
+                        boolean isPartitionWiseThreading, boolean isBinaryMessage, boolean enableAutoCommit) {
         this.consumer = new KafkaConsumer<>(props);
         this.sourceEventListener = sourceEventListener;
         this.topics = topics;
         this.partitions = partitions;
         this.isPartitionWiseThreading = isPartitionWiseThreading;
         this.isBinaryMessage = isBinaryMessage;
+        this.enableAutoCommit = enableAutoCommit;
         this.consumerThreadId = buildId();
         lock = new ReentrantLock();
         condition = lock.newCondition();
@@ -171,8 +173,6 @@ public class KafkaConsumerThread implements Runnable {
                                 + ", key: " + record.key() + ", topic: " + record.topic() +
                                 ", partition: " + partition);
                     }
-                    kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(), record.offset());
-
                     String transportSyncProperties = "topic:" + record.topic() + ",partition:" + record.partition()
                             + ",offSet:" + record.offset();
                     String[] transportSyncPropertiesArr = new String[]{transportSyncProperties};
@@ -229,16 +229,19 @@ public class KafkaConsumerThread implements Runnable {
                                     + consumerThreadId + ". Dropping the message");
                         }
                     }
+                    kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(), record.offset());
                 }
-                try {
-                    consumerLock.lock();
-                    if (!records.isEmpty()) {
-                        consumer.commitAsync();
+                if (!enableAutoCommit) {
+                    try {
+                        consumerLock.lock();
+                        if (!records.isEmpty()) {
+                            consumer.commitAsync();
+                        }
+                    } catch (CommitFailedException e) {
+                        LOG.error("Kafka commit failed for topic kafka_result_topic", e);
+                    } finally {
+                        consumerLock.unlock();
                     }
-                } catch (CommitFailedException e) {
-                    LOG.error("Kafka commit failed for topic kafka_result_topic", e);
-                } finally {
-                    consumerLock.unlock();
                 }
             }
             try { //To avoid thread spin

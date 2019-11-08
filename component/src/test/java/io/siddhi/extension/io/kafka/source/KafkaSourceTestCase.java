@@ -837,7 +837,7 @@ public class KafkaSourceTestCase {
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
                             "@info(name = 'query1') " +
-                            "@source(type='kafka', topic.list='non_existing_topic1', "
+                            "@source(type='kafka', topic.list='non_existing_topic1', enable.auto.commit='false', "
                             + "group.id='test_non_existing_topic1', " +
                             "threading.option='single.thread', bootstrap.servers='localhost:9092'," +
                             "@map(type='xml'))" +

@@ -105,7 +105,7 @@ public class SequencedMessagingTestCase {
                 "@info(name = 'DataReceiveQuery') " +
                 "@source(type='kafka', topic.list='IntermediateTopic-0', group.id='test1', " +
                 "threading.option='topic.wise', seq.enabled='true', bootstrap.servers='localhost:9092', " +
-                "partition.no.list='0', is.binary.message='true', @map(type='binary')) " +
+                "partition.no.list='0', is.binary.message='true', enable.auto.commit='false', @map(type='binary')) " +
                 "Define stream FooStream1 (symbol string, count long);" +
 
                 "from FooStream1 select * insert into BarStream1;";
