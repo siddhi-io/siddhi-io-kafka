@@ -127,8 +127,8 @@ import java.util.concurrent.ScheduledExecutorService;
                                 + "Siddhi Periodic State Persistence when `enable.auto.commit` property "
                                 + "is set to `true`.\n "
                                 + "When you would like more control over exactly when offsets are committed, you can "
-                                + "set `enable.auto.commit` to false and Siddhi will call the commit method"
-                                + "on the consumer once the records are successfully processed at the Source. "
+                                + "set `enable.auto.commit` to false and Siddhi will commit the offset once the "
+                                + "records are successfully processed at the Source. "
                                 + "When `enable.auto.commit` is set to `false`, manual committing would introduce "
                                 + "a latency during consumption.",
                         type = {DataType.BOOL},
