@@ -42,7 +42,7 @@ public class ConsumerKafkaGroup {
     private KafkaSource.KafkaSourceState kafkaSourceState;
 
     ConsumerKafkaGroup(String[] topics, String[] partitions, Properties props, String threadingOption,
-                       ScheduledExecutorService executorService, boolean isBinaryMessage,
+                       ScheduledExecutorService executorService, boolean isBinaryMessage, boolean enableAutoCommit,
                        SourceEventListener sourceEventListener) {
         this.threadingOption = threadingOption;
         this.topics = topics;
@@ -54,7 +54,7 @@ public class ConsumerKafkaGroup {
         if (KafkaSource.SINGLE_THREADED.equals(threadingOption)) {
             KafkaConsumerThread kafkaConsumerThread =
                     new KafkaConsumerThread(sourceEventListener, topics, partitions, props,
-                            false, isBinaryMessage);
+                            false, isBinaryMessage, enableAutoCommit);
             kafkaConsumerThreadList.add(kafkaConsumerThread);
             LOG.info("Kafka Consumer thread starting to listen on topic(s): " + Arrays.toString(topics) +
                     " with partition/s: " + Arrays.toString(partitions));
@@ -62,7 +62,7 @@ public class ConsumerKafkaGroup {
             for (String topic : topics) {
                 KafkaConsumerThread kafkaConsumerThread =
                         new KafkaConsumerThread(sourceEventListener, new String[]{topic}, partitions, props,
-                                false, isBinaryMessage);
+                                false, isBinaryMessage, enableAutoCommit);
                 kafkaConsumerThreadList.add(kafkaConsumerThread);
                 LOG.info("Kafka Consumer thread starting to listen on topic: " + topic +
                         " with partition/s: " + Arrays.toString(partitions));
@@ -73,7 +73,7 @@ public class ConsumerKafkaGroup {
                     KafkaConsumerThread kafkaConsumerThread =
                             new KafkaConsumerThread(sourceEventListener, new String[]{topic},
                                     new String[]{partition}, props, true,
-                                    isBinaryMessage);
+                                    isBinaryMessage, enableAutoCommit);
                     kafkaConsumerThreadList.add(kafkaConsumerThread);
                     LOG.info("Kafka Consumer thread starting to listen on topic: " + topic +
                             " with partition: " + partition);
