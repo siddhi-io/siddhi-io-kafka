@@ -42,7 +42,7 @@ Following JARs are needed from `<KAFKA_HOME>/libs` directory.
 
 ## Installation
 
-For installing this extension and to add the dependent jars on various siddhi execution environments refer Siddhi documentation section on <a target="_blank" href="https://siddhi.io/redirect/add-extensions.html">adding extensions and jars</a>.
+For installing this extension and to add the dependent jars on various siddhi execution environments refer Siddhi documentation section on <a target="_blank" href="https://siddhi.io/en/v5.1/docs/guides/fault-tolerance/guide/#setup-kafka">setup kafka</a>.
 
 ## Support and Contribution
 
