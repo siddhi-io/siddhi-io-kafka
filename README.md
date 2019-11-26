@@ -42,7 +42,37 @@ Following JARs are needed from `<KAFKA_HOME>/libs` directory.
 
 ## Installation
 
-For installing this extension and to add the dependent jars on various siddhi execution environments refer Siddhi documentation section on <a target="_blank" href="https://siddhi.io/en/v5.1/docs/guides/fault-tolerance/guide/#setup-kafka">setup kafka</a>.
+For installing this extension and to add the dependent jars on various siddhi execution environments refer Siddhi documentation section on <a target="_blank" href="https://siddhi.io/redirect/add-extensions.html">adding extensions and jars</a>.
+
+#### Setup Kafka
+
+As a prerequisite, you have to start the Kafka message broker. Please follow better steps.
+1. Download the Kafka [distribution](https://kafka.apache.org/downloads)
+2. Unzip the above distribution and go to the ‘bin’ directory
+3. Start the zookeeper by executing below command,
+    ```bash
+    zookeeper-server-start.sh config/zookeeper.properties
+    ```
+4. Start the Kafka broker by executing below command,
+    ```bash
+    kafka-server-start.sh config/server.properties
+    ```
+
+Refer the Kafka documentation for more details, https://kafka.apache.org/quickstart 
+
+Then, you have to add necessary client jars (from <KAFKA_HOME>/libs directory) to Siddhi distribution as given below.
+
+* Copy below client libs to <SIDDHI_HOME>/bundles directory
+    * scala-library-2.12.8.jar	
+    * zkclient-0.11.jar		
+    * zookeeper-3.4.14.jar
+
+* Copy below client libs to <SIDDHI_HOME>jars directory
+    * kafka-clients-2.3.0.jar	
+    * kafka_2.12-2.3.0.jar	
+    * metrics-core-2.2.0.jar
+
+!!! info "`bundles` directory to add OSGI bundles and `jars` directory to add non-OSGI jars."
 
 ## Support and Contribution
 
