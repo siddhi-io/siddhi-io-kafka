@@ -471,7 +471,6 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         //If it stops heart-beating for a period of time longer than session.timeout.ms then it will be considered dead
         // and its partitions will be assigned to another process
         props.put("session.timeout.ms", "30000");
-        props.put("enable.auto.commit", "false");
         props.put("auto.offset.reset", "earliest");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         if (!isBinaryMessage) {
