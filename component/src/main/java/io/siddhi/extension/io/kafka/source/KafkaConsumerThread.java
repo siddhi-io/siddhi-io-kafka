@@ -39,13 +39,14 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static io.siddhi.extension.io.kafka.source.KafkaSource.ADAPTOR_ENABLE_AUTO_COMMIT;
+
 /**
  * This runnable processes each Kafka message and sends it to siddhi.
  */
 public class KafkaConsumerThread implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(KafkaConsumerThread.class);
-    public static final String ADAPTOR_ENABLE_AUTO_COMMIT = "enable.auto.commit";
     private final KafkaConsumer<byte[], byte[]> consumer;
     // KafkaConsumer is not thread safe, hence we need a lock
     private final Lock consumerLock = new ReentrantLock();

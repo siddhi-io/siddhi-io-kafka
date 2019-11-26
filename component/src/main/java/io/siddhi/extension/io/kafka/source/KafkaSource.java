@@ -50,7 +50,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
 
-
 /**
  * This class implements a Kafka source to receive events from a kafka cluster.
  */
@@ -190,6 +189,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     public static final String ADAPTOR_SUBSCRIBER_GROUP_ID = "group.id";
     public static final String ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS = "bootstrap.servers";
     public static final String ADAPTOR_SUBSCRIBER_PARTITION_NO_LIST = "partition.no.list";
+    public static final String ADAPTOR_ENABLE_AUTO_COMMIT = "enable.auto.commit";
     public static final String ADAPTOR_ENABLE_OFFSET_COMMIT = "enable.offset.commit";
     public static final String ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
     private static final String TOPIC_OFFSET_MAP = "topic.offsets.map";
@@ -235,8 +235,6 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         optionalConfigs = optionHolder.validateAndGetStaticValue(ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES, null);
         isBinaryMessage = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(IS_BINARY_MESSAGE,
                 "false"));
-//        enableAutoCommit = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_AUTO_COMMIT,
-//                "true"));
         enableOffsetCommit = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_OFFSET_COMMIT,
                 "true"));
         topicOffsetMapConfig = optionHolder.validateAndGetStaticValue(TOPIC_OFFSET_MAP, null);
@@ -259,7 +257,8 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         try {
             ScheduledExecutorService executorService = siddhiAppContext.getScheduledExecutorService();
             consumerKafkaGroup = new ConsumerKafkaGroup(topics, partitions,
-                    KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs, isBinaryMessage),
+                    KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs, isBinaryMessage,
+                            enableOffsetCommit),
                     threadingOption, executorService, isBinaryMessage, enableOffsetCommit, sourceEventListener);
 
             checkTopicsAvailableInCluster();
@@ -383,7 +382,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
 
     private void checkTopicsAvailableInCluster() {
         Properties props = KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
-                isBinaryMessage);
+                isBinaryMessage, enableOffsetCommit);
         props.put("group.id", "test-consumer-group");
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
         Map<String, List<PartitionInfo>> testTopicList = consumer.listTopics();
@@ -463,7 +462,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     }
 
     private static Properties createConsumerConfig(String zkServerList, String groupId, String optionalConfigs,
-                                                   boolean isBinaryMessage) {
+                                                   boolean isBinaryMessage, boolean enableOffsetCommit) {
         Properties props = new Properties();
         props.put(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS, zkServerList);
         props.put(ADAPTOR_SUBSCRIBER_GROUP_ID, groupId);
@@ -471,6 +470,9 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         //If it stops heart-beating for a period of time longer than session.timeout.ms then it will be considered dead
         // and its partitions will be assigned to another process
         props.put("session.timeout.ms", "30000");
+        if (!enableOffsetCommit) {
+            props.put(ADAPTOR_ENABLE_AUTO_COMMIT, "false");
+        }
         props.put("auto.offset.reset", "earliest");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         if (!isBinaryMessage) {
