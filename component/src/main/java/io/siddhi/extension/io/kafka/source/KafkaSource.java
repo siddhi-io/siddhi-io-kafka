@@ -129,7 +129,8 @@ import java.util.concurrent.ScheduledExecutorService;
                                 + "To guarantee at-least-once processing, we recommend you to enable "
                                 + "Siddhi Periodic State Persistence when `enable.auto.commit` property "
                                 + "is set to `true`. \n"
-                                + "When `enable.auto.commit` is set to `false`, manual committing would introduce "
+                                + "When `enable.auto.commit` is set to `false` along with this property, "
+                                + "Source would manually commit the offset which might introduce "
                                 + "a latency during consumption.",
                         type = {DataType.BOOL},
                         optional = true,

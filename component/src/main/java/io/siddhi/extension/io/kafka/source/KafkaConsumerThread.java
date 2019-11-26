@@ -74,7 +74,7 @@ public class KafkaConsumerThread implements Runnable {
         this.isPartitionWiseThreading = isPartitionWiseThreading;
         this.isBinaryMessage = isBinaryMessage;
         this.enableOffsetCommit = enableOffsetCommit;
-        this.enableAutoCommit = Boolean.parseBoolean(props.getProperty(ADAPTOR_ENABLE_AUTO_COMMIT, "false"));
+        this.enableAutoCommit = Boolean.parseBoolean(props.getProperty(ADAPTOR_ENABLE_AUTO_COMMIT, "true"));
         this.consumerThreadId = buildId();
         lock = new ReentrantLock();
         condition = lock.newCondition();
