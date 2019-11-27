@@ -115,21 +115,23 @@ import java.util.concurrent.ScheduledExecutorService;
                         type = {DataType.STRING},
                         optional = true,
                         defaultValue = "null"),
-                @Parameter(name = "enable.offset.commit",
+                @Parameter(name = "enable.offsets.commit",
                         description = "This parameter specifies whether to commit offsets. \n"
                                 + "By default, as the Siddhi Kafka source reads messages from Kafka, "
                                 + "Siddhi will commit the offset once the records are successfully "
-                                + "processed at the Source. If `enable.auto.commit` property is set to `true` "
-                                + "along with this property as an `optional.configuration`, "
-                                + "it will periodically(default: 1000ms. Configurable with `auto.commit.interval.ms` "
+                                + "processed at the Source. \n"
+                                + "If both `enable.offsets.commit` property and `enable.auto.commit` "
+                                + "`optional.configuration` property are set to `true`, Source will "
+                                + "periodically(default: 1000ms. Configurable with `auto.commit.interval.ms` "
                                 + "property as an `optional.configuration`) commit its current offset "
                                 + "(defined as the offset of the next message to be read) "
                                 + "for the partitions it is reading from back to Kafka. "
                                 + "To guarantee at-least-once processing, we recommend you to enable "
                                 + "Siddhi Periodic State Persistence when `enable.auto.commit` property "
                                 + "is set to `true`. \n"
-                                + "When `enable.auto.commit` is set to `false` along with this property, "
-                                + "Source would manually commit the offset which might introduce "
+                                + "When `enable.auto.commit` `optional.configuration` is set to `false` "
+                                + "while `enable.offsets.commit` property is set to `true`, "
+                                + "Source would manually commit the offset. This might introduce "
                                 + "a latency during consumption.",
                         type = {DataType.BOOL},
                         optional = true,
@@ -190,7 +192,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     public static final String ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS = "bootstrap.servers";
     public static final String ADAPTOR_SUBSCRIBER_PARTITION_NO_LIST = "partition.no.list";
     public static final String ADAPTOR_ENABLE_AUTO_COMMIT = "enable.auto.commit";
-    public static final String ADAPTOR_ENABLE_OFFSET_COMMIT = "enable.offset.commit";
+    public static final String ADAPTOR_ENABLE_OFFSET_COMMIT = "enable.offsets.commit";
     public static final String ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
     private static final String TOPIC_OFFSET_MAP = "topic.offsets.map";
     public static final String THREADING_OPTION = "threading.option";
