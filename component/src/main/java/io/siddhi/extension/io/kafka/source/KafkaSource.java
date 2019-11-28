@@ -48,7 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ExecutorService;
 
 /**
  * This class implements a Kafka source to receive events from a kafka cluster.
@@ -256,7 +256,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     public void connect(ConnectionCallback connectionCallback, KafkaSourceState kafkaSourceState)
             throws ConnectionUnavailableException {
         try {
-            ScheduledExecutorService executorService = siddhiAppContext.getScheduledExecutorService();
+            ExecutorService executorService = siddhiAppContext.getExecutorService();
             consumerKafkaGroup = new ConsumerKafkaGroup(topics, partitions,
                     KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs, isBinaryMessage,
                             enableOffsetCommit),

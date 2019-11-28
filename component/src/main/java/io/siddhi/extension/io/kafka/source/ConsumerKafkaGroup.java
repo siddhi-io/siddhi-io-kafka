@@ -25,7 +25,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 /**
  * This processes the Kafka messages using a thread pool.
@@ -36,13 +37,14 @@ public class ConsumerKafkaGroup {
     private final String partitions[];
     private final Properties props;
     private List<KafkaConsumerThread> kafkaConsumerThreadList = new ArrayList<>();
-    private ScheduledExecutorService executorService;
+    private ExecutorService executorService;
     private String threadingOption;
     private boolean isBinaryMessage;
     private KafkaSource.KafkaSourceState kafkaSourceState;
+    private List<Future<?>> futureList = new ArrayList<>();
 
     ConsumerKafkaGroup(String[] topics, String[] partitions, Properties props, String threadingOption,
-                       ScheduledExecutorService executorService, boolean isBinaryMessage, boolean enableOffsetCommit,
+                       ExecutorService executorService, boolean isBinaryMessage, boolean enableOffsetCommit,
                        SourceEventListener sourceEventListener) {
         this.threadingOption = threadingOption;
         this.topics = topics;
@@ -96,12 +98,17 @@ public class ConsumerKafkaGroup {
 
     void shutdown() {
         kafkaConsumerThreadList.forEach(KafkaConsumerThread::shutdownConsumer);
+        futureList.forEach(future -> {
+            if (!future.isCancelled()) {
+                future.cancel(true);
+            }
+        });
     }
 
     void run() {
         try {
             for (KafkaConsumerThread consumerThread : kafkaConsumerThreadList) {
-                executorService.submit(consumerThread);
+                futureList.add(executorService.submit(consumerThread));
             }
         } catch (Throwable t) {
             LOG.error("Error while creating KafkaConsumerThread for topic(s): " + Arrays.toString(topics), t);
