@@ -50,7 +50,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
 
-
 /**
  * This class implements a Kafka source to receive events from a kafka cluster.
  */
@@ -116,21 +115,23 @@ import java.util.concurrent.ScheduledExecutorService;
                         type = {DataType.STRING},
                         optional = true,
                         defaultValue = "null"),
-                @Parameter(name = "enable.auto.commit",
-                        description = "This parameter specifies whether to commit offsets automatically. \n"
-                                + "By default, as the Siddhi Kafka source reads messages from Kafka, "
-                                + "it will periodically(Default value is set to 1000ms. You can configure it with "
-                                + "`auto.commit.interval.ms` property as an `optional.configuration`) "
-                                + "commit its current offset (defined as the offset of the next message to be read) "
-                                + "for the partitions it is reading from back to Kafka. "
+                @Parameter(name = "enable.offsets.commit",
+                        description = "This parameter specifies whether to commit offsets. \n"
+                                + "If the manual asynchronous offset committing is needed, `enable.offsets.commit` "
+                                + "should be `true` and `enable.auto.commit` should be `false`. \n"
+                                + "If periodical committing is needed `enable.offsets.commit` should be `true` and "
+                                + "`enable.auto.commit` should be `true`. \n"
+                                + "If committing is not needed, `enable.offsets.commit` should be `false`. \n"
+                                + "\n"
+                                + "Note: `enable.auto.commit` is an `optional.configuration` property. If it is set to "
+                                + "`true`, Source will periodically(default: 1000ms. Configurable with "
+                                + "`auto.commit.interval.ms` property as an `optional.configuration`) commit its "
+                                + "current offset (defined as the offset of the next message to be read) "
+                                + "for the partitions it is reading from back to Kafka. \n"
                                 + "To guarantee at-least-once processing, we recommend you to enable "
                                 + "Siddhi Periodic State Persistence when `enable.auto.commit` property "
                                 + "is set to `true`. \n"
-                                + "When you would like more control over exactly when offsets are committed, you can "
-                                + "set `enable.auto.commit` to false and Siddhi will commit the offset once the "
-                                + "records are successfully processed at the Source. "
-                                + "When `enable.auto.commit` is set to `false`, manual committing would introduce "
-                                + "a latency during consumption.",
+                                + "During manual committing, it might introduce a latency during consumption.",
                         type = {DataType.BOOL},
                         optional = true,
                         defaultValue = "true"),
@@ -190,6 +191,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     public static final String ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS = "bootstrap.servers";
     public static final String ADAPTOR_SUBSCRIBER_PARTITION_NO_LIST = "partition.no.list";
     public static final String ADAPTOR_ENABLE_AUTO_COMMIT = "enable.auto.commit";
+    public static final String ADAPTOR_ENABLE_OFFSET_COMMIT = "enable.offsets.commit";
     public static final String ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
     private static final String TOPIC_OFFSET_MAP = "topic.offsets.map";
     public static final String THREADING_OPTION = "threading.option";
@@ -209,7 +211,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     private String optionalConfigs;
     private boolean seqEnabled = false;
     private boolean isBinaryMessage;
-    private boolean enableAutoCommit;
+    private boolean enableOffsetCommit;
     private String topicOffsetMapConfig;
     private SiddhiAppContext siddhiAppContext;
     private KafkaSourceState kafkaSourceState;
@@ -234,7 +236,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         optionalConfigs = optionHolder.validateAndGetStaticValue(ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES, null);
         isBinaryMessage = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(IS_BINARY_MESSAGE,
                 "false"));
-        enableAutoCommit = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_AUTO_COMMIT,
+        enableOffsetCommit = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_OFFSET_COMMIT,
                 "true"));
         topicOffsetMapConfig = optionHolder.validateAndGetStaticValue(TOPIC_OFFSET_MAP, null);
         if (PARTITION_WISE.equals(threadingOption) && null == partitions) {
@@ -257,8 +259,8 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
             ScheduledExecutorService executorService = siddhiAppContext.getScheduledExecutorService();
             consumerKafkaGroup = new ConsumerKafkaGroup(topics, partitions,
                     KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs, isBinaryMessage,
-                            enableAutoCommit), threadingOption, executorService, isBinaryMessage, enableAutoCommit,
-                    sourceEventListener);
+                            enableOffsetCommit),
+                    threadingOption, executorService, isBinaryMessage, enableOffsetCommit, sourceEventListener);
 
             checkTopicsAvailableInCluster();
             checkPartitionsAvailableForTheTopicsInCluster();
@@ -381,7 +383,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
 
     private void checkTopicsAvailableInCluster() {
         Properties props = KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
-                isBinaryMessage, enableAutoCommit);
+                isBinaryMessage, enableOffsetCommit);
         props.put("group.id", "test-consumer-group");
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
         Map<String, List<PartitionInfo>> testTopicList = consumer.listTopics();
@@ -461,7 +463,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     }
 
     private static Properties createConsumerConfig(String zkServerList, String groupId, String optionalConfigs,
-                                                   boolean isBinaryMessage, boolean enableAutoCommit) {
+                                                   boolean isBinaryMessage, boolean enableOffsetCommit) {
         Properties props = new Properties();
         props.put(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS, zkServerList);
         props.put(ADAPTOR_SUBSCRIBER_GROUP_ID, groupId);
@@ -469,10 +471,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         //If it stops heart-beating for a period of time longer than session.timeout.ms then it will be considered dead
         // and its partitions will be assigned to another process
         props.put("session.timeout.ms", "30000");
-        if (enableAutoCommit) {
-            props.put(ADAPTOR_ENABLE_AUTO_COMMIT, "true");
-            props.put("auto.commit.interval.ms", "1000");
-        } else {
+        if (!enableOffsetCommit) {
             props.put(ADAPTOR_ENABLE_AUTO_COMMIT, "false");
         }
         props.put("auto.offset.reset", "earliest");

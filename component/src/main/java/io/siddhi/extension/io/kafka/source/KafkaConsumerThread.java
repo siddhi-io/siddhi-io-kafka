@@ -39,6 +39,8 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static io.siddhi.extension.io.kafka.source.KafkaSource.ADAPTOR_ENABLE_AUTO_COMMIT;
+
 /**
  * This runnable processes each Kafka message and sends it to siddhi.
  */
@@ -57,21 +59,23 @@ public class KafkaConsumerThread implements Runnable {
     private String consumerThreadId;
     private boolean isPartitionWiseThreading = false;
     private boolean isBinaryMessage = false;
-    private boolean enableAutoCommit = true;
+    private boolean enableOffsetCommit = false;
+    private boolean enableAutoCommit = false;
     private ReentrantLock lock;
     private Condition condition;
     private KafkaSource.KafkaSourceState kafkaSourceState;
 
     KafkaConsumerThread(SourceEventListener sourceEventListener, String[] topics, String[] partitions,
                         Properties props,
-                        boolean isPartitionWiseThreading, boolean isBinaryMessage, boolean enableAutoCommit) {
+                        boolean isPartitionWiseThreading, boolean isBinaryMessage, boolean enableOffsetCommit) {
         this.consumer = new KafkaConsumer<>(props);
         this.sourceEventListener = sourceEventListener;
         this.topics = topics;
         this.partitions = partitions;
         this.isPartitionWiseThreading = isPartitionWiseThreading;
         this.isBinaryMessage = isBinaryMessage;
-        this.enableAutoCommit = enableAutoCommit;
+        this.enableOffsetCommit = enableOffsetCommit;
+        this.enableAutoCommit = Boolean.parseBoolean(props.getProperty(ADAPTOR_ENABLE_AUTO_COMMIT, "true"));
         this.consumerThreadId = buildId();
         lock = new ReentrantLock();
         condition = lock.newCondition();
@@ -231,7 +235,7 @@ public class KafkaConsumerThread implements Runnable {
                     }
                     kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(), record.offset());
                 }
-                if (!enableAutoCommit) {
+                if (enableOffsetCommit && !enableAutoCommit) {
                     try {
                         consumerLock.lock();
                         if (!records.isEmpty()) {
