@@ -117,22 +117,21 @@ import java.util.concurrent.ScheduledExecutorService;
                         defaultValue = "null"),
                 @Parameter(name = "enable.offsets.commit",
                         description = "This parameter specifies whether to commit offsets. \n"
-                                + "By default, as the Siddhi Kafka source reads messages from Kafka, "
-                                + "Siddhi will commit the offset once the records are successfully "
-                                + "processed at the Source. \n"
-                                + "If both `enable.offsets.commit` property and `enable.auto.commit` "
-                                + "`optional.configuration` property are set to `true`, Source will "
-                                + "periodically(default: 1000ms. Configurable with `auto.commit.interval.ms` "
-                                + "property as an `optional.configuration`) commit its current offset "
-                                + "(defined as the offset of the next message to be read) "
-                                + "for the partitions it is reading from back to Kafka. "
+                                + "If the manual asynchronous offset committing is needed, `enable.offsets.commit` "
+                                + "should be `true` and `enable.auto.commit` should be `false`. \n"
+                                + "If periodical committing is needed `enable.offsets.commit` should be `true` and "
+                                + "`enable.auto.commit` should be `true`. \n"
+                                + "If committing is not needed, `enable.offsets.commit` should be `false`. \n"
+                                + "\n"
+                                + "Note: `enable.auto.commit` is an `optional.configuration` property. If it is set to "
+                                + "`true`, Source will periodically(default: 1000ms. Configurable with "
+                                + "`auto.commit.interval.ms` property as an `optional.configuration`) commit its "
+                                + "current offset (defined as the offset of the next message to be read) "
+                                + "for the partitions it is reading from back to Kafka. \n"
                                 + "To guarantee at-least-once processing, we recommend you to enable "
                                 + "Siddhi Periodic State Persistence when `enable.auto.commit` property "
                                 + "is set to `true`. \n"
-                                + "When `enable.auto.commit` `optional.configuration` is set to `false` "
-                                + "while `enable.offsets.commit` property is set to `true`, "
-                                + "Source would manually commit the offset. This might introduce "
-                                + "a latency during consumption.",
+                                + "During manual committing, it might introduce a latency during consumption.",
                         type = {DataType.BOOL},
                         optional = true,
                         defaultValue = "true"),
