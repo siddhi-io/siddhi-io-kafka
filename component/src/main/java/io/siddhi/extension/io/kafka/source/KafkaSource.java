@@ -541,7 +541,9 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         public void restore(Map<String, Object> state) {
             isRestored = true;
             topicOffsetMap = (Map<String, Map<Integer, Long>>) state.get(TOPIC_OFFSET_MAP);
-            consumerKafkaGroup.restoreState();
+            if (consumerKafkaGroup != null) {
+                consumerKafkaGroup.restoreState();
+            }
             if (seqEnabled) {
                 this.consumerLastReceivedSeqNoMap =
                         (Map<String, Map<SequenceKey, Integer>>) state.get(LAST_RECEIVED_SEQ_NO_KEY);
