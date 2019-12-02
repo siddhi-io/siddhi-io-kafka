@@ -44,7 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ExecutorService;
 
 
 /**
@@ -177,7 +177,7 @@ public class KafkaSource extends Source implements SourceSyncCallback {
     public static final String IS_BINARY_MESSAGE = "is.binary.message";
     private static final Logger LOG = Logger.getLogger(KafkaSource.class);
     private SourceEventListener sourceEventListener;
-    private ScheduledExecutorService executorService;
+    private ExecutorService executorService;
     private OptionHolder optionHolder;
     private ConsumerKafkaGroup consumerKafkaGroup;
     private Map<String, Map<Integer, Long>> topicOffsetMap = new HashMap<>();
@@ -204,7 +204,7 @@ public class KafkaSource extends Source implements SourceSyncCallback {
         this.siddhiAppContext = siddhiAppContext;
         this.sourceEventListener = sourceEventListener;
         this.optionHolder = optionHolder;
-        this.executorService = siddhiAppContext.getScheduledExecutorService();
+        this.executorService = siddhiAppContext.getExecutorService();
         bootstrapServers = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS);
         groupID = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_GROUP_ID);
         threadingOption = optionHolder.validateAndGetStaticValue(THREADING_OPTION);

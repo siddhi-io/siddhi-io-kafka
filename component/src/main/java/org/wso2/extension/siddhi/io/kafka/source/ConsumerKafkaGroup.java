@@ -27,7 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 /**
  * This processes the Kafka messages using a thread pool.
@@ -39,14 +40,15 @@ public class ConsumerKafkaGroup {
     private final Properties props;
     private List<KafkaConsumerThread> kafkaConsumerThreadList = new ArrayList<>();
     private Map<String, Map<Integer, Long>> topicOffsetMap = new HashMap<>();
-    private ScheduledExecutorService executorService;
+    private ExecutorService executorService;
     private String threadingOption;
     private boolean isBinaryMessage;
     private Map<String, Map<SequenceKey, Integer>> perConsumerLastReceivedSeqNo = new HashMap<>();
+    private List<Future<?>> futureList = new ArrayList<>();
 
     ConsumerKafkaGroup(String topics[], String partitions[], Properties props, Map<String, Map<Integer, Long>>
             topicOffsetMap, Map<String, Map<SequenceKey, Integer>> perConsumerLastReceivedSeqNo, String threadingOption,
-                       ScheduledExecutorService executorService, boolean isBinaryMessage,
+                       ExecutorService executorService, boolean isBinaryMessage,
                        SourceEventListener sourceEventListener) {
         this.threadingOption = threadingOption;
         this.topicOffsetMap = topicOffsetMap;
@@ -105,6 +107,11 @@ public class ConsumerKafkaGroup {
 
     void shutdown() {
         kafkaConsumerThreadList.forEach(KafkaConsumerThread::shutdownConsumer);
+        futureList.forEach(future -> {
+            if (!future.isCancelled()) {
+                future.cancel(true);
+            }
+        });
     }
 
     void run() {
@@ -116,7 +123,7 @@ public class ConsumerKafkaGroup {
                     seqNoMap = (seqNoMap != null) ? seqNoMap : new HashMap<>();
                     consumerThread.setLastReceivedSeqNoMap(seqNoMap);
                 }
-                executorService.submit(consumerThread);
+                futureList.add(executorService.submit(consumerThread));
             }
         } catch (Throwable t) {
             LOG.error("Error while creating KafkaConsumerThread for topic(s): " + Arrays.toString(topics), t);
