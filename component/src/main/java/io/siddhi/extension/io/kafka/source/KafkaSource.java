@@ -135,10 +135,10 @@ import java.util.concurrent.ExecutorService;
                         type = {DataType.BOOL},
                         optional = true,
                         defaultValue = "true"),
-                @Parameter(name = "commit.async",
+                @Parameter(name = "enable.async.commit",
                         description = "This parameter will changes the type of the committing offsets returned on " +
                                 "the last poll for the subscribed list of topics and partitions.\n" +
-                                "When `commit.async` is set to true, committing will be an asynchronous call.",
+                                "When `enable.async.commit` is set to true, committing will be an asynchronous call.",
                         type = {DataType.BOOL},
                         optional = true,
                         defaultValue = "true"),
@@ -199,7 +199,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     public static final String ADAPTOR_SUBSCRIBER_PARTITION_NO_LIST = "partition.no.list";
     public static final String ADAPTOR_ENABLE_AUTO_COMMIT = "enable.auto.commit";
     public static final String ADAPTOR_ENABLE_OFFSET_COMMIT = "enable.offsets.commit";
-    public static final String ADAPTOR_ENABLE_ASYNC_COMMIT = "async.commit";
+    public static final String ADAPTOR_ENABLE_ASYNC_COMMIT = "enable.async.commit";
     public static final String ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
     private static final String TOPIC_OFFSET_MAP = "topic.offsets.map";
     public static final String THREADING_OPTION = "threading.option";
@@ -220,7 +220,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     private boolean seqEnabled = false;
     private boolean isBinaryMessage;
     private boolean enableOffsetCommit;
-    private boolean asyncCommit;
+    private boolean enableAsyncCommit;
     private String topicOffsetMapConfig;
     private SiddhiAppContext siddhiAppContext;
     private KafkaSourceState kafkaSourceState;
@@ -247,7 +247,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                 "false"));
         enableOffsetCommit = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_OFFSET_COMMIT,
                 "true"));
-        asyncCommit = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_ASYNC_COMMIT,
+        enableAsyncCommit = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_ASYNC_COMMIT,
                 "true"));
         topicOffsetMapConfig = optionHolder.validateAndGetStaticValue(TOPIC_OFFSET_MAP, null);
         if (PARTITION_WISE.equals(threadingOption) && null == partitions) {
@@ -273,7 +273,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                             topics, partitions,
                             KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
                                     isBinaryMessage, enableOffsetCommit),
-                            threadingOption, executorService, isBinaryMessage, enableOffsetCommit, asyncCommit,
+                            threadingOption, executorService, isBinaryMessage, enableOffsetCommit, enableAsyncCommit,
                             sourceEventListener);
             checkTopicsAvailableInCluster();
             checkPartitionsAvailableForTheTopicsInCluster();

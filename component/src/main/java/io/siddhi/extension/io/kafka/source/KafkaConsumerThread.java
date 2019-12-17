@@ -64,7 +64,7 @@ public class KafkaConsumerThread implements Runnable {
     private boolean isBinaryMessage = false;
     private boolean enableOffsetCommit = false;
     private boolean enableAutoCommit = false;
-    private boolean asyncCommit;
+    private boolean enableAsyncCommit;
     private boolean consumerClosed;
     private ReentrantLock lock;
     private Condition condition;
@@ -72,7 +72,7 @@ public class KafkaConsumerThread implements Runnable {
 
     KafkaConsumerThread(SourceEventListener sourceEventListener, String[] topics, String[] partitions,
                         Properties props, boolean isPartitionWiseThreading, boolean isBinaryMessage,
-                        boolean enableOffsetCommit, boolean asyncCommit) {
+                        boolean enableOffsetCommit, boolean enableAsyncCommit) {
         this.consumer = new KafkaConsumer<>(props);
         this.sourceEventListener = sourceEventListener;
         this.topics = topics;
@@ -82,7 +82,7 @@ public class KafkaConsumerThread implements Runnable {
         this.enableOffsetCommit = enableOffsetCommit;
         this.enableAutoCommit = Boolean.parseBoolean(props.getProperty(ADAPTOR_ENABLE_AUTO_COMMIT, "true"));
         this.consumerThreadId = buildId();
-        this.asyncCommit = asyncCommit;
+        this.enableAsyncCommit = enableAsyncCommit;
         lock = new ReentrantLock();
         condition = lock.newCondition();
         if (null != partitions) {
@@ -249,7 +249,7 @@ public class KafkaConsumerThread implements Runnable {
                     try {
                         consumerLock.lock();
                         if (!records.isEmpty()) {
-                            if (asyncCommit) {
+                            if (enableAsyncCommit) {
                                 consumer.commitAsync(new KafkaOffsetCommitCallback());
                             } else {
                                 try {
