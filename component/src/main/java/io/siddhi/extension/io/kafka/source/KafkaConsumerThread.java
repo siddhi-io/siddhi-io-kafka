@@ -255,7 +255,7 @@ public class KafkaConsumerThread implements Runnable {
                                 try {
                                     consumer.commitSync();
                                 } catch (KafkaException e) {
-                                    LOG.error("Exception occurred when committing offsets Synchronously");
+                                    LOG.error("Exception occurred when committing offsets Synchronously", e);
                                 }
                             }
                         }
