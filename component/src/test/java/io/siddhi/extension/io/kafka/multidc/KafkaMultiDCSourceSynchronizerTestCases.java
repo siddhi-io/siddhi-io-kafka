@@ -45,8 +45,18 @@ public class KafkaMultiDCSourceSynchronizerTestCases {
         }
 
         @Override
+        public void onEvent(Object eventObject, Object[] transportProperties) {
+            eventsArrived.add(eventObject);
+        }
+
+        @Override
         public void onEvent(Object o, String[] strings) {
             eventsArrived.add(o);
+        }
+
+        @Override
+        public void onEvent(Object eventObject, Object[] transportProperties, String[] transportSyncProperties) {
+            eventsArrived.add(eventObject);
         }
 
         @Override

@@ -309,6 +309,11 @@ class Interceptor implements SourceEventListener {
     }
 
     @Override
+    public void onEvent(Object eventObject, Object[] transportProperties, String[] transportSyncProperties) {
+        onEventReceive(eventObject, transportProperties, transportSyncProperties);
+    }
+
+    @Override
     public void onEvent(Object event, String[] transportProperties, String[] transportSyncProperties) {
         onEventReceive(event, transportProperties, transportSyncProperties);
     }
@@ -318,7 +323,12 @@ class Interceptor implements SourceEventListener {
         return null;
     }
 
-    private void onEventReceive(Object event, String[] transportProperties, String[] transportSyncProperties) {
+    @Override
+    public void onEvent(Object eventObject, Object[] transportProperties) {
+        onEventReceive(eventObject, transportProperties, null);
+    }
+
+    private void onEventReceive(Object event, Object[] transportProperties, Object[] transportSyncProperties) {
         if (!isBinaryMessage) {
             String eventString = (String) event;
             int headerStartingIndex = eventString.indexOf(KafkaSink.SEQ_NO_HEADER_DELIMITER);
