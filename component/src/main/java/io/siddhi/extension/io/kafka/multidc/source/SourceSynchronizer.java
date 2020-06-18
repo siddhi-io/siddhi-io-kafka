@@ -80,7 +80,7 @@ public class SourceSynchronizer {
 
                 lastConsumedSeqNo = sequenceNumber;
                 toRemoveSeqNos.add(sequenceNumber);
-                eventListener.onEvent(eventHolder.getEvent(), eventHolder.getStrings());
+                eventListener.onEvent(eventHolder.getEvent(), eventHolder.getObjects());
             }
         }
         toRemoveSeqNos.forEach(seqNo -> eventBuffer.remove(seqNo)); // To avoid concurrent modification.
@@ -110,7 +110,7 @@ public class SourceSynchronizer {
                 }
 
                 toRemoveSeqNos.add(sequenceNumber);
-                eventListener.onEvent(eventHolder.getEvent(), eventHolder.getStrings());
+                eventListener.onEvent(eventHolder.getEvent(), eventHolder.getObjects());
             } else {
                 isEventGap = true;
                 if (LOG.isDebugEnabled()) {
@@ -129,7 +129,7 @@ public class SourceSynchronizer {
         }
     }
 
-    private synchronized void bufferEvent(String sourceId, long sequenceNumber, Object event, String[] strings) {
+    private synchronized void bufferEvent(String sourceId, long sequenceNumber, Object event, Object[] objects) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Buffering Event. SourceId=" + sourceId + ", SequenceNumber=" + sequenceNumber);
         }
@@ -141,10 +141,10 @@ public class SourceSynchronizer {
             LOG.info("Buffer size exceeded. Force flushing events till the sequence " + sequenceNumber);
             forceFlushBuffer(flushTillSeq);
         }
-        eventBuffer.put(sequenceNumber, new BufferValueHolder(event, sourceId, strings));
+        eventBuffer.put(sequenceNumber, new BufferValueHolder(event, sourceId, objects));
     }
 
-    public synchronized void onEvent(String sourceId, long sequenceNumber, Object event, String[] strings) {
+    public synchronized void onEvent(String sourceId, long sequenceNumber, Object event, Object[] objects) {
         perSourceReceivedSeqNo.put(sourceId, sequenceNumber);
 
         if (sequenceNumber <= lastConsumedSeqNo) {
@@ -159,7 +159,7 @@ public class SourceSynchronizer {
                         + " received from source "
                         + sourceId + ". Updating lastConsumedSeqNo=" + lastConsumedSeqNo);
             }
-            eventListener.onEvent(event, strings);
+            eventListener.onEvent(event, objects);
 
             // Gap is filled by receiving the next expected sequence number
             if (!eventBuffer.isEmpty()) {
@@ -172,7 +172,7 @@ public class SourceSynchronizer {
                             + ". Couldn't fill the gap, buffering the event.");
                 }
 
-                bufferEvent(sourceId, sequenceNumber, event, strings);
+                bufferEvent(sourceId, sequenceNumber, event, objects);
                 long flushTillSeq = Math.min(perSourceReceivedSeqNo.get(bootstrapServers[0]),
                         perSourceReceivedSeqNo.get(bootstrapServers[1]));
                 isEventGap = false;
@@ -185,7 +185,7 @@ public class SourceSynchronizer {
                             + ". Starting buffering events");
                 }
                 isEventGap = true;
-                bufferEvent(sourceId, sequenceNumber, event, strings);
+                bufferEvent(sourceId, sequenceNumber, event, objects);
 
                 if (!isFlushTaskDue.get()) {
                     flushBufferTimer.schedule(new BufferFlushTask(), bufferInterval);
@@ -204,18 +204,18 @@ public class SourceSynchronizer {
     }
 
     static class BufferValueHolder {
-        String[] strings;
+        Object[] objects;
         private Object event;
         private String sourceId;
 
-        BufferValueHolder(Object event, String sourceId, String[] strings) {
+        BufferValueHolder(Object event, String sourceId, Object[] objects) {
             this.event = event;
             this.sourceId = sourceId;
-            this.strings = strings;
+            this.objects = objects;
         }
 
-        String[] getStrings() {
-            return strings;
+        Object[] getObjects() {
+            return objects;
         }
 
         String getSourceId() {
