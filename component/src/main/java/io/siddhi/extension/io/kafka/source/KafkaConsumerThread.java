@@ -180,6 +180,7 @@ public class KafkaConsumerThread implements Runnable {
                         Object event = record.value();
                         Object eventBody = null;
                         String header = null;
+                        long eventTimestamp = System.currentTimeMillis();
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("Event received in Kafka Event Adaptor with offSet: " + record.offset()
                                     + ", key: " + record.key() + ", topic: " + record.topic() +

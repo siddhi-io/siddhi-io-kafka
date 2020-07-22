@@ -244,10 +244,11 @@ public class KafkaTestUtil {
                 }
                 if (numOfPartitions > 1 || publishWithPartition) {
                     log.info("producing: " + msg + " into partition: " + (i % numOfPartitions));
-                    producer.send(new ProducerRecord<>(topic, (i % numOfPartitions), null, msg));
+                    producer.send(new ProducerRecord<>(topic, (i % numOfPartitions),
+                            System.currentTimeMillis(), null, msg));
                 } else {
                     log.info("producing: " + msg);
-                    producer.send(new ProducerRecord<>(topic, null, null, msg));
+                    producer.send(new ProducerRecord<>(topic, null, System.currentTimeMillis(), null, msg));
                 }
             }
         }

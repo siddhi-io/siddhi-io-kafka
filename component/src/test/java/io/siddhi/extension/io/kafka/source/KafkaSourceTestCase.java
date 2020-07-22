@@ -1260,5 +1260,64 @@ public class KafkaSourceTestCase {
             log.warn("No zookeeper may not be available.", ex);
         }
     }
+
+    @Test//(dependsOnMethods = "testKafkaTopic_MultiplePartition_SubscribeALl_oneByOne_Source")
+    public void testKafkaSourceWithTRP() throws InterruptedException {
+        try {
+            log.info("-------------------------------------------------------------------------------------------");
+            log.info("Creating test for TRP values");
+            log.info("-------------------------------------------------------------------------------------------");
+            String topics[] = new String[]{"trp_topic"};
+            receivedEventNameList = new ArrayList<>(4);
+            receivedValueList = new ArrayList<>(4);
+            KafkaTestUtil.createTopic(topics, 1);
+            SiddhiManager siddhiManager = new SiddhiManager();
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
+                    "@App:name('HelloKafka')\n" +
+                            "@source(type='kafka',\n" +
+                            "        topic.list='trp_topic',\n" +
+                            "        partition.no.list='0',\n" +
+                            "        threading.option='single.thread',\n" +
+                            "        group.id='group',\n" +
+                            "        bootstrap.servers='localhost:9092',\n" +
+                            "        @map(type='xml', enclosing.element='//events', " +
+                            "            @attributes(symbol ='symbol', price = 'price', volume = 'volume', " +
+                            "                        partition = 'trp:partition', " +
+                            "                        topic = 'trp:topic', key = 'trp:key', " +
+                            "                        recordTimestamp = 'trp:record.timestamp',  " +
+                            "                        eventTimestamp = 'trp:event.timestamp', " +
+                            "                        checkSum = 'trp:check.sum', topicOffset = 'trp:offset')))\n" +
+                            "define stream FooStream (symbol string, price float, volume long, " +
+                            "                                     partition string, " +
+                            "                                     topic string, key string, recordTimestamp string, " +
+                            "                                     eventTimestamp string, checkSum string, " +
+                            "                                     topicOffset string);\n" +
+                            "from FooStream select * insert into BarStream;");
+            siddhiAppRuntime.addCallback("BarStream", new StreamCallback() {
+                @Override
+                public void receive(Event[] events) {
+                    for (Event event : events) {
+                        log.info(event);
+                        eventArrived = true;
+                        count++;
+                        receivedEventNameList.add(event.getData(4).toString());
+                    }
+                }
+            });
+            siddhiAppRuntime.start();
+            Thread.sleep(5000);
+            KafkaTestUtil.kafkaPublisher(topics, 1, 1, false, null, true);
+            Thread.sleep(100);
+            List<String> expectedNames = new ArrayList<>(2);
+            expectedNames.add("trp_topic");
+            AssertJUnit.assertEquals(1, count);
+            AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
+                    receivedEventNameList);
+            KafkaTestUtil.deleteTopic(topics);
+            siddhiAppRuntime.shutdown();
+        } catch (ZkTimeoutException ex) {
+            log.warn("No zookeeper may not be available.", ex);
+        }
+    }
 }
 
