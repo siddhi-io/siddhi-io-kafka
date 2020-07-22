@@ -19,18 +19,23 @@ For information on <a target="_blank" href="https://siddhi.io/">Siddhi</a> and i
 
 ## Latest API Docs 
 
-Latest API Docs is <a target="_blank" href="https://siddhi-io.github.io/siddhi-io-kafka/api/5.0.8">5.0.8</a>.
+Latest API Docs is <a target="_blank" href="https://siddhi-io.github.io/siddhi-io-kafka/api/5.0.7">5.0.7</a>.
 
 ## Features
 
-* <a target="_blank" href="https://siddhi-io.github.io/siddhi-io-kafka/api/5.0.8/#kafka-sink">kafka</a> *(<a target="_blank" href="http://siddhi.io/en/v5.1/docs/query-guide/#sink">Sink</a>)*<br> <div style="padding-left: 1em;"><p><p style="word-wrap: break-word;margin: 0;">A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.<br>To configure a sink to use the Kafka transport, the <code>type</code> parameter should have <code>kafka</code> as its value.</p></p></div>
-* <a target="_blank" href="https://siddhi-io.github.io/siddhi-io-kafka/api/5.0.8/#kafkamultidc-sink">kafkaMultiDC</a> *(<a target="_blank" href="http://siddhi.io/en/v5.1/docs/query-guide/#sink">Sink</a>)*<br> <div style="padding-left: 1em;"><p><p style="word-wrap: break-word;margin: 0;">A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.<br>To configure a sink to publish events via the Kafka transport, and using two Kafka brokers to publish events to the same topic, the <code>type</code> parameter must have <code>kafkaMultiDC</code> as its value.</p></p></div>
-* <a target="_blank" href="https://siddhi-io.github.io/siddhi-io-kafka/api/5.0.8/#kafka-source">kafka</a> *(<a target="_blank" href="http://siddhi.io/en/v5.1/docs/query-guide/#source">Source</a>)*<br> <div style="padding-left: 1em;"><p><p style="word-wrap: break-word;margin: 0;">A Kafka source receives events to be processed by WSO2 SP from a topic with a partition for a Kafka cluster. The events received can be in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic.</p></p></div>
-* <a target="_blank" href="https://siddhi-io.github.io/siddhi-io-kafka/api/5.0.8/#kafkamultidc-source">kafkaMultiDC</a> *(<a target="_blank" href="http://siddhi.io/en/v5.1/docs/query-guide/#source">Source</a>)*<br> <div style="padding-left: 1em;"><p><p style="word-wrap: break-word;margin: 0;">The Kafka Multi-Datacenter(DC) source receives records from the same topic in brokers deployed in two different kafka clusters. It filters out all the duplicate messages and ensuresthat the events are received in the correct order using sequential numbering. It receives events in formats such as <code>TEXT</code>, <code>XML</code> JSON<code> and </code>Binary`.The Kafka Source creates the default partition '0' for a given topic, if the topic has not yet been created in the Kafka cluster.</p></p></div>
+* <a target="_blank" href="https://siddhi-io.github.io/siddhi-io-kafka/api/5.0.7/#kafka-sink">kafka</a> *(<a target="_blank" href="http://siddhi.io/en/v5.1/docs/query-guide/#sink">Sink</a>)*<br> <div style="padding-left: 1em;"><p><p style="word-wrap: break-word;margin: 0;">A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.<br>To configure a sink to use the Kafka transport, the <code>type</code> parameter should have <code>kafka</code> as its value.</p></p></div>
+* <a target="_blank" href="https://siddhi-io.github.io/siddhi-io-kafka/api/5.0.7/#kafkamultidc-sink">kafkaMultiDC</a> *(<a target="_blank" href="http://siddhi.io/en/v5.1/docs/query-guide/#sink">Sink</a>)*<br> <div style="padding-left: 1em;"><p><p style="word-wrap: break-word;margin: 0;">A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.<br>To configure a sink to publish events via the Kafka transport, and using two Kafka brokers to publish events to the same topic, the <code>type</code> parameter must have <code>kafkaMultiDC</code> as its value.</p></p></div>
+* <a target="_blank" href="https://siddhi-io.github.io/siddhi-io-kafka/api/5.0.7/#kafka-source">kafka</a> *(<a target="_blank" href="http://siddhi.io/en/v5.1/docs/query-guide/#source">Source</a>)*<br> <div style="padding-left: 1em;"><p><p style="word-wrap: break-word;margin: 0;">A Kafka source receives events to be processed by WSO2 SP from a topic with a partition for a Kafka cluster. The events received can be in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic.</p></p></div>
+* <a target="_blank" href="https://siddhi-io.github.io/siddhi-io-kafka/api/5.0.7/#kafkamultidc-source">kafkaMultiDC</a> *(<a target="_blank" href="http://siddhi.io/en/v5.1/docs/query-guide/#source">Source</a>)*<br> <div style="padding-left: 1em;"><p><p style="word-wrap: break-word;margin: 0;">The Kafka Multi-Datacenter(DC) source receives records from the same topic in brokers deployed in two different kafka clusters. It filters out all the duplicate messages and ensuresthat the events are received in the correct order using sequential numbering. It receives events in formats such as <code>TEXT</code>, <code>XML</code> JSON<code> and </code>Binary`.The Kafka Source creates the default partition '0' for a given topic, if the topic has not yet been created in the Kafka cluster.</p></p></div>
+
+## Installation
+
+For installing this extension in the Streaming Integrator Worker, and to add the dependent jars, refer Streaming Integrator documentation section on <a target="_blank" href="https://ei.docs.wso2.com/en/7.1.0/streaming-integrator/connectors/downloading-and-Installing-Siddhi-Extensions/">downloading and installing siddhi extensions</a>.\
+For installing this extension in the Streaming Integrator Tooling, and to add the dependent jars, refer Streaming Integrator documentation section on <a target="_blank" href="https://ei.docs.wso2.com/en/7.1.0/streaming-integrator/develop/installing-siddhi-extensions/">installing siddhi extensions</a>.
 
 ## Dependencies 
 
-Following JARs are needed from `<KAFKA_HOME>/libs` directory.
+Following JARs will be converted to osgi and copied to `WSO2SI_HOME/lib` and `WSO2SI_HOME/samples/sample-clients/lib` which are in `<KAFKA_HOME>/libs` directory.
 
  - kafka_2.11-*.jar
  - kafka-clients-*.jar
@@ -39,10 +44,6 @@ Following JARs are needed from `<KAFKA_HOME>/libs` directory.
  - scala-parser-combinators_2.11.*.jar (if exists)
  - zkclient-*.jar
  - zookeeper-*.jar 
-
-## Installation
-
-For installing this extension and to add the dependent jars on various siddhi execution environments refer Siddhi documentation section on <a target="_blank" href="https://siddhi.io/redirect/add-extensions.html">adding extensions and jars</a>.
 
 #### Setup Kafka
 
@@ -59,20 +60,6 @@ As a prerequisite, you have to start the Kafka message broker. Please follow bet
     ```
 
 Refer the Kafka documentation for more details, https://kafka.apache.org/quickstart 
-
-Then, you have to add necessary client jars (from <KAFKA_HOME>/libs directory) to Siddhi distribution as given below.
-
-* Copy below client libs to <SIDDHI_HOME>/bundles directory
-    * scala-library-2.12.8.jar	
-    * zkclient-0.11.jar		
-    * zookeeper-3.4.14.jar
-
-* Copy below client libs to <SIDDHI_HOME>jars directory
-    * kafka-clients-2.3.0.jar	
-    * kafka_2.12-2.3.0.jar	
-    * metrics-core-2.2.0.jar
-
-!!! info "`bundles` directory to add OSGI bundles and `jars` directory to add non-OSGI jars."
 
 ## Support and Contribution
 

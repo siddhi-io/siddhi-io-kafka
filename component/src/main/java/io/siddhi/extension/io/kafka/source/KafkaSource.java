@@ -226,13 +226,15 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     private KafkaSourceState kafkaSourceState;
     private String threadingOption;
     private SourceEventListener sourceEventListener;
+    private String[] requiredProperties;
 
     @Override
     public StateFactory<KafkaSourceState> init(SourceEventListener sourceEventListener, OptionHolder optionHolder,
-                                               String[] strings, ConfigReader configReader,
+                                               String[] requiredProperties, ConfigReader configReader,
                                                SiddhiAppContext siddhiAppContext) {
         this.siddhiAppContext = siddhiAppContext;
         this.optionHolder = optionHolder;
+        this.requiredProperties = requiredProperties.clone();
         this.sourceEventListener = sourceEventListener;
         bootstrapServers = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS);
         groupID = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_GROUP_ID);
@@ -274,7 +276,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                             KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
                                     isBinaryMessage, enableOffsetCommit),
                             threadingOption, executorService, isBinaryMessage, enableOffsetCommit, enableAsyncCommit,
-                            sourceEventListener);
+                            sourceEventListener, requiredProperties);
             checkTopicsAvailableInCluster();
             checkPartitionsAvailableForTheTopicsInCluster();
             this.kafkaSourceState = kafkaSourceState;
