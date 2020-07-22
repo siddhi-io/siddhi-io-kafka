@@ -114,7 +114,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="#api-docs-v508" tabindex="1" class="md-skip">
+      <a href="#api-docs-v509" tabindex="1" class="md-skip">
         Skip to content
       </a>
     
@@ -372,6 +372,18 @@
   
 </nav>
     
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../5.0.9/" title="5.0.9" class="md-nav__link">
+      5.0.9
+    </a>
   </li>
 
         
@@ -1013,7 +1025,7 @@
                   <a href="https://github.com/siddhi-io/siddhi-io-kafka/blob/master/api/latest.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                <h1 id="api-docs-v508">API Docs - v5.0.8</h1>
+                <h1 id="api-docs-v509">API Docs - v5.0.9</h1>
 <div class="admonition info">
 <p class="admonition-title">Tested Siddhi Core version: <em><a target="_blank" href="http://siddhi.io/en/v5.1/docs/query-guide/">5.1.13</a></em></p>
 <p>It could also support other Siddhi Core minor versions.</p>
@@ -1381,6 +1393,25 @@ from FooStream select symbol, price, volume insert into BarStream;
 
 <p></p>
 
+<p><span id="example-3" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 3</span></p>
+<pre><code>@App:name('TestExecutionPlan')
+@source(type='kafka',
+        topic.list='trp_topic',
+        partition.no.list='0',
+        threading.option='single.thread',
+        group.id='group',
+        bootstrap.servers='localhost:9092',
+        @map(type='xml', enclosing.element='//events',             @attributes(symbol ='symbol', price = 'price', volume = 'volume',                         partition = 'trp:partition',                         topic = 'trp:topic', key = 'trp:key',                         recordTimestamp = 'trp:record.timestamp',                          eventTimestamp = 'trp:event.timestamp',                         checkSum = 'trp:check.sum', topicOffset = 'trp:offset')))
+define stream FooStream (symbol string, price float, volume long,                                      partition string,                                      topic string, key string,                                      recordTimestamp string,                                      eventTimestamp string, checkSum string,                                      topicOffset string);
+from FooStream select * insert into BarStream;
+</code></pre>
+
+<p></p>
+
+<p style="word-wrap: break-word;margin: 0;">This Kafka source configuration listens to the <code>trp_topic</code> topic for the default partition because no <code>partition.no.list</code> is defined. <br>Since the custom attribute mapping is enabled with TRP values, the siddhi event will be populated with the relevant trp values as well</p>
+
+<p></p>
+
 <h3 id="kafkamultidc-source">kafkaMultiDC <em><a target="_blank" href="http://siddhi.io/en/v5.1/docs/query-guide/#source">(Source)</a></em></h3>
 <p><p></p>
 <p style="word-wrap: break-word;margin: 0;">The Kafka Multi-Datacenter(DC) source receives records from the same topic in brokers deployed in two different kafka clusters. It filters out all the duplicate messages and ensuresthat the events are received in the correct order using sequential numbering. It receives events in formats such as <code>TEXT</code>, <code>XML</code> JSON<code> and </code>Binary`.The Kafka Source creates the default partition '0' for a given topic, if the topic has not yet been created in the Kafka cluster.</p>
@@ -1491,13 +1522,13 @@ from FooStream select symbol, price, volume insert into BarStream;
           </a>
         
         
-          <a href="../5.0.8/" title="5.0.8" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="../5.0.9/" title="5.0.9" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                5.0.8
+                5.0.9
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">
