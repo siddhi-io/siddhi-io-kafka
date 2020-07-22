@@ -30,7 +30,7 @@ Latest API Docs is <a target="_blank" href="https://siddhi-io.github.io/siddhi-i
 
 ## Installation
 
-For installing this extension in the Streaming Integrator Worker, and to add the dependent jars, refer Streaming Integrator documentation section on <a target="_blank" href="https://ei.docs.wso2.com/en/7.1.0/streaming-integrator/connectors/downloading-and-Installing-Siddhi-Extensions/">downloading and installing siddhi extensions</a>.\
+For installing this extension in the Streaming Integrator Server, and to add the dependent jars, refer Streaming Integrator documentation section on <a target="_blank" href="https://ei.docs.wso2.com/en/7.1.0/streaming-integrator/connectors/downloading-and-Installing-Siddhi-Extensions/">downloading and installing siddhi extensions</a>.\
 For installing this extension in the Streaming Integrator Tooling, and to add the dependent jars, refer Streaming Integrator documentation section on <a target="_blank" href="https://ei.docs.wso2.com/en/7.1.0/streaming-integrator/develop/installing-siddhi-extensions/">installing siddhi extensions</a>.
 
 ## Dependencies 
