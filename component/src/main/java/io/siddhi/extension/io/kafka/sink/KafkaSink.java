@@ -223,9 +223,11 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
             }
 
             if (null == partitionNo) {
-                producer.send(new ProducerRecord<>(topic, null, key, payloadToSend));
+                producer.send(new ProducerRecord<>(topic, null, System.currentTimeMillis(), key,
+                        payloadToSend));
             } else {
-                producer.send(new ProducerRecord<>(topic, Integer.parseInt(partitionNo), key, payloadToSend));
+                producer.send(new ProducerRecord<>(topic, Integer.parseInt(partitionNo), System.currentTimeMillis(),
+                        key, payloadToSend));
             }
         } catch (UnsupportedEncodingException e) {
             LOG.error("Error while converting the received string payload to byte[].", e);

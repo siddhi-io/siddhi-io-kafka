@@ -185,7 +185,33 @@ import java.util.concurrent.ExecutorService;
                         description = "This Kafka source configuration listens to the `kafka_topic` topic for the " +
                                 "default partition because no `partition.no.list` is defined. Only one thread is " +
                                 "created for the topic. The events are received in the XML format, mapped" +
-                                " to a Siddhi event, and sent to a stream named `FooStream`.")
+                                " to a Siddhi event, and sent to a stream named `FooStream`."),
+                @Example(
+                        syntax = "@App:name('TestExecutionPlan')\n" +
+                                "@source(type='kafka',\n" +
+                                "        topic.list='trp_topic',\n" +
+                                "        partition.no.list='0',\n" +
+                                "        threading.option='single.thread',\n" +
+                                "        group.id='group',\n" +
+                                "        bootstrap.servers='localhost:9092',\n" +
+                                "        @map(type='xml', enclosing.element='//events', " +
+                                "            @attributes(symbol ='symbol', price = 'price', volume = 'volume', " +
+                                "                        partition = 'trp:partition', " +
+                                "                        topic = 'trp:topic', key = 'trp:key', " +
+                                "                        recordTimestamp = 'trp:record.timestamp',  " +
+                                "                        eventTimestamp = 'trp:event.timestamp', " +
+                                "                        checkSum = 'trp:check.sum', topicOffset = 'trp:offset')))\n" +
+                                "define stream FooStream (symbol string, price float, volume long, " +
+                                "                                     partition string, " +
+                                "                                     topic string, key string, " +
+                                "                                     recordTimestamp string, " +
+                                "                                     eventTimestamp string, checkSum string, " +
+                                "                                     topicOffset string);\n" +
+                                "from FooStream select * insert into BarStream;",
+                        description = "This Kafka source configuration listens to the `trp_topic` topic for the " +
+                                "default partition because no `partition.no.list` is defined. \n" +
+                                "Since the custom attribute mapping is enabled with TRP values, the siddhi event " +
+                                "will be populated with the relevant trp values as well")
         }
 )
 public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements SourceSyncCallback {
@@ -226,13 +252,15 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     private KafkaSourceState kafkaSourceState;
     private String threadingOption;
     private SourceEventListener sourceEventListener;
+    private String[] requiredProperties;
 
     @Override
     public StateFactory<KafkaSourceState> init(SourceEventListener sourceEventListener, OptionHolder optionHolder,
-                                               String[] strings, ConfigReader configReader,
+                                               String[] requiredProperties, ConfigReader configReader,
                                                SiddhiAppContext siddhiAppContext) {
         this.siddhiAppContext = siddhiAppContext;
         this.optionHolder = optionHolder;
+        this.requiredProperties = requiredProperties.clone();
         this.sourceEventListener = sourceEventListener;
         bootstrapServers = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS);
         groupID = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_GROUP_ID);
@@ -274,7 +302,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                             KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
                                     isBinaryMessage, enableOffsetCommit),
                             threadingOption, executorService, isBinaryMessage, enableOffsetCommit, enableAsyncCommit,
-                            sourceEventListener);
+                            sourceEventListener, requiredProperties);
             checkTopicsAvailableInCluster();
             checkPartitionsAvailableForTheTopicsInCluster();
             this.kafkaSourceState = kafkaSourceState;

@@ -19,6 +19,7 @@
 package io.siddhi.extension.io.kafka.source;
 
 import io.siddhi.core.stream.input.source.SourceEventListener;
+import io.siddhi.extension.io.kafka.Constants;
 import io.siddhi.extension.io.kafka.sink.KafkaSink;
 import org.apache.kafka.clients.consumer.CommitFailedException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -69,10 +70,12 @@ public class KafkaConsumerThread implements Runnable {
     private ReentrantLock lock;
     private Condition condition;
     private KafkaSource.KafkaSourceState kafkaSourceState;
+    private String[] requiredProperties;
+    private int trpLength;
 
     KafkaConsumerThread(SourceEventListener sourceEventListener, String[] topics, String[] partitions,
                         Properties props, boolean isPartitionWiseThreading, boolean isBinaryMessage,
-                        boolean enableOffsetCommit, boolean enableAsyncCommit) {
+                        boolean enableOffsetCommit, boolean enableAsyncCommit, String[] requiredProperties) {
         this.consumer = new KafkaConsumer<>(props);
         this.sourceEventListener = sourceEventListener;
         this.topics = topics;
@@ -85,6 +88,12 @@ public class KafkaConsumerThread implements Runnable {
         this.enableAsyncCommit = enableAsyncCommit;
         lock = new ReentrantLock();
         condition = lock.newCondition();
+        this.requiredProperties = requiredProperties;
+        if (requiredProperties != null && requiredProperties.length > 0) {
+            trpLength = requiredProperties.length;
+        } else {
+            trpLength = 0;
+        }
         if (null != partitions) {
             for (String topic : topics) {
                 for (String partition1 : partitions) {
@@ -175,21 +184,47 @@ public class KafkaConsumerThread implements Runnable {
                     lastReceivedSeqNoMap = kafkaSourceState.getConsumerLastReceivedSeqNoMap().get(consumerThreadId);
                 }
                 for (ConsumerRecord record : records) {
+                    String[] trpProperties = new String[trpLength];
                     if (!consumerClosed) {
                         int partition = record.partition();
                         Object event = record.value();
                         Object eventBody = null;
                         String header = null;
+                        long eventTimestamp = System.currentTimeMillis();
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("Event received in Kafka Event Adaptor with offSet: " + record.offset()
-                                    + ", key: " + record.key() + ", topic: " + record.topic() +
-                                    ", partition: " + partition);
+                            LOG.debug("Event received in Kafka Event Adaptor with offSet: " + record.offset() +
+                                    ", key: " + record.key() + ", topic: " + record.topic() +
+                                    ", partition: " + partition + ", recordTimestamp: " + record.timestamp() +
+                                    ", eventTimestamp: " + eventTimestamp + ", checksum: " + record.checksum());
+                        }
+                        for (int i = 0; i < requiredProperties.length; i++) {
+                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_PARTITION)) {
+                                trpProperties[i] = String.valueOf(record.partition());
+                            }
+                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_TOPIC)) {
+                                trpProperties[i] = record.topic();
+                            }
+                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_KEY)) {
+                                trpProperties[i] = String.valueOf(record.key());
+                            }
+                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_RECORD_TIMESTAMP)) {
+                                trpProperties[i] = String.valueOf(record.timestamp());
+                            }
+                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_EVENT_TIMESTAMP)) {
+                                trpProperties[i] = String.valueOf(eventTimestamp);
+                            }
+                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_CHECK_SUM)) {
+                                trpProperties[i] = String.valueOf(record.checksum());
+                            }
+                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_OFFSET)) {
+                                trpProperties[i] = String.valueOf(record.offset());
+                            }
                         }
                         String transportSyncProperties = "topic:" + record.topic() + ",partition:" + record.partition()
                                 + ",offSet:" + record.offset();
                         String[] transportSyncPropertiesArr = new String[]{transportSyncProperties};
                         if (lastReceivedSeqNoMap == null) {
-                            sourceEventListener.onEvent(event, new String[0], transportSyncPropertiesArr);
+                            sourceEventListener.onEvent(event, trpProperties, transportSyncPropertiesArr);
                         } else {
                             if (isBinaryMessage) {
                                 byte[] byteEvents = (byte[]) event;
@@ -216,7 +251,7 @@ public class KafkaConsumerThread implements Runnable {
                                 }
                                 if (lastReceivedSeqNo < seqNo) {
                                     lastReceivedSeqNoMap.put(sequenceKey, seqNo);
-                                    sourceEventListener.onEvent(eventBody, new String[0], transportSyncPropertiesArr);
+                                    sourceEventListener.onEvent(eventBody, trpProperties, transportSyncPropertiesArr);
                                     if (LOG.isDebugEnabled()) {
                                         LOG.debug("Last Received SeqNo Updated to:" + seqNo + " for " + "SeqKey:["
                                                 + sequenceKey.toString() + "] in Kafka consumer thread:"
