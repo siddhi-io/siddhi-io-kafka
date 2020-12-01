@@ -75,6 +75,58 @@ public class KafkaSourceTestCase {
     }
 
     @Test
+    public void testKafkaReplay() throws InterruptedException {
+        try {
+            log.info("Creating test for single topic");
+            String topics[] = new String[]{"single_topic"};
+            receivedEventNameList = new ArrayList<>(2);
+            receivedValueList = new ArrayList<>(2);
+            KafkaTestUtil.createTopic(topics, 1);
+            Thread.sleep(1000);
+            SiddhiManager siddhiManager = new SiddhiManager();
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
+                    "@App:name('TestExecutionPlan') @App:transportChannelCreationEnabled('false')" +
+                            "define stream BarStream (symbol string, price float, volume long); " +
+                            "@info(name = 'query1') " +
+                            "@source(type='kafka-replay-response', topic.list='single_topic', group.id='group', " +
+                            "threading.option='single.thread', bootstrap.servers='localhost:9092'," +
+                            "@map(type='xml'))" +
+                            "Define stream FooStream (symbol string, price float, volume long);" +
+                            "from FooStream select symbol, price, volume insert into BarStream;");
+            siddhiAppRuntime.addCallback("BarStream", new StreamCallback() {
+                @Override
+                public void receive(Event[] events) {
+                    for (Event event : events) {
+                        log.info(event);
+                        eventArrived = true;
+                        count++;
+                        receivedEventNameList.add(event.getData(0).toString());
+                        receivedValueList.add((long) event.getData(2));
+                    }
+                }
+            });
+            siddhiAppRuntime.start();
+            KafkaTestUtil.kafkaPublisher(topics, 1, 2, false, null, true);
+            Thread.sleep(100);
+            List<String> expectedNames = new ArrayList<>(2);
+            expectedNames.add("single_topic");
+            expectedNames.add("single_topic");
+            List<Long> expectedValues = new ArrayList<>(2);
+            expectedValues.add(0L);
+            expectedValues.add(1L);
+            SiddhiTestHelper.waitForEvents(2000, 2, count, 20000);
+            AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
+                    receivedEventNameList);
+            AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
+            AssertJUnit.assertEquals(2, count);
+            KafkaTestUtil.deleteTopic(topics);
+            siddhiAppRuntime.shutdown();
+        } catch (ZkTimeoutException ex) {
+            log.warn("No zookeeper may not be available.", ex);
+        }
+    }
+
+    @Test
     public void testKafkaSingleTopicSource() throws InterruptedException {
         try {
             log.info("Creating test for single topic");
