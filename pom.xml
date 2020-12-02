@@ -44,7 +44,7 @@
     </profiles>
 
     <properties>
-        <siddhi.version>5.1.13</siddhi.version>
+        <siddhi.version>5.1.15</siddhi.version>
         <siddhi.version.range>[5.0.0,6.0.0)</siddhi.version.range>
         <log4j.version>1.2.17.wso2v1</log4j.version>
         <testng.version>6.8</testng.version>
@@ -58,6 +58,7 @@
         <text.mapper.version>2.0.5</text.mapper.version>
         <binary.mapper.version>2.0.5</binary.mapper.version>
         <jacoco.version>0.7.9</jacoco.version>
+        <carbon.analytics.version>3.0.36</carbon.analytics.version>
 
         <mavan.findbugsplugin.exclude.file>findbugs-exclude.xml</mavan.findbugsplugin.exclude.file>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -168,6 +169,13 @@
                 <artifactId>org.jacoco.agent</artifactId>
                 <classifier>runtime</classifier>
                 <version>${jacoco.version}</version>
+            </dependency>
+
+            <!--Metrics-->
+            <dependency>
+                <groupId>org.wso2.carbon.analytics</groupId>
+                <artifactId>org.wso2.carbon.si.metrics.core</artifactId>
+                <version>${carbon.analytics.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -20,6 +20,7 @@ package io.siddhi.extension.io.kafka.source;
 
 import io.siddhi.core.stream.input.source.SourceEventListener;
 import io.siddhi.extension.io.kafka.Constants;
+import io.siddhi.extension.io.kafka.metrics.SourceMetrics;
 import io.siddhi.extension.io.kafka.sink.KafkaSink;
 import org.apache.kafka.clients.consumer.CommitFailedException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -44,6 +45,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static io.siddhi.extension.io.kafka.source.KafkaSource.ADAPTOR_ENABLE_AUTO_COMMIT;
+import static io.siddhi.extension.io.kafka.source.KafkaSource.ADAPTOR_SUBSCRIBER_GROUP_ID;
 
 /**
  * This runnable processes each Kafka message and sends it to siddhi.
@@ -72,20 +74,27 @@ public class KafkaConsumerThread implements Runnable {
     private KafkaSource.KafkaSourceState kafkaSourceState;
     private String[] requiredProperties;
     private int trpLength;
+    private SourceMetrics metrics;
+    private String groupId; //Needed for metrics
+//    private String streamId;
 
     KafkaConsumerThread(SourceEventListener sourceEventListener, String[] topics, String[] partitions,
                         Properties props, boolean isPartitionWiseThreading, boolean isBinaryMessage,
-                        boolean enableOffsetCommit, boolean enableAsyncCommit, String[] requiredProperties) {
+                        boolean enableOffsetCommit, boolean enableAsyncCommit, String[] requiredProperties,
+                        SourceMetrics metrics) {
         this.consumer = new KafkaConsumer<>(props);
         this.sourceEventListener = sourceEventListener;
+//        this.streamId = sourceEventListener.getStreamDefinition().getId();
         this.topics = topics;
         this.partitions = partitions;
         this.isPartitionWiseThreading = isPartitionWiseThreading;
         this.isBinaryMessage = isBinaryMessage;
         this.enableOffsetCommit = enableOffsetCommit;
         this.enableAutoCommit = Boolean.parseBoolean(props.getProperty(ADAPTOR_ENABLE_AUTO_COMMIT, "true"));
+        this.groupId = props.getProperty(ADAPTOR_SUBSCRIBER_GROUP_ID);
         this.consumerThreadId = buildId();
         this.enableAsyncCommit = enableAsyncCommit;
+        this.metrics = metrics;
         lock = new ReentrantLock();
         condition = lock.newCondition();
         this.requiredProperties = requiredProperties;
@@ -186,29 +195,32 @@ public class KafkaConsumerThread implements Runnable {
                 for (ConsumerRecord record : records) {
                     String[] trpProperties = new String[trpLength];
                     if (!consumerClosed) {
-                        int partition = record.partition();
+                        int partition = record.partition(); 
                         Object event = record.value();
+                        long offset = record.offset();
+                        String topic = record.topic();
+                        long recordTimestamp = record.timestamp();
                         Object eventBody = null;
                         String header = null;
                         long eventTimestamp = System.currentTimeMillis();
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("Event received in Kafka Event Adaptor with offSet: " + record.offset() +
-                                    ", key: " + record.key() + ", topic: " + record.topic() +
-                                    ", partition: " + partition + ", recordTimestamp: " + record.timestamp() +
+                            LOG.debug("Event received in Kafka Event Adaptor with offSet: " + offset +
+                                    ", key: " + record.key() + ", topic: " + topic +
+                                    ", partition: " + partition + ", recordTimestamp: " + recordTimestamp +
                                     ", eventTimestamp: " + eventTimestamp + ", checksum: " + record.checksum());
                         }
                         for (int i = 0; i < requiredProperties.length; i++) {
                             if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_PARTITION)) {
-                                trpProperties[i] = String.valueOf(record.partition());
+                                trpProperties[i] = String.valueOf(partition);
                             }
                             if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_TOPIC)) {
-                                trpProperties[i] = record.topic();
+                                trpProperties[i] = topic;
                             }
                             if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_KEY)) {
                                 trpProperties[i] = String.valueOf(record.key());
                             }
                             if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_RECORD_TIMESTAMP)) {
-                                trpProperties[i] = String.valueOf(record.timestamp());
+                                trpProperties[i] = String.valueOf(recordTimestamp);
                             }
                             if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_EVENT_TIMESTAMP)) {
                                 trpProperties[i] = String.valueOf(eventTimestamp);
@@ -217,11 +229,16 @@ public class KafkaConsumerThread implements Runnable {
                                 trpProperties[i] = String.valueOf(record.checksum());
                             }
                             if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_OFFSET)) {
-                                trpProperties[i] = String.valueOf(record.offset());
+                                trpProperties[i] = String.valueOf(offset);
                             }
                         }
-                        String transportSyncProperties = "topic:" + record.topic() + ",partition:" + record.partition()
-                                + ",offSet:" + record.offset();
+
+
+                        String transportSyncProperties = "topic:" + topic + ",partition:" + partition
+                                + ",offSet:" + offset;
+                        if (metrics != null) {
+                            updateMetrics(topic, partition, recordTimestamp);
+                        }
                         String[] transportSyncPropertiesArr = new String[]{transportSyncProperties};
                         if (lastReceivedSeqNoMap == null) {
                             sourceEventListener.onEvent(event, trpProperties, transportSyncPropertiesArr);
@@ -272,6 +289,11 @@ public class KafkaConsumerThread implements Runnable {
                                         + consumerThreadId + ". Dropping the message");
                             }
                         }
+                        if (metrics != null) {
+                            metrics.getValidEventCountPerStreamMetric(topic, groupId).inc();
+                            metrics.getValidEventCountMetric(topic, groupId).inc();
+                            metrics.getValidEventCountMetric(topic).inc();
+                        }
                         kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(),
                                 record.offset());
                     } else {
@@ -290,11 +312,19 @@ public class KafkaConsumerThread implements Runnable {
                                 try {
                                     consumer.commitSync();
                                 } catch (KafkaException e) {
+                                    for (String topic: topics) {
+                                        metrics.getErrorCountPerTopic(topic, "KafkaException").inc();
+                                    }
                                     LOG.error("Exception occurred when committing offsets Synchronously", e);
                                 }
                             }
                         }
                     } catch (CommitFailedException e) {
+                        for (String topic: topics) {
+                            metrics.getErrorCountPerTopic(topic, "CommitFailedException").inc();
+                            metrics.getErrorCountPerGroup(topic, groupId, "CommitFailedException").inc();
+                            metrics.getErrorCountPerStream(topic, groupId, "CommitFailedException").inc();
+                        }
                         LOG.error("Kafka commit failed for topic kafka_result_topic", e);
                     } finally {
                         consumerLock.unlock();
@@ -376,6 +406,17 @@ public class KafkaConsumerThread implements Runnable {
                 LOG.error("Exception occurred when committing offsets asynchronously.", exception);
             }
         }
+    }
+
+    private void updateMetrics(String topic, int partition, long recordTimestamp) {
+        metrics.getTotalReads().inc();
+        metrics.getTotalSourceReads().inc();
+        metrics.getCurrentOffset(topic, partition, groupId);
+        metrics.getReadCountPerTopic(topic).inc();
+        metrics.getReadCountPerGroup(topic, groupId).inc();
+        metrics.getReadCountPerStream(topic, partition, groupId).inc();
+        metrics.getLastMessageConsumedTime(topic, groupId);
+        metrics.getConsumerLag(topic, groupId, partition, recordTimestamp);
     }
 }
 

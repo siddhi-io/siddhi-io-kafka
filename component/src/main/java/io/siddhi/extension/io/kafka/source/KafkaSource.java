@@ -34,13 +34,16 @@ import io.siddhi.core.util.config.ConfigReader;
 import io.siddhi.core.util.snapshot.state.State;
 import io.siddhi.core.util.snapshot.state.StateFactory;
 import io.siddhi.core.util.transport.OptionHolder;
+import io.siddhi.extension.io.kafka.Constants;
 import io.siddhi.extension.io.kafka.KafkaIOUtils;
+import io.siddhi.extension.io.kafka.metrics.SourceMetrics;
 import io.siddhi.query.api.exception.SiddhiAppValidationException;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.log4j.Logger;
+import org.wso2.carbon.si.metrics.core.internal.MetricsDataHolder;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -253,6 +256,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     private String threadingOption;
     private SourceEventListener sourceEventListener;
     private String[] requiredProperties;
+    private SourceMetrics metrics;
 
     @Override
     public StateFactory<KafkaSourceState> init(SourceEventListener sourceEventListener, OptionHolder optionHolder,
@@ -282,7 +286,19 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
             throw new SiddhiAppValidationException("Threading option is selected as 'partition.wise' but " +
                     "there are no partitions given");
         }
-
+        if (MetricsDataHolder.getInstance().getMetricService() != null &&
+                MetricsDataHolder.getInstance().getMetricManagementService().isEnabled()) {
+            try {
+                if (MetricsDataHolder.getInstance().getMetricManagementService().isReporterRunning(
+                        Constants.PROMETHEUS_REPORTER_NAME)) {
+                    metrics = new SourceMetrics(siddhiAppContext.getName(),
+                            sourceEventListener.getStreamDefinition().getId());
+                }
+            } catch (IllegalArgumentException e) {
+                LOG.debug("Prometheus reporter is not running. Hence kafka metrics will not be initialized for "
+                        + siddhiAppContext.getName());
+            }
+        }
         return () -> new KafkaSourceState(seqEnabled);
     }
 
@@ -302,7 +318,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                             KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
                                     isBinaryMessage, enableOffsetCommit),
                             threadingOption, executorService, isBinaryMessage, enableOffsetCommit, enableAsyncCommit,
-                            sourceEventListener, requiredProperties);
+                            sourceEventListener, requiredProperties, metrics);
             checkTopicsAvailableInCluster();
             checkPartitionsAvailableForTheTopicsInCluster();
             this.kafkaSourceState = kafkaSourceState;
@@ -313,13 +329,34 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                 }
                 consumerKafkaGroup.setKafkaSourceState(kafkaSourceState);
                 consumerKafkaGroup.restoreState();
+
             } else {
                 consumerKafkaGroup.setKafkaSourceState(kafkaSourceState);
             }
+            if (kafkaSourceState.topicOffsetMap != null) {
+                metrics.setTopicOffsetMap(kafkaSourceState.topicOffsetMap);
+                for (String topic: kafkaSourceState.topicOffsetMap.keySet()) {
+                    Map<Integer, Long> partitionMap = kafkaSourceState.topicOffsetMap.get(topic);
+                    for (Map.Entry<Integer, Long> entry: partitionMap.entrySet()) {
+                        metrics.getCurrentOffset(topic, entry.getKey(), groupID);
+                    }
+                }
+            }
             consumerKafkaGroup.run();
+            for (String topic: topics) {
+                metrics.getErrorCountPerTopic(topic, "null");
+                metrics.getErrorCountPerGroup(topic, groupID, "null");
+                metrics.getErrorCountPerStream(topic, groupID, "null");
+            }
         } catch (SiddhiAppRuntimeException e) {
+            for (String topic: topics) {
+                metrics.getErrorCountPerTopic(topic, "SiddhiAppRuntimeException").inc();
+            }
             throw e;
         } catch (Throwable e) {
+            for (String topic: topics) {
+                metrics.getErrorCountPerTopic(topic, e.getClass().getSimpleName()).inc();
+            }
             throw new ConnectionUnavailableException("Error when initiating connection with Kafka server: " +
                     bootstrapServers + " in Siddhi App: " + siddhiAppContext.getName(), e);
         }
