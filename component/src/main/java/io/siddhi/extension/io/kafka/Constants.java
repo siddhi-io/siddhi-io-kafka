@@ -11,4 +11,7 @@ public class Constants {
     public static final String TRP_PARTITION = "partition";
     public static final String TRP_KEY = "key";
     public static final String TRP_OFFSET = "offset";
+
+    /*prometheus reporte values*/
+    public static final String PROMETHEUS_REPORTER_NAME = "prometheus";
 }
