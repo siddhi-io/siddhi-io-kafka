@@ -17,6 +17,10 @@
  */
 package io.siddhi.extension.io.kafka.sink;
 
+import io.siddhi.annotation.Example;
+import io.siddhi.annotation.Extension;
+import io.siddhi.annotation.Parameter;
+import io.siddhi.annotation.util.DataType;
 import io.siddhi.core.config.SiddhiAppContext;
 import io.siddhi.core.exception.ConnectionUnavailableException;
 import io.siddhi.core.stream.ServiceDeploymentInfo;
@@ -27,6 +31,21 @@ import io.siddhi.core.util.snapshot.state.StateFactory;
 import io.siddhi.core.util.transport.DynamicOptions;
 import io.siddhi.core.util.transport.OptionHolder;
 import io.siddhi.query.api.definition.StreamDefinition;
+
+/**
+ * This class implements a Kafka Replay Request Sink
+ */
+@Extension(
+        name = "kafka-replay-request",
+        namespace = "sink",
+        description = "",
+        parameters = {
+                @Parameter(name = "id",
+                        description = "",
+                        type = {DataType.STRING})
+        },
+        examples = {}
+)
 
 public class KafkaReplayRequestSink extends Sink {
     @Override
