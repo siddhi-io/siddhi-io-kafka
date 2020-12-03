@@ -41,10 +41,12 @@ import io.siddhi.extension.io.kafka.util.KafkaReplayResponseSourceRegistry;
 import org.apache.log4j.Logger;
 
 import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static io.siddhi.extension.io.kafka.source.KafkaSource.ADAPTOR_SUBSCRIBER_TOPIC;
+import static io.siddhi.extension.io.kafka.source.KafkaSource.*;
 
 @Extension(
         name = "kafka-replay-response",
@@ -75,6 +77,13 @@ public class KafkaReplayResponseSource extends Source {
     private Condition condition;
     private static final Logger logger = Logger.getLogger(KafkaReplayResponseSource.class.getName());
     private String[] topics;
+    private String[] partitions;
+    private Properties props;
+    private boolean isBinaryMessage;
+    private boolean enableOffsetCommit;
+    private boolean enableAsyncCommit;
+    private String[] requiredProperties;
+    private ExecutorService executorService;
 
     @Override
     protected ServiceDeploymentInfo exposeServiceDeploymentInfo() {
@@ -92,9 +101,10 @@ public class KafkaReplayResponseSource extends Source {
      */
     @Override
     public StateFactory init(SourceEventListener sourceEventListener, OptionHolder optionHolder,
-                             String[] requestedTransportPropertyNames, ConfigReader configReader,
+                             String[] requiredProperties, ConfigReader configReader,
                              SiddhiAppContext siddhiAppContext) {
         this.sourceEventListener = sourceEventListener;
+        this.requiredProperties = requiredProperties.clone();
         this.requestedTransportPropertyNames = requestedTransportPropertyNames.clone();
         sinkID = optionHolder.validateAndGetOption(Constants.ID).getValue();
         KafkaReplayResponseSourceRegistry.getInstance().putKafkaReplayResponseSource(sinkID, this);
@@ -102,17 +112,21 @@ public class KafkaReplayResponseSource extends Source {
         condition = lock.newCondition();
         String topicList = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_TOPIC);
         topics = topicList.split(KafkaIOUtils.HEADER_SEPARATOR);
+        String partitionList = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_PARTITION_NO_LIST, null);
+        partitions = (partitionList != null) ? partitionList.split(KafkaIOUtils.HEADER_SEPARATOR) : null;
+        String bootstrapServers = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS);
+        String groupID = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_GROUP_ID);
+        String optionalConfigs = optionHolder.validateAndGetStaticValue(ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES,
+                null);
+        isBinaryMessage = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(IS_BINARY_MESSAGE, "false"));
+        enableOffsetCommit = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(
+                ADAPTOR_ENABLE_OFFSET_COMMIT, "true"));
+        enableAsyncCommit = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_ASYNC_COMMIT,
+                "true"));
+        props = KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs, isBinaryMessage,
+                enableOffsetCommit);
+        executorService = siddhiAppContext.getExecutorService();
         return null;
-    }
-//
-//    public void onResponse(Event response, Map<String, String> siddhiRequestEventData) {
-//        handlePause();
-//        sourceEventListener.onEvent(response.getPayload(), getTransportProperties(response.getHeadersMap(),
-//                siddhiRequestEventData));
-//    }
-    public void onResponse(Object response, Map<String, String> siddhiRequestEventData) {
-        handlePause();
-        sourceEventListener.onEvent(response, getTransportProperties(siddhiRequestEventData));
     }
 
     public void onReplayRequest() {
@@ -120,27 +134,7 @@ public class KafkaReplayResponseSource extends Source {
                 new KafkaConsumerThread(sourceEventListener, topics, partitions, props,
                         false, isBinaryMessage, enableOffsetCommit, enableAsyncCommit,
                         requiredProperties);
-    }
-
-    private String[] getTransportProperties(Map<String, String> headersMap,
-                                            Map<String, String> siddhiRequestEventData) {
-        siddhiRequestEventData.putAll(headersMap);
-        String[] transportProperties = new String[requestedTransportPropertyNames.length];
-        for (int i = 0; i < requestedTransportPropertyNames.length; i++) {
-            if (siddhiRequestEventData.containsKey(requestedTransportPropertyNames[i])) {
-                transportProperties[i] = siddhiRequestEventData.get(requestedTransportPropertyNames[i]);
-            }
-        }
-        return transportProperties;
-    }
-    private String[] getTransportProperties(Map<String, String> siddhiRequestEventData) {
-        String[] transportProperties = new String[requestedTransportPropertyNames.length];
-        for (int i = 0; i < requestedTransportPropertyNames.length; i++) {
-            if (siddhiRequestEventData.containsKey(requestedTransportPropertyNames[i])) {
-                transportProperties[i] = siddhiRequestEventData.get(requestedTransportPropertyNames[i]);
-            }
-        }
-        return transportProperties;
+        executorService.submit(kafkaConsumerThread);
     }
 
     /**

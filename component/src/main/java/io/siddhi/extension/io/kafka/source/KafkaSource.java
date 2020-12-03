@@ -503,7 +503,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         }
     }
 
-    private static Properties createConsumerConfig(String zkServerList, String groupId, String optionalConfigs,
+    protected static Properties createConsumerConfig(String zkServerList, String groupId, String optionalConfigs,
                                                    boolean isBinaryMessage, boolean enableOffsetCommit) {
         Properties props = new Properties();
         props.put(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS, zkServerList);
