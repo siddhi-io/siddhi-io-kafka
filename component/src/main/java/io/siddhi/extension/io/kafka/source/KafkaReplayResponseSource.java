@@ -36,12 +36,15 @@ import io.siddhi.core.util.snapshot.state.State;
 import io.siddhi.core.util.snapshot.state.StateFactory;
 import io.siddhi.core.util.transport.OptionHolder;
 import io.siddhi.extension.io.kafka.Constants;
+import io.siddhi.extension.io.kafka.KafkaIOUtils;
 import io.siddhi.extension.io.kafka.util.KafkaReplayResponseSourceRegistry;
 import org.apache.log4j.Logger;
 
 import java.util.Map;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static io.siddhi.extension.io.kafka.source.KafkaSource.ADAPTOR_SUBSCRIBER_TOPIC;
 
 @Extension(
         name = "kafka-replay-response",
@@ -71,6 +74,7 @@ public class KafkaReplayResponseSource extends Source {
     private ReentrantLock lock;
     private Condition condition;
     private static final Logger logger = Logger.getLogger(KafkaReplayResponseSource.class.getName());
+    private String[] topics;
 
     @Override
     protected ServiceDeploymentInfo exposeServiceDeploymentInfo() {
@@ -96,6 +100,8 @@ public class KafkaReplayResponseSource extends Source {
         KafkaReplayResponseSourceRegistry.getInstance().putKafkaReplayResponseSource(sinkID, this);
         lock = new ReentrantLock();
         condition = lock.newCondition();
+        String topicList = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_TOPIC);
+        topics = topicList.split(KafkaIOUtils.HEADER_SEPARATOR);
         return null;
     }
 //
@@ -107,6 +113,13 @@ public class KafkaReplayResponseSource extends Source {
     public void onResponse(Object response, Map<String, String> siddhiRequestEventData) {
         handlePause();
         sourceEventListener.onEvent(response, getTransportProperties(siddhiRequestEventData));
+    }
+
+    public void onReplayRequest() {
+        KafkaConsumerThread kafkaConsumerThread =
+                new KafkaConsumerThread(sourceEventListener, topics, partitions, props,
+                        false, isBinaryMessage, enableOffsetCommit, enableAsyncCommit,
+                        requiredProperties);
     }
 
     private String[] getTransportProperties(Map<String, String> headersMap,
