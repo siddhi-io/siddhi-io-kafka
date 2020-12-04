@@ -51,7 +51,7 @@ import static io.siddhi.extension.io.kafka.source.KafkaSource.*;
 @Extension(
         name = "kafka-replay-response",
         namespace = "source",
-        description = "",
+        description = "sdfsdf",
         parameters = {
                 @Parameter(
                         name = "sink.id",
@@ -63,8 +63,8 @@ import static io.siddhi.extension.io.kafka.source.KafkaSource.*;
         },
         examples = {
                 @Example(
-                        syntax = "",
-                        description = "")
+                        syntax = "sdfsdf",
+                        description = "sdfsdf")
         }
 )
 
@@ -105,7 +105,6 @@ public class KafkaReplayResponseSource extends Source {
                              SiddhiAppContext siddhiAppContext) {
         this.sourceEventListener = sourceEventListener;
         this.requiredProperties = requiredProperties.clone();
-        this.requestedTransportPropertyNames = requestedTransportPropertyNames.clone();
         sinkID = optionHolder.validateAndGetOption(Constants.ID).getValue();
         KafkaReplayResponseSourceRegistry.getInstance().putKafkaReplayResponseSource(sinkID, this);
         lock = new ReentrantLock();

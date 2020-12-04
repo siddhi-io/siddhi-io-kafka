@@ -22,6 +22,7 @@ import io.siddhi.annotation.Extension;
 import io.siddhi.annotation.Parameter;
 import io.siddhi.annotation.util.DataType;
 import io.siddhi.core.config.SiddhiAppContext;
+import io.siddhi.core.event.Event;
 import io.siddhi.core.exception.ConnectionUnavailableException;
 import io.siddhi.core.stream.ServiceDeploymentInfo;
 import io.siddhi.core.stream.output.sink.Sink;
@@ -30,6 +31,8 @@ import io.siddhi.core.util.snapshot.state.State;
 import io.siddhi.core.util.snapshot.state.StateFactory;
 import io.siddhi.core.util.transport.DynamicOptions;
 import io.siddhi.core.util.transport.OptionHolder;
+import io.siddhi.extension.io.kafka.Constants;
+import io.siddhi.extension.io.kafka.util.KafkaReplayResponseSourceRegistry;
 import io.siddhi.query.api.definition.StreamDefinition;
 
 /**
@@ -38,19 +41,25 @@ import io.siddhi.query.api.definition.StreamDefinition;
 @Extension(
         name = "kafka-replay-request",
         namespace = "sink",
-        description = "",
+        description = "sdgsfg",
         parameters = {
                 @Parameter(name = "id",
-                        description = "",
+                        description = "sdfsdf",
                         type = {DataType.STRING})
         },
-        examples = {}
+        examples = {
+                @Example(
+                        syntax = "sdfsdf",
+                        description = "sdfsdf")
+        }
 )
 
 public class KafkaReplayRequestSink extends Sink {
+    private String sinkID;
+
     @Override
     public Class[] getSupportedInputEventClasses() {
-        return new Class[0];
+        return new Class[]{String.class, Event.class};
     }
 
     @Override
@@ -64,13 +73,15 @@ public class KafkaReplayRequestSink extends Sink {
     }
 
     @Override
-    protected StateFactory init(StreamDefinition outputStreamDefinition, OptionHolder optionHolder, ConfigReader sinkConfigReader, SiddhiAppContext siddhiAppContext) {
+    protected StateFactory init(StreamDefinition outputStreamDefinition, OptionHolder optionHolder,
+                                ConfigReader sinkConfigReader, SiddhiAppContext siddhiAppContext) {
+        this.sinkID = optionHolder.validateAndGetOption(Constants.ID).getValue();
         return null;
     }
 
     @Override
     public void publish(Object payload, DynamicOptions dynamicOptions, State state) throws ConnectionUnavailableException {
-
+        KafkaReplayResponseSourceRegistry.getInstance().getKafkaReplayResponseSource(sinkID).onReplayRequest();
     }
 
     @Override
