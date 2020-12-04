@@ -164,7 +164,6 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
     protected Option keyOption;
     private Producer<String, Object> producer;
     private SinkMetrics metrics;
-//    private LastCommittedOffsetGauge<Long> lastCommittedOffsetGauge;
     private String streamId;
 
     @Override
@@ -341,34 +340,22 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
         public void onCompletion(RecordMetadata metadata, Exception exception) {
             if (metrics != null) {
                 metrics.getTotalWrites().inc();
-                metrics.getTotalSourceWrites().inc();
 
                 if (metadata != null) {
                     String topic = metadata.topic();
                     int partition = metadata.partition();
 
-                    //Write Counts
-                    metrics.getWriteCountPerTopic(topic).inc();
-                    metrics.getWriteCountPerPartition(topic, partition).inc();
                     metrics.getWriteCountPerStream(streamId, topic, partition).inc();
-
-                    //Message size
                     metrics.getLastMessageSize(topic, partition, streamId, metadata.serializedValueSize());
-
-                    //Ack latency
                     metrics.getLastMessageAckLatency(topic, partition, streamId,
                             metadata.timestamp() - pushedTimestamp);
-
                     metrics.getLastMessagePublishedTime(topic, partition, streamId, pushedTimestamp);
-
-                    //Last committed offset
                     metrics.getLastCommittedOffset(topic, partition, streamId, metadata.offset());
                 } else {  //error has occurred
-                    metrics.getErrorCountPerTopic(this.topic, exception.getClass().getSimpleName()).inc();
+                    metrics.getErrorCountWithoutPartition(
+                            this.topic, streamId, exception.getClass().getSimpleName()).inc();
                     // When the siddhi app user has not given a partition, then this stat won't be published.
                     if (this.partition != null) {
-                        metrics.getErrorCountPerPartition(
-                                this.topic, this.partition, exception.getClass().getSimpleName()).inc();
                         metrics.getErrorCountPerStream(
                                 streamId, this.topic, this.partition, exception.getClass().getSimpleName()).inc();
                     }

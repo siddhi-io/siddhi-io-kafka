@@ -38,35 +38,12 @@ public class SinkMetrics extends Metrics {
         super(siddhiAppName, streamId);
     }
 
-    //Overall - To count the total writes from siddhi app level.
     public Counter getTotalWrites() {
         return MetricsDataHolder.getInstance().getMetricService()
                 .counter(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Total.Writes.%s", siddhiAppName, "kafka"),
                         Level.INFO);
     }
 
-    //App level - To count the total reads from app level.
-    public Counter getTotalSourceWrites() {
-        return MetricsDataHolder.getInstance().getMetricService()
-                .counter(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Sink.Total.Writes",
-                        siddhiAppName), Level.INFO);
-    }
-
-    //topic level
-    public Counter getWriteCountPerTopic(String topic) {
-        return MetricsDataHolder.getInstance().getMetricService()
-                .counter(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Sink.Writes.Per.Topic.%s",
-                        siddhiAppName, topic), Level.INFO);
-    }
-
-    //partition level
-    public Counter getWriteCountPerPartition(String topic, int partition) {
-        return MetricsDataHolder.getInstance().getMetricService()
-                .counter(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Sink.Writes.Per.Partition.%s.%s",
-                        siddhiAppName, topic, "partition." + partition), Level.INFO);
-    }
-
-    //stream level
     public Counter getWriteCountPerStream(String streamId, String topic, int partition) {
         return MetricsDataHolder.getInstance().getMetricService()
                 .counter(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Sink.Writes.Per.Stream.%s.%s.%s",
@@ -74,21 +51,12 @@ public class SinkMetrics extends Metrics {
                         , Level.INFO);
     }
 
-    //app stats
-    public Counter getErrorCountPerTopic(String topic, String errorString) {
+    public Counter getErrorCountWithoutPartition(String topic, String streamId, String errorString) {
         return MetricsDataHolder.getInstance().getMetricService()
-                .counter(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Sink.Errors.Per.Topic.%s.%s",
-                        siddhiAppName, topic, "errorString." + errorString), Level.INFO);
+                .counter(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Sink.Errors.Without.Partition.%s.%s.%s",
+                        siddhiAppName, topic, "stream_id." + streamId, "errorString." + errorString), Level.INFO);
     }
 
-    //topic
-    public Counter getErrorCountPerPartition(String topic, int partition, String errorString) {
-        return MetricsDataHolder.getInstance().getMetricService()
-                .counter(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Sink.Errors.Per.Partition.%s.%s.%s",
-                        siddhiAppName, topic, "partition." + partition, "errorString." + errorString), Level.INFO);
-    }
-
-    //partition level
     public Counter getErrorCountPerStream(String streamId, String topic, int partition, String errorString) {
         return MetricsDataHolder.getInstance().getMetricService()
                 .counter(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Sink.Errors.Per.Stream.%s.%s.%s.%s",
@@ -96,7 +64,6 @@ public class SinkMetrics extends Metrics {
                                 errorString), Level.INFO);
     }
 
-    //Message size in bytes
     public void getLastMessageSize(String topic, int partition, String streamId, double messageSize) {
         updateMessageSizeMap(topic, partition, messageSize);
         MetricsDataHolder.getInstance().getMetricService()
@@ -104,31 +71,14 @@ public class SinkMetrics extends Metrics {
                         siddhiAppName, topic, "partition." + partition,
                         "streamId." + streamId, "last_message_size_in_bytes"),
                         Level.INFO, () -> messageSizeMap.get(topic).get(partition));
-        MetricsDataHolder.getInstance().getMetricService()
-                .gauge(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Sink.Per.Partition.%s.%s.%s",
-                        siddhiAppName, topic, "partition." + partition, "last_message_size_in_bytes"),
-                        Level.INFO, () -> messageSizeMap.get(topic).get(partition));
-        MetricsDataHolder.getInstance().getMetricService()
-                .gauge(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Sink.%s.%s",
-                        siddhiAppName, topic, "last_message_size_in_bytes"),
-                        Level.INFO, () -> messageSizeMap.get(topic).get(partition));
     }
 
-    //Latency is millis
     public void getLastMessageAckLatency(String topic, int partition, String streamId, long latency) {
         updateLatencyMap(topic, partition, latency);
         MetricsDataHolder.getInstance().getMetricService()
                 .gauge(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Sink.Per.Stream.%s.%s.%s.%s",
                         siddhiAppName, topic, "partition." + partition,
                         "streamId." + streamId, "last_message_latency_in_millis"),
-                        Level.INFO, () -> latencyMap.get(topic).get(partition));
-        MetricsDataHolder.getInstance().getMetricService()
-                .gauge(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Sink.Per.Partition.%s.%s.%s",
-                        siddhiAppName, topic, "partition." + partition, "last_message_latency_in_millis"),
-                        Level.INFO, () -> latencyMap.get(topic).get(partition));
-        MetricsDataHolder.getInstance().getMetricService()
-                .gauge(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Sink.%s.%s",
-                        siddhiAppName, topic, "last_message_latency_in_millis"),
                         Level.INFO, () -> latencyMap.get(topic).get(partition));
     }
 
@@ -146,14 +96,6 @@ public class SinkMetrics extends Metrics {
                 .gauge(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Sink.Per.Stream.%s.%s.%s.%s",
                         siddhiAppName, topic, "partition." + partition,
                         "streamId." + streamId, "last_message_published_at"),
-                        Level.INFO, System::currentTimeMillis);
-        MetricsDataHolder.getInstance().getMetricService()
-                .gauge(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Sink.Per.Partition.%s.%s.%s",
-                        siddhiAppName, topic, "partition." + partition, "last_message_published_at"),
-                        Level.INFO, System::currentTimeMillis);
-        MetricsDataHolder.getInstance().getMetricService()
-                .gauge(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Sink.%s.%s",
-                        siddhiAppName, topic, "last_message_published_at"),
                         Level.INFO, System::currentTimeMillis);
     }
 

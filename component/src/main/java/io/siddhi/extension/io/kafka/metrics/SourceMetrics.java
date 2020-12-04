@@ -18,7 +18,6 @@
 
 package io.siddhi.extension.io.kafka.metrics;
 
-import org.apache.log4j.Logger;
 import org.wso2.carbon.metrics.core.Counter;
 import org.wso2.carbon.metrics.core.Level;
 import org.wso2.carbon.si.metrics.core.internal.MetricsDataHolder;
@@ -32,9 +31,6 @@ public class SourceMetrics extends Metrics {
     private Map<String, Map<Integer, Long>> topicOffsetMap = null;
     private long consumerLag;
 
-    private static final Logger LOG = Logger.getLogger(SourceMetrics.class);
-
-
     public SourceMetrics(String siddhiAppName, String streamId) {
         super(siddhiAppName, streamId);
     }
@@ -43,25 +39,6 @@ public class SourceMetrics extends Metrics {
         return MetricsDataHolder.getInstance().getMetricService()
                 .counter(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Total.Reads.%s", siddhiAppName, "kafka"),
                         Level.INFO);
-    }
-    //io.siddhi.SiddhiApps.helloK.Siddhi.Total.Reads.kafka
-
-    public Counter getTotalSourceReads() { //to count the total reads from app level.
-        return MetricsDataHolder.getInstance().getMetricService()
-                .counter(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Source.Total.Reads",
-                        siddhiAppName), Level.INFO);
-    }
-
-    public Counter getReadCountPerTopic(String topic) {
-        return MetricsDataHolder.getInstance().getMetricService()
-                .counter(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Source.Reads.Per.Topic.%s",
-                        siddhiAppName, topic), Level.INFO);
-    }
-
-    public Counter getReadCountPerGroup(String topic, String groupId) {
-        return MetricsDataHolder.getInstance().getMetricService()
-                .counter(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Source.Reads.Per.Group.%s.%s",
-                        siddhiAppName, topic, "groupId." + groupId), Level.INFO);
     }
 
     public Counter getReadCountPerStream(String topic, Integer partition, String groupId) {
@@ -80,18 +57,6 @@ public class SourceMetrics extends Metrics {
         }
     }
 
-    public Counter getErrorCountPerTopic(String topic, String errorString) {
-        return MetricsDataHolder.getInstance().getMetricService()
-                .counter(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Source.Errors.Per.Topic.%s.%s",
-                        siddhiAppName, topic, "errorString." + errorString), Level.INFO);
-    }
-
-    public Counter getErrorCountPerGroup(String topic, String groupId, String errorString) {
-        return MetricsDataHolder.getInstance().getMetricService()
-                .counter(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Source.Errors.Per.Group.%s.%s.%s",
-                        siddhiAppName, topic, "groupId." + groupId, "errorString." + errorString), Level.INFO);
-    }
-
     public Counter getErrorCountPerStream(String topic, String groupId, String errorString) {
         return MetricsDataHolder.getInstance().getMetricService()
                 .counter(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Source.Errors.Per.Stream.%s.%s.%s.%s",
@@ -105,52 +70,15 @@ public class SourceMetrics extends Metrics {
                         siddhiAppName, topic, "groupId." + groupId,
                         "streamId." + streamId, "last_message_consumed_at"),
                         Level.INFO, System::currentTimeMillis);
-        MetricsDataHolder.getInstance().getMetricService()
-                .gauge(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Source.Per.Group.%s.%s.%s",
-                        siddhiAppName, topic, "groupId." + groupId, "last_message_consumed_at"),
-                        Level.INFO, System::currentTimeMillis);
-        MetricsDataHolder.getInstance().getMetricService()
-                .gauge(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Source.%s.%s",
-                        siddhiAppName, topic, "last_message_consumed_at"),
-                        Level.INFO, System::currentTimeMillis);
     }
 
     public synchronized void getConsumerLag(String topic, String groupId, int partition, long recordTimestamp) {
-//        long lag = System.currentTimeMillis() - recordTimestamp;
         setConsumerLag(System.currentTimeMillis() - recordTimestamp);
-//        LOG.info("Consumer lag is: " + lag);
         MetricsDataHolder.getInstance().getMetricService()
                 .gauge(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Source.Per.Stream.%s.%s.%s.%s.%s",
                         siddhiAppName, topic, "partition." + partition, "groupId." + groupId,
                         "streamId." + streamId, "consumer_lag"),
                         Level.INFO, () -> getConsumerLag());
-        MetricsDataHolder.getInstance().getMetricService()
-                .gauge(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Source.Per.Group.%s.%s.%s",
-                        siddhiAppName, topic, "groupId." + groupId, "consumer_lag"),
-                        Level.INFO, () -> getConsumerLag());
-        MetricsDataHolder.getInstance().getMetricService()
-                .gauge(String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Source.%s.%s",
-                        siddhiAppName, topic, "consumer_lag"),
-                        Level.INFO, () -> getConsumerLag());
-    }
-
-    public Counter getValidEventCountPerStreamMetric(String topic, String groupId) {
-        return MetricsDataHolder.getInstance().getMetricService().counter(
-                String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Source.Per.Stream.%s.%s.%s.%s",
-                        siddhiAppName, topic, "groupId." + groupId,
-                        "streamId." + streamId, "total_valid_events_count"), Level.INFO);
-    }
-
-    public Counter getValidEventCountMetric(String topic, String groupId) {
-        return MetricsDataHolder.getInstance().getMetricService().counter(
-                String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Source.Per.Group.%s.%s.%s",
-                        siddhiAppName, topic, "groupId." + groupId, "total_valid_events_count"), Level.INFO);
-    }
-
-    public Counter getValidEventCountMetric(String topic) {
-        return MetricsDataHolder.getInstance().getMetricService().counter(
-                String.format("io.siddhi.SiddhiApps.%s.Siddhi.Kafka.Source.%s.%s",
-                        siddhiAppName, topic, "total_valid_events_count"), Level.INFO);
     }
 
     public void setTopicOffsetMap(Map<String, Map<Integer, Long>> topicOffsetMap) {

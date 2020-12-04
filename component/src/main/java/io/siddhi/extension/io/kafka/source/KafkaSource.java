@@ -344,18 +344,16 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
             }
             consumerKafkaGroup.run();
             for (String topic: topics) {
-                metrics.getErrorCountPerTopic(topic, "null");
-                metrics.getErrorCountPerGroup(topic, groupID, "null");
                 metrics.getErrorCountPerStream(topic, groupID, "null");
             }
         } catch (SiddhiAppRuntimeException e) {
             for (String topic: topics) {
-                metrics.getErrorCountPerTopic(topic, "SiddhiAppRuntimeException").inc();
+                metrics.getErrorCountPerStream(topic, groupID, "SiddhiAppRuntimeException").inc();
             }
             throw e;
         } catch (Throwable e) {
             for (String topic: topics) {
-                metrics.getErrorCountPerTopic(topic, e.getClass().getSimpleName()).inc();
+                metrics.getErrorCountPerStream(topic, groupID, e.getClass().getSimpleName()).inc();
             }
             throw new ConnectionUnavailableException("Error when initiating connection with Kafka server: " +
                     bootstrapServers + " in Siddhi App: " + siddhiAppContext.getName(), e);

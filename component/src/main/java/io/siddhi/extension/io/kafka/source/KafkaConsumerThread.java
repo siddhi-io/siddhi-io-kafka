@@ -289,11 +289,6 @@ public class KafkaConsumerThread implements Runnable {
                                         + consumerThreadId + ". Dropping the message");
                             }
                         }
-                        if (metrics != null) {
-                            metrics.getValidEventCountPerStreamMetric(topic, groupId).inc();
-                            metrics.getValidEventCountMetric(topic, groupId).inc();
-                            metrics.getValidEventCountMetric(topic).inc();
-                        }
                         kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(),
                                 record.offset());
                     } else {
@@ -312,18 +307,20 @@ public class KafkaConsumerThread implements Runnable {
                                 try {
                                     consumer.commitSync();
                                 } catch (KafkaException e) {
-                                    for (String topic: topics) {
-                                        metrics.getErrorCountPerTopic(topic, "KafkaException").inc();
+                                    if (metrics != null) {
+                                        for (String topic: topics) {
+                                            metrics.getErrorCountPerStream(topic, groupId, "KafkaException").inc();
+                                        }
                                     }
                                     LOG.error("Exception occurred when committing offsets Synchronously", e);
                                 }
                             }
                         }
                     } catch (CommitFailedException e) {
-                        for (String topic: topics) {
-                            metrics.getErrorCountPerTopic(topic, "CommitFailedException").inc();
-                            metrics.getErrorCountPerGroup(topic, groupId, "CommitFailedException").inc();
-                            metrics.getErrorCountPerStream(topic, groupId, "CommitFailedException").inc();
+                        if (metrics != null) {
+                            for (String topic: topics) {
+                                metrics.getErrorCountPerStream(topic, groupId, "CommitFailedException").inc();
+                            }
                         }
                         LOG.error("Kafka commit failed for topic kafka_result_topic", e);
                     } finally {
@@ -410,10 +407,7 @@ public class KafkaConsumerThread implements Runnable {
 
     private void updateMetrics(String topic, int partition, long recordTimestamp) {
         metrics.getTotalReads().inc();
-        metrics.getTotalSourceReads().inc();
         metrics.getCurrentOffset(topic, partition, groupId);
-        metrics.getReadCountPerTopic(topic).inc();
-        metrics.getReadCountPerGroup(topic, groupId).inc();
         metrics.getReadCountPerStream(topic, partition, groupId).inc();
         metrics.getLastMessageConsumedTime(topic, groupId);
         metrics.getConsumerLag(topic, groupId, partition, recordTimestamp);
