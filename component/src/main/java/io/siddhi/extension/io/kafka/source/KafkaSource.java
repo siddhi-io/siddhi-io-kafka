@@ -237,22 +237,22 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     private static final String PARTITION = "partition";
     private static final String OFFSET = "offSet";
     private OptionHolder optionHolder;
-    private ConsumerKafkaGroup consumerKafkaGroup;
-    private String bootstrapServers;
-    private String groupID;
-    private String[] partitions;
-    private String[] topics;
-    private String optionalConfigs;
+    ConsumerKafkaGroup consumerKafkaGroup;
+    String bootstrapServers;
+    String groupID;
+    String[] partitions;
+    String[] topics;
+    String optionalConfigs;
     private boolean seqEnabled = false;
-    private boolean isBinaryMessage;
-    private boolean enableOffsetCommit;
-    private boolean enableAsyncCommit;
-    private String topicOffsetMapConfig;
-    private SiddhiAppContext siddhiAppContext;
-    private KafkaSourceState kafkaSourceState;
-    private String threadingOption;
-    private SourceEventListener sourceEventListener;
-    private String[] requiredProperties;
+    boolean isBinaryMessage;
+    boolean enableOffsetCommit;
+    boolean enableAsyncCommit;
+    String topicOffsetMapConfig;
+    SiddhiAppContext siddhiAppContext;
+    KafkaSourceState kafkaSourceState;
+    String threadingOption;
+    SourceEventListener sourceEventListener;
+    String[] requiredProperties;
 
     @Override
     public StateFactory<KafkaSourceState> init(SourceEventListener sourceEventListener, OptionHolder optionHolder,
@@ -278,6 +278,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         enableAsyncCommit = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_ASYNC_COMMIT,
                 "true"));
         topicOffsetMapConfig = optionHolder.validateAndGetStaticValue(TOPIC_OFFSET_MAP, null);
+        setSinkId(optionHolder);
         if (PARTITION_WISE.equals(threadingOption) && null == partitions) {
             throw new SiddhiAppValidationException("Threading option is selected as 'partition.wise' but " +
                     "there are no partitions given");
@@ -285,6 +286,8 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
 
         return () -> new KafkaSourceState(seqEnabled);
     }
+
+    public void setSinkId(OptionHolder optionHolder) {}
 
     @Override
     public Class[] getOutputEventClasses() {
@@ -396,7 +399,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         return null;
     }
 
-    private Map<String, Map<Integer, Long>> readTopicOffsetsConfig(String topicOffsetsConfig) {
+    Map<String, Map<Integer, Long>> readTopicOffsetsConfig(String topicOffsetsConfig) {
         Map<String, Map<Integer, Long>> perTopicPerPartitionOffset = new HashMap<>();
         String[] topicOffsets = topicOffsetsConfig.split(",");
         for (String entry : topicOffsets) {
@@ -422,7 +425,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         return perTopicPerPartitionOffset;
     }
 
-    private void checkTopicsAvailableInCluster() {
+    void checkTopicsAvailableInCluster() {
         Properties props = KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
                 isBinaryMessage, enableOffsetCommit);
         props.put("group.id", "test-consumer-group");
@@ -467,7 +470,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         }
     }
 
-    private void checkPartitionsAvailableForTheTopicsInCluster() {
+    void checkPartitionsAvailableForTheTopicsInCluster() {
         //checking whether the defined partitions are available in the defined topic
         Properties configProperties = createProducerConfig(bootstrapServers, optionalConfigs, isBinaryMessage);
         org.apache.kafka.clients.producer.Producer producer = new KafkaProducer(configProperties);
@@ -551,9 +554,9 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
      */
     public class KafkaSourceState extends State {
 
-        private Map<String, Map<Integer, Long>> topicOffsetMap = new HashMap<>();
+        Map<String, Map<Integer, Long>> topicOffsetMap = new HashMap<>();
         private Map<String, Map<SequenceKey, Integer>> consumerLastReceivedSeqNoMap = null;
-        private boolean isRestored = false;
+        boolean isRestored = false;
 
         public Map<String, Map<Integer, Long>> getTopicOffsetMap() {
             return topicOffsetMap;
