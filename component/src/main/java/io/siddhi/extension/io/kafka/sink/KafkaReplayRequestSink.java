@@ -81,7 +81,7 @@ public class KafkaReplayRequestSink extends Sink {
 
     @Override
     public void publish(Object payload, DynamicOptions dynamicOptions, State state) throws ConnectionUnavailableException {
-        KafkaReplayResponseSourceRegistry.getInstance().getKafkaReplayResponseSource(sinkID).onReplayRequest();
+//        KafkaReplayResponseSourceRegistry.getInstance().getKafkaReplayResponseSource(sinkID).onReplayRequest();
     }
 
     @Override

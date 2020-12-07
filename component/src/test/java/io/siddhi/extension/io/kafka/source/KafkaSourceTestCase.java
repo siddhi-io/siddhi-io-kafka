@@ -52,39 +52,39 @@ public class KafkaSourceTestCase {
     private volatile List<Long> receivedValueList;
     private ReentrantLock lock = new ReentrantLock();
 
-//    @BeforeClass
-//    public static void init() throws Exception {
-//        try {
-//            KafkaTestUtil.cleanLogDir();
-//            KafkaTestUtil.setupKafkaBroker();
-//            Thread.sleep(1000);
-//        } catch (Exception e) {
-//            throw new RemoteException("Exception caught when starting server", e);
-//        }
-//    }
-//
-//    @AfterClass
-//    public static void stopKafkaBroker() throws InterruptedException {
-//        KafkaTestUtil.stopKafkaBroker();
-//        Thread.sleep(1000);
-//    }
-//
-//    @BeforeMethod
-//    public void init2() {
-//        count = 0;
-//        eventArrived = false;
-//    }
+    @BeforeClass
+    public static void init() throws Exception {
+        try {
+            KafkaTestUtil.cleanLogDir();
+            KafkaTestUtil.setupKafkaBroker();
+            Thread.sleep(1000);
+        } catch (Exception e) {
+            throw new RemoteException("Exception caught when starting server", e);
+        }
+    }
+
+    @AfterClass
+    public static void stopKafkaBroker() throws InterruptedException {
+        KafkaTestUtil.stopKafkaBroker();
+        Thread.sleep(1000);
+    }
+
+    @BeforeMethod
+    public void init2() {
+        count = 0;
+        eventArrived = false;
+    }
 
     @Test
     public void testKafkaReplay() throws InterruptedException {
         try {
-            count = 0;
-            eventArrived = false;
+//            count = 0;
+//            eventArrived = false;
             log.info("Creating test for single topic");
-            String topics[] = new String[]{"single_topic"};
+            String topics[] = new String[]{"test_topic"};
             receivedEventNameList = new ArrayList<>(2);
             receivedValueList = new ArrayList<>(2);
-//            KafkaTestUtil.createTopic(topics, 1);
+            KafkaTestUtil.createTopic(topics, 1);
             Thread.sleep(1000);
             SiddhiManager siddhiManager = new SiddhiManager();
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
@@ -95,11 +95,11 @@ public class KafkaSourceTestCase {
                             "@source(type='kafka-replay-response', topic.list='test_topic', group.id='group', " +
                             "threading.option='single.thread', bootstrap.servers='localhost:9092', id='1'," +
                             "@map(type='xml'))" +
-                            "Define stream FooStream (symbol string, volume long);" +
+                            "Define stream FooStream (symbol string, price float, volume long);" +
                             "@sink(type='log')" +
-                            "Define stream logStream(symbol string, volume long);" +
+                            "Define stream logStream(symbol string, price float, volume long);" +
                             "from FooStream select * insert into logStream;");
-            siddhiAppRuntime.addCallback("FooStream", new StreamCallback() {
+            siddhiAppRuntime.addCallback("logStream", new StreamCallback() {
                 @Override
                 public void receive(Event[] events) {
                     for (Event event : events) {
@@ -114,7 +114,7 @@ public class KafkaSourceTestCase {
             InputHandler BarStream = siddhiAppRuntime.getInputHandler("BarStream");
             siddhiAppRuntime.start();
             BarStream.send(new Object[]{"5", "12"});
-//            KafkaTestUtil.kafkaPublisher(topics, 1, 2, false, null, true);
+            KafkaTestUtil.kafkaPublisher(topics, 1, 2, false, null, true);
             Thread.sleep(100);
             List<String> expectedNames = new ArrayList<>(2);
             expectedNames.add("test_topic");
@@ -122,12 +122,12 @@ public class KafkaSourceTestCase {
             List<Long> expectedValues = new ArrayList<>(2);
             expectedValues.add(0L);
             expectedValues.add(1L);
-            SiddhiTestHelper.waitForEvents(2000, 2, count, 200000);
+            SiddhiTestHelper.waitForEvents(2000, 2, count, 20000);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedNames,
                     receivedEventNameList);
             AssertJUnit.assertEquals("Kafka Source expected input not received", expectedValues, receivedValueList);
             AssertJUnit.assertEquals(2, count);
-//            KafkaTestUtil.deleteTopic(topics);
+            KafkaTestUtil.deleteTopic(topics);
             siddhiAppRuntime.shutdown();
         } catch (ZkTimeoutException ex) {
             log.warn("No zookeeper may not be available.", ex);
