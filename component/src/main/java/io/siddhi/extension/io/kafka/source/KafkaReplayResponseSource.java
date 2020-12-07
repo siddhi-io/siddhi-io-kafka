@@ -68,7 +68,7 @@ public class KafkaReplayResponseSource extends KafkaSource {
         KafkaReplayResponseSourceRegistry.getInstance().putKafkaReplayResponseSource(sinkId, this);
     }
 
-    public void onReplayRequest() throws ConnectionUnavailableException {
+    public void onReplayRequest(String startOffset, String endOffset) throws ConnectionUnavailableException {
         try {
             ExecutorService executorService = siddhiAppContext.getExecutorService();
             consumerKafkaGroup =
