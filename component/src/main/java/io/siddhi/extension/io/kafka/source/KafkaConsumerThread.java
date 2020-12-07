@@ -76,7 +76,6 @@ public class KafkaConsumerThread implements Runnable {
     private int trpLength;
     private SourceMetrics metrics;
     private String groupId; //Needed for metrics
-//    private String streamId;
 
     KafkaConsumerThread(SourceEventListener sourceEventListener, String[] topics, String[] partitions,
                         Properties props, boolean isPartitionWiseThreading, boolean isBinaryMessage,
@@ -84,7 +83,6 @@ public class KafkaConsumerThread implements Runnable {
                         SourceMetrics metrics) {
         this.consumer = new KafkaConsumer<>(props);
         this.sourceEventListener = sourceEventListener;
-//        this.streamId = sourceEventListener.getStreamDefinition().getId();
         this.topics = topics;
         this.partitions = partitions;
         this.isPartitionWiseThreading = isPartitionWiseThreading;
@@ -194,12 +192,12 @@ public class KafkaConsumerThread implements Runnable {
                 }
                 for (ConsumerRecord record : records) {
                     String[] trpProperties = new String[trpLength];
+                    int partition = record.partition();
+                    long offset = record.offset();
+                    String topic = record.topic();
+                    long recordTimestamp = record.timestamp();
                     if (!consumerClosed) {
-                        int partition = record.partition(); 
                         Object event = record.value();
-                        long offset = record.offset();
-                        String topic = record.topic();
-                        long recordTimestamp = record.timestamp();
                         Object eventBody = null;
                         String header = null;
                         long eventTimestamp = System.currentTimeMillis();
@@ -232,13 +230,8 @@ public class KafkaConsumerThread implements Runnable {
                                 trpProperties[i] = String.valueOf(offset);
                             }
                         }
-
-
                         String transportSyncProperties = "topic:" + topic + ",partition:" + partition
                                 + ",offSet:" + offset;
-                        if (metrics != null) {
-                            updateMetrics(topic, partition, recordTimestamp);
-                        }
                         String[] transportSyncPropertiesArr = new String[]{transportSyncProperties};
                         if (lastReceivedSeqNoMap == null) {
                             sourceEventListener.onEvent(event, trpProperties, transportSyncPropertiesArr);
@@ -289,11 +282,16 @@ public class KafkaConsumerThread implements Runnable {
                                         + consumerThreadId + ". Dropping the message");
                             }
                         }
-                        kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(),
-                                record.offset());
+                        kafkaSourceState.getTopicOffsetMap().get(topic).put(partition, offset);
+                        if (metrics != null) {
+                            updateMetrics(topic, partition, recordTimestamp);
+                        }
                     } else {
                         kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(),
                                 record.offset());
+                        if (metrics != null) {
+                            updateMetrics(topic, partition, recordTimestamp);
+                        }
                         break;
                     }
                 }
