@@ -111,9 +111,9 @@ public class KafkaSourceTestCase {
                     }
                 }
             });
-            InputHandler BarStream = siddhiAppRuntime.getInputHandler("BarStream");
+            InputHandler barStream = siddhiAppRuntime.getInputHandler("BarStream");
             siddhiAppRuntime.start();
-            BarStream.send(new Object[]{"2", "4"});
+            barStream.send(new Object[]{"2", "4"});
             KafkaTestUtil.kafkaPublisher(topics, 1, 2, false, null, true);
             Thread.sleep(100);
             List<String> expectedNames = new ArrayList<>(2);

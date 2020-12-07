@@ -217,7 +217,8 @@ public class KafkaConsumerThread implements Runnable {
                                 trpProperties[i] = String.valueOf(record.checksum());
                             }
                             if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_OFFSET)) {
-                                trpProperties[i] = String.valueOf(record.offset()); //todo check for end offset and break the loop
+                                trpProperties[i] = String.valueOf(record.offset());
+                                //todo check for end offset and break the loop
                             }
                         }
                         String transportSyncProperties = "topic:" + record.topic() + ",partition:" + record.partition()
