@@ -333,7 +333,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
             } else {
                 consumerKafkaGroup.setKafkaSourceState(kafkaSourceState);
             }
-            if (kafkaSourceState.topicOffsetMap != null) {
+            if (metrics!= null && kafkaSourceState.topicOffsetMap != null) {
                 metrics.setTopicOffsetMap(kafkaSourceState.topicOffsetMap);
                 for (String topic: kafkaSourceState.topicOffsetMap.keySet()) {
                     Map<Integer, Long> partitionMap = kafkaSourceState.topicOffsetMap.get(topic);
@@ -343,17 +343,23 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                 }
             }
             consumerKafkaGroup.run();
-            for (String topic: topics) {
-                metrics.getErrorCountPerStream(topic, groupID, "null");
+            if (metrics != null) {
+                for (String topic: topics) {
+                    metrics.getErrorCountPerStream(topic, groupID, "null");
+                }
             }
         } catch (SiddhiAppRuntimeException e) {
-            for (String topic: topics) {
-                metrics.getErrorCountPerStream(topic, groupID, "SiddhiAppRuntimeException").inc();
+            if (metrics != null) {
+                for (String topic: topics) {
+                    metrics.getErrorCountPerStream(topic, groupID, "SiddhiAppRuntimeException").inc();
+                }
             }
             throw e;
         } catch (Throwable e) {
-            for (String topic: topics) {
-                metrics.getErrorCountPerStream(topic, groupID, e.getClass().getSimpleName()).inc();
+            if (metrics != null) {
+                for (String topic: topics) {
+                    metrics.getErrorCountPerStream(topic, groupID, e.getClass().getSimpleName()).inc();
+                }
             }
             throw new ConnectionUnavailableException("Error when initiating connection with Kafka server: " +
                     bootstrapServers + " in Siddhi App: " + siddhiAppContext.getName(), e);
