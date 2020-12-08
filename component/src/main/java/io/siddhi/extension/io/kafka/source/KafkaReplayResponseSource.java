@@ -33,6 +33,7 @@ import io.siddhi.extension.io.kafka.Constants;
 import io.siddhi.extension.io.kafka.util.KafkaReplayResponseSourceRegistry;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 /**
  * aerer
@@ -83,13 +84,13 @@ public class KafkaReplayResponseSource extends KafkaSource {
     public void onReplayRequest(String startOffset, String endOffset) throws ConnectionUnavailableException {
         try {
             ExecutorService executorService = siddhiAppContext.getExecutorService();
-            KafkaConsumerThread kafkaConsumerThread =
-                    new KafkaConsumerThread(sourceEventListener, topics, partitions,
+            KafkaReplayThread kafkaReplayThread =
+                    new KafkaReplayThread(sourceEventListener, topics, partitions,
                             KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
                             isBinaryMessage, enableOffsetCommit),
                             false, isBinaryMessage, enableOffsetCommit, enableAsyncCommit,
                             requiredProperties);
-            executorService.submit(kafkaConsumerThread);
+            Future<?> ignored = executorService.submit(kafkaReplayThread);
 //            consumerKafkaGroup =
 //                    new ConsumerKafkaGroup(
 //                            topics, partitions,
