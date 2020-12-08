@@ -82,9 +82,21 @@ public class KafkaReplayRequestSink extends Sink {
     @Override
     public void publish(Object payload, DynamicOptions dynamicOptions, State state)
             throws ConnectionUnavailableException {
-        Object[] offsets = ((Event[]) payload)[0].getData();
+        String startOffset;
+        String endOffset;
+        if (payload instanceof Event[]) {
+            Object[] offsets = ((Event[]) payload)[0].getData();
+            startOffset = (String) offsets[0];
+            endOffset = (String) offsets[1];
+        } else if (payload instanceof Event) {
+            Object[] offsets = ((Event) payload).getData();
+            startOffset = (String) offsets[0];
+            endOffset = (String) offsets[1];
+        } else {
+            throw new ConnectionUnavailableException("Unknown type");
+        }
         KafkaReplayResponseSourceRegistry.getInstance().getKafkaReplayResponseSource(sinkID)
-                .onReplayRequest((String) offsets[0], (String) offsets[1]);
+                .onReplayRequest(startOffset, endOffset);
     }
 
     @Override
