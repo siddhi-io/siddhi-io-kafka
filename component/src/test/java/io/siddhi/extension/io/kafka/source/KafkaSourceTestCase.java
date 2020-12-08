@@ -78,8 +78,6 @@ public class KafkaSourceTestCase {
     @Test
     public void testKafkaReplay() throws InterruptedException {
         try {
-//            count = 0;
-//            eventArrived = false;
             log.info("Creating test for single topic");
             String topics[] = new String[]{"test_topic"};
             receivedEventNameList = new ArrayList<>(2);
