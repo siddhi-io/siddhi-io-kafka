@@ -61,7 +61,17 @@ public class KafkaReplayResponseSource extends KafkaSource {
 
     @Override
     public void connect(ConnectionCallback connectionCallback, KafkaSourceState kafkaSourceState) {
-        this.kafkaSourceState = kafkaSourceState;
+//        this.kafkaSourceState = kafkaSourceState;
+//        // If state does not contain the topic offset map try to read it from the config
+//        if (!kafkaSourceState.isRestored && topicOffsetMapConfig != null) {
+//            synchronized (kafkaSourceState) {
+//                kafkaSourceState.topicOffsetMap = readTopicOffsetsConfig(topicOffsetMapConfig);
+//            }
+//            consumerKafkaGroup.setKafkaSourceState(kafkaSourceState);
+//            consumerKafkaGroup.restoreState();
+//        } else {
+//            consumerKafkaGroup.setKafkaSourceState(kafkaSourceState);
+//        }
     }
 
     @Override
@@ -73,27 +83,25 @@ public class KafkaReplayResponseSource extends KafkaSource {
     public void onReplayRequest(String startOffset, String endOffset) throws ConnectionUnavailableException {
         try {
             ExecutorService executorService = siddhiAppContext.getExecutorService();
-            consumerKafkaGroup =
-                    new ConsumerKafkaGroup(
-                            topics, partitions,
+            KafkaConsumerThread kafkaConsumerThread =
+                    new KafkaConsumerThread(sourceEventListener, topics, partitions,
                             KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
-                                    isBinaryMessage, enableOffsetCommit),
-                            threadingOption, executorService, isBinaryMessage, enableOffsetCommit, enableAsyncCommit,
-                            sourceEventListener, requiredProperties);
-            checkTopicsAvailableInCluster();
-            checkPartitionsAvailableForTheTopicsInCluster();
+                            isBinaryMessage, enableOffsetCommit),
+                            false, isBinaryMessage, enableOffsetCommit, enableAsyncCommit,
+                            requiredProperties);
+            executorService.submit(kafkaConsumerThread);
+//            consumerKafkaGroup =
+//                    new ConsumerKafkaGroup(
+//                            topics, partitions,
+//                            KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
+//                                    isBinaryMessage, enableOffsetCommit),
+//                            threadingOption, executorService, isBinaryMessage, enableOffsetCommit, enableAsyncCommit,
+//                            sourceEventListener, requiredProperties);
+//            checkTopicsAvailableInCluster();
+//            checkPartitionsAvailableForTheTopicsInCluster();
 //            this.kafkaSourceState = kafkaSourceState;
-            // If state does not contain the topic offset map try to read it from the config
-            if (!kafkaSourceState.isRestored && topicOffsetMapConfig != null) {
-                synchronized (kafkaSourceState) {
-                    kafkaSourceState.topicOffsetMap = readTopicOffsetsConfig(topicOffsetMapConfig);
-                }
-                consumerKafkaGroup.setKafkaSourceState(kafkaSourceState);
-                consumerKafkaGroup.restoreState();
-            } else {
-                consumerKafkaGroup.setKafkaSourceState(kafkaSourceState);
-            }
-            consumerKafkaGroup.run();
+//            consumerKafkaGroup.run();
+
         } catch (SiddhiAppRuntimeException e) {
             throw e;
         } catch (Throwable e) {
