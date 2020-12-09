@@ -68,10 +68,15 @@ public class KafkaReplayThread implements Runnable {
     private KafkaSource.KafkaSourceState kafkaSourceState;
     private String[] requiredProperties;
     private int trpLength;
+    private int startOffset;
+    private int endOffset;
 
     KafkaReplayThread(SourceEventListener sourceEventListener, String[] topics, String[] partitions,
                         Properties props, boolean isPartitionWiseThreading, boolean isBinaryMessage,
-                        boolean enableOffsetCommit, boolean enableAsyncCommit, String[] requiredProperties) {
+                        boolean enableOffsetCommit, boolean enableAsyncCommit, String[] requiredProperties,
+                      int startOffset, int endOffset) {
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
         this.consumer = new KafkaConsumer<>(props);
         this.sourceEventListener = sourceEventListener;
         this.topics = topics;
@@ -182,45 +187,49 @@ public class KafkaReplayThread implements Runnable {
                 for (ConsumerRecord record : records) {
                     String[] trpProperties = new String[trpLength];
                     if (!consumerClosed) {
-                        int partition = record.partition();
-                        Object event = record.value();
-                        Object eventBody = null;
-                        String header = null;
-                        long eventTimestamp = System.currentTimeMillis();
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Event received in Kafka Event Adaptor with offSet: " + record.offset() +
-                                    ", key: " + record.key() + ", topic: " + record.topic() +
-                                    ", partition: " + partition + ", recordTimestamp: " + record.timestamp() +
-                                    ", eventTimestamp: " + eventTimestamp + ", checksum: " + record.checksum());
-                        }
-                        for (int i = 0; i < requiredProperties.length; i++) {
-                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_PARTITION)) {
-                                trpProperties[i] = String.valueOf(record.partition());
+                        if (record.offset() >= startOffset) {
+                            if (record.offset() > endOffset) {
+                                break;
                             }
-                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_TOPIC)) {
-                                trpProperties[i] = record.topic();
+                            int partition = record.partition();
+                            Object event = record.value();
+                            Object eventBody = null;
+                            String header = null;
+                            long eventTimestamp = System.currentTimeMillis();
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("Event received in Kafka Event Adaptor with offSet: " + record.offset() +
+                                        ", key: " + record.key() + ", topic: " + record.topic() +
+                                        ", partition: " + partition + ", recordTimestamp: " + record.timestamp() +
+                                        ", eventTimestamp: " + eventTimestamp + ", checksum: " + record.checksum());
                             }
-                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_KEY)) {
-                                trpProperties[i] = String.valueOf(record.key());
+                            for (int i = 0; i < requiredProperties.length; i++) {
+                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_PARTITION)) {
+                                    trpProperties[i] = String.valueOf(record.partition());
+                                }
+                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_TOPIC)) {
+                                    trpProperties[i] = record.topic();
+                                }
+                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_KEY)) {
+                                    trpProperties[i] = String.valueOf(record.key());
+                                }
+                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_RECORD_TIMESTAMP)) {
+                                    trpProperties[i] = String.valueOf(record.timestamp());
+                                }
+                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_EVENT_TIMESTAMP)) {
+                                    trpProperties[i] = String.valueOf(eventTimestamp);
+                                }
+                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_CHECK_SUM)) {
+                                    trpProperties[i] = String.valueOf(record.checksum());
+                                }
+                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_OFFSET)) {
+                                    trpProperties[i] = String.valueOf(record.offset());
+                                    //todo check for end offset and break the loop
+                                }
                             }
-                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_RECORD_TIMESTAMP)) {
-                                trpProperties[i] = String.valueOf(record.timestamp());
-                            }
-                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_EVENT_TIMESTAMP)) {
-                                trpProperties[i] = String.valueOf(eventTimestamp);
-                            }
-                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_CHECK_SUM)) {
-                                trpProperties[i] = String.valueOf(record.checksum());
-                            }
-                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_OFFSET)) {
-                                trpProperties[i] = String.valueOf(record.offset());
-                                //todo check for end offset and break the loop
-                            }
-                        }
-                        String transportSyncProperties = "topic:" + record.topic() + ",partition:" + record.partition()
-                                + ",offSet:" + record.offset();
-                        String[] transportSyncPropertiesArr = new String[]{transportSyncProperties};
-                        sourceEventListener.onEvent(event, trpProperties, transportSyncPropertiesArr);
+                            String transportSyncProperties = "topic:" + record.topic() + ",partition:" + record.partition()
+                                    + ",offSet:" + record.offset();
+                            String[] transportSyncPropertiesArr = new String[]{transportSyncProperties};
+                            sourceEventListener.onEvent(event, trpProperties, transportSyncPropertiesArr);
 //                        if (lastReceivedSeqNoMap == null) {
 //                            sourceEventListener.onEvent(event, trpProperties, transportSyncPropertiesArr);
 //                        } else {
@@ -272,10 +281,11 @@ public class KafkaReplayThread implements Runnable {
 //                        }
 //                        kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(),
 //                                record.offset());
-                    } else {
+                        } else {
 //                        kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(),
 //                                record.offset());
-                        break;
+                            break;
+                        }
                     }
                 }
                 if (enableOffsetCommit && !enableAutoCommit) {

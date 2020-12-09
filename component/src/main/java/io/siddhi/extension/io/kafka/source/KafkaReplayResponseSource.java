@@ -89,7 +89,7 @@ public class KafkaReplayResponseSource extends KafkaSource {
                             KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
                             isBinaryMessage, enableOffsetCommit),
                             false, isBinaryMessage, enableOffsetCommit, enableAsyncCommit,
-                            requiredProperties);
+                            requiredProperties, Integer.parseInt(startOffset), Integer.parseInt(endOffset));
             Future<?> ignored = executorService.submit(kafkaReplayThread);
 //            consumerKafkaGroup =
 //                    new ConsumerKafkaGroup(
