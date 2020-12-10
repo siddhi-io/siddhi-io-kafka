@@ -20,6 +20,7 @@ package io.siddhi.extension.io.kafka.source;
 
 import io.siddhi.core.stream.input.source.SourceEventListener;
 import io.siddhi.extension.io.kafka.Constants;
+import io.siddhi.extension.io.kafka.util.KafkaReplayResponseSourceRegistry;
 import org.apache.kafka.clients.consumer.CommitFailedException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -69,11 +70,15 @@ public class KafkaReplayThread implements Runnable {
     private int trpLength;
     private int startOffset;
     private int endOffset;
+    private int threadId;
+    private String sinkId;
 
     KafkaReplayThread(SourceEventListener sourceEventListener, String[] topics, String[] partitions,
                         Properties props, boolean isPartitionWiseThreading, boolean isBinaryMessage,
                         boolean enableOffsetCommit, boolean enableAsyncCommit, String[] requiredProperties,
-                      int startOffset, int endOffset) {
+                      int startOffset, int endOffset, int threadId, String sinkId) {
+        this.threadId = threadId;
+        this.sinkId = sinkId;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         this.consumer = new KafkaConsumer<>(props);
@@ -189,8 +194,9 @@ public class KafkaReplayThread implements Runnable {
                     if (!consumerClosed) {
                         if (record.offset() >= startOffset) {
                             if (record.offset() > endOffset) {
-                                shutdownConsumer();
-                                Thread.currentThread().interrupt();
+                                inactive = true;
+                                KafkaReplayResponseSourceRegistry.getInstance().getKafkaReplayResponseSource(sinkId)
+                                        .onReplayFinish(threadId);
                                 break;
                             }
                             int partition = record.partition();
@@ -233,8 +239,9 @@ public class KafkaReplayThread implements Runnable {
                             String[] transportSyncPropertiesArr = new String[]{transportSyncProperties};
                             sourceEventListener.onEvent(event, trpProperties, transportSyncPropertiesArr);
                             if (record.offset() == endOffset) {
-                                shutdownConsumer();
-                                Thread.currentThread().interrupt();
+                                inactive = true;
+                                KafkaReplayResponseSourceRegistry.getInstance().getKafkaReplayResponseSource(sinkId)
+                                        .onReplayFinish(threadId);
                             }
 //                        if (lastReceivedSeqNoMap == null) {
 //                            sourceEventListener.onEvent(event, trpProperties, transportSyncPropertiesArr);

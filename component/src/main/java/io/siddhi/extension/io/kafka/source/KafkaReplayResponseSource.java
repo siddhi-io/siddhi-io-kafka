@@ -32,6 +32,8 @@ import io.siddhi.core.util.transport.OptionHolder;
 import io.siddhi.extension.io.kafka.Constants;
 import io.siddhi.extension.io.kafka.util.KafkaReplayResponseSourceRegistry;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
@@ -59,6 +61,8 @@ import java.util.concurrent.Future;
 )
 public class KafkaReplayResponseSource extends KafkaSource {
     private String sinkId;
+    private List<Future<?>> futureList = new ArrayList<>();
+    private List<KafkaReplayThread> kafkaReplayThreadList = new ArrayList<>();
 
     @Override
     public void connect(ConnectionCallback connectionCallback, KafkaSourceState kafkaSourceState) {
@@ -87,10 +91,11 @@ public class KafkaReplayResponseSource extends KafkaSource {
             KafkaReplayThread kafkaReplayThread =
                     new KafkaReplayThread(sourceEventListener, topics, partitions,
                             KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
-                            isBinaryMessage, enableOffsetCommit),
-                            false, isBinaryMessage, enableOffsetCommit, enableAsyncCommit,
-                            requiredProperties, Integer.parseInt(startOffset), Integer.parseInt(endOffset));
-            Future<?> ignored = executorService.submit(kafkaReplayThread);
+                                    isBinaryMessage, enableOffsetCommit), false, isBinaryMessage, enableOffsetCommit,
+                            enableAsyncCommit, requiredProperties, Integer.parseInt(startOffset),
+                            Integer.parseInt(endOffset), futureList.size(), sinkId);
+            kafkaReplayThreadList.add(kafkaReplayThread);
+            futureList.add(executorService.submit(kafkaReplayThread));
 //            consumerKafkaGroup =
 //                    new ConsumerKafkaGroup(
 //                            topics, partitions,
@@ -108,6 +113,14 @@ public class KafkaReplayResponseSource extends KafkaSource {
         } catch (Throwable e) {
             throw new ConnectionUnavailableException("Error when initiating connection with Kafka server: " +
                     bootstrapServers + " in Siddhi App: " + siddhiAppContext.getName(), e);
+        }
+    }
+
+    public void onReplayFinish(int threadId) {
+        kafkaReplayThreadList.get(threadId).shutdownConsumer();
+        Future future = futureList.get(threadId);
+        if (!future.isCancelled()) {
+            future.cancel(true);
         }
     }
 }
