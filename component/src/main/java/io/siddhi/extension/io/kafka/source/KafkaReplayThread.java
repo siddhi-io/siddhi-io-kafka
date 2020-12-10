@@ -189,6 +189,7 @@ public class KafkaReplayThread implements Runnable {
                     if (!consumerClosed) {
                         if (record.offset() >= startOffset) {
                             if (record.offset() > endOffset) {
+                                shutdownConsumer();
                                 Thread.currentThread().interrupt();
                                 break;
                             }
@@ -232,6 +233,7 @@ public class KafkaReplayThread implements Runnable {
                             String[] transportSyncPropertiesArr = new String[]{transportSyncProperties};
                             sourceEventListener.onEvent(event, trpProperties, transportSyncPropertiesArr);
                             if (record.offset() == endOffset) {
+                                shutdownConsumer();
                                 Thread.currentThread().interrupt();
                             }
 //                        if (lastReceivedSeqNoMap == null) {
