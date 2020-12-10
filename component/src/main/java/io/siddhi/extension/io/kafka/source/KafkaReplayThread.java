@@ -173,6 +173,7 @@ public class KafkaReplayThread implements Runnable {
                 // TODO add a huge value because, when there are so many equal group ids, the group balancing
                 // takes time and if this value is small, there will be an CommitFailedException while
                 // trying to retrieve data
+                consumer.seekToBeginning(partitionsList);
                 records = consumer.poll(100); // todo check
             } catch (CommitFailedException ex) {
                 LOG.warn("Consumer poll() failed." + ex.getMessage(), ex);
@@ -288,26 +289,26 @@ public class KafkaReplayThread implements Runnable {
                         break;
                     }
                 }
-                if (enableOffsetCommit && !enableAutoCommit) {
-                    try {
-                        consumerLock.lock();
-                        if (!records.isEmpty()) {
-                            if (enableAsyncCommit) {
-                                consumer.commitAsync(new KafkaOffsetCommitCallback());
-                            } else {
-                                try {
-                                    consumer.commitSync();
-                                } catch (KafkaException e) {
-                                    LOG.error("Exception occurred when committing offsets Synchronously", e);
-                                }
-                            }
-                        }
-                    } catch (CommitFailedException e) {
-                        LOG.error("Kafka commit failed for topic kafka_result_topic", e);
-                    } finally {
-                        consumerLock.unlock();
-                    }
-                }
+//                if (enableOffsetCommit && !enableAutoCommit) {
+//                    try {
+//                        consumerLock.lock();
+//                        if (!records.isEmpty()) {
+//                            if (enableAsyncCommit) {
+//                                consumer.commitAsync(new KafkaOffsetCommitCallback());
+//                            } else {
+//                                try {
+//                                    consumer.commitSync();
+//                                } catch (KafkaException e) {
+//                                    LOG.error("Exception occurred when committing offsets Synchronously", e);
+//                                }
+//                            }
+//                        }
+//                    } catch (CommitFailedException e) {
+//                        LOG.error("Kafka commit failed for topic kafka_result_topic", e);
+//                    } finally {
+//                        consumerLock.unlock();
+//                    }
+//                }
             }
             try { //To avoid thread spin
                 Thread.sleep(1);
