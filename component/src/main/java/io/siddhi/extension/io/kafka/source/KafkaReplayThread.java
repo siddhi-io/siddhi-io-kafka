@@ -26,7 +26,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.consumer.OffsetCommitCallback;
-import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.log4j.Logger;
 
@@ -190,6 +189,7 @@ public class KafkaReplayThread implements Runnable {
                     if (!consumerClosed) {
                         if (record.offset() >= startOffset) {
                             if (record.offset() > endOffset) {
+                                Thread.currentThread().interrupt();
                                 break;
                             }
                             int partition = record.partition();
@@ -231,6 +231,9 @@ public class KafkaReplayThread implements Runnable {
                                     + record.partition() + ",offSet:" + record.offset();
                             String[] transportSyncPropertiesArr = new String[]{transportSyncProperties};
                             sourceEventListener.onEvent(event, trpProperties, transportSyncPropertiesArr);
+                            if (record.offset() == endOffset) {
+                                Thread.currentThread().interrupt();
+                            }
 //                        if (lastReceivedSeqNoMap == null) {
 //                            sourceEventListener.onEvent(event, trpProperties, transportSyncPropertiesArr);
 //                        } else {
