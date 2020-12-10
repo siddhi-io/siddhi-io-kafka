@@ -83,7 +83,7 @@ public class KafkaReplayThread implements Runnable {
         this.partitions = partitions;
         this.isPartitionWiseThreading = isPartitionWiseThreading;
         this.isBinaryMessage = isBinaryMessage;
-        this.enableOffsetCommit = enableOffsetCommit;
+        this.enableOffsetCommit = false;
         this.enableAutoCommit = Boolean.parseBoolean(props.getProperty(ADAPTOR_ENABLE_AUTO_COMMIT, "true"));
         this.consumerThreadId = buildId();
         this.enableAsyncCommit = enableAsyncCommit;
@@ -226,8 +226,8 @@ public class KafkaReplayThread implements Runnable {
                                     //todo check for end offset and break the loop
                                 }
                             }
-                            String transportSyncProperties = "topic:" + record.topic() + ",partition:" + record.partition()
-                                    + ",offSet:" + record.offset();
+                            String transportSyncProperties = "topic:" + record.topic() + ",partition:"
+                                    + record.partition() + ",offSet:" + record.offset();
                             String[] transportSyncPropertiesArr = new String[]{transportSyncProperties};
                             sourceEventListener.onEvent(event, trpProperties, transportSyncPropertiesArr);
 //                        if (lastReceivedSeqNoMap == null) {
@@ -281,11 +281,11 @@ public class KafkaReplayThread implements Runnable {
 //                        }
 //                        kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(),
 //                                record.offset());
-                        } else {
+                        }
+                    } else {
 //                        kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(),
 //                                record.offset());
-                            break;
-                        }
+                        break;
                     }
                 }
                 if (enableOffsetCommit && !enableAutoCommit) {
