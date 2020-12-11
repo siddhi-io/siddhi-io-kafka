@@ -66,17 +66,6 @@ public class KafkaReplayResponseSource extends KafkaSource {
 
     @Override
     public void connect(ConnectionCallback connectionCallback, KafkaSourceState kafkaSourceState) {
-//        this.kafkaSourceState = kafkaSourceState;
-//        // If state does not contain the topic offset map try to read it from the config
-//        if (!kafkaSourceState.isRestored && topicOffsetMapConfig != null) {
-//            synchronized (kafkaSourceState) {
-//                kafkaSourceState.topicOffsetMap = readTopicOffsetsConfig(topicOffsetMapConfig);
-//            }
-//            consumerKafkaGroup.setKafkaSourceState(kafkaSourceState);
-//            consumerKafkaGroup.restoreState();
-//        } else {
-//            consumerKafkaGroup.setKafkaSourceState(kafkaSourceState);
-//        }
     }
 
     @Override
@@ -96,18 +85,6 @@ public class KafkaReplayResponseSource extends KafkaSource {
                             Integer.parseInt(endOffset), futureList.size(), sinkId);
             kafkaReplayThreadList.add(kafkaReplayThread);
             futureList.add(executorService.submit(kafkaReplayThread));
-//            consumerKafkaGroup =
-//                    new ConsumerKafkaGroup(
-//                            topics, partitions,
-//                            KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
-//                                    isBinaryMessage, enableOffsetCommit),
-//                            threadingOption, executorService, isBinaryMessage, enableOffsetCommit, enableAsyncCommit,
-//                            sourceEventListener, requiredProperties);
-//            checkTopicsAvailableInCluster();
-//            checkPartitionsAvailableForTheTopicsInCluster();
-//            this.kafkaSourceState = kafkaSourceState;
-//            consumerKafkaGroup.run();
-
         } catch (SiddhiAppRuntimeException e) {
             throw e;
         } catch (Throwable e) {

@@ -139,7 +139,7 @@ public class KafkaConsumerThread implements Runnable {
                                     .getValue() + 1));
                             try {
                                 consumerLock.lock();
-                                consumer.seek(partition, entry.getValue() + 1); //todo check this
+                                consumer.seek(partition, entry.getValue() + 1);
                             } finally {
                                 consumerLock.unlock();
                             }
@@ -172,7 +172,7 @@ public class KafkaConsumerThread implements Runnable {
                 // TODO add a huge value because, when there are so many equal group ids, the group balancing
                 // takes time and if this value is small, there will be an CommitFailedException while
                 // trying to retrieve data
-                records = consumer.poll(100); // todo check
+                records = consumer.poll(100);
             } catch (CommitFailedException ex) {
                 LOG.warn("Consumer poll() failed." + ex.getMessage(), ex);
             } finally {
@@ -218,7 +218,6 @@ public class KafkaConsumerThread implements Runnable {
                             }
                             if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_OFFSET)) {
                                 trpProperties[i] = String.valueOf(record.offset());
-                                //todo check for end offset and break the loop
                             }
                         }
                         String transportSyncProperties = "topic:" + record.topic() + ",partition:" + record.partition()
