@@ -72,6 +72,7 @@ public class KafkaConsumerThread implements Runnable {
     private KafkaSource.KafkaSourceState kafkaSourceState;
     private String[] requiredProperties;
     private int trpLength;
+    boolean isReplayThread = false;
 
     KafkaConsumerThread(SourceEventListener sourceEventListener, String[] topics, String[] partitions,
                         Properties props, boolean isPartitionWiseThreading, boolean isBinaryMessage,
@@ -181,108 +182,116 @@ public class KafkaConsumerThread implements Runnable {
             }
             if (null != records) {
                 Map<SequenceKey, Integer> lastReceivedSeqNoMap = null;
-                if (kafkaSourceState.getConsumerLastReceivedSeqNoMap() != null) {
+                if (!isReplayThread && kafkaSourceState.getConsumerLastReceivedSeqNoMap() != null) {
                     lastReceivedSeqNoMap = kafkaSourceState.getConsumerLastReceivedSeqNoMap().get(consumerThreadId);
                 }
                 for (ConsumerRecord record : records) {
                     String[] trpProperties = new String[trpLength];
                     if (!consumerClosed) {
-                        checkLoopConditions();
-                        int partition = record.partition();
-                        Object event = record.value();
-                        Object eventBody = null;
-                        String header = null;
-                        long eventTimestamp = System.currentTimeMillis();
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Event received in Kafka Event Adaptor with offSet: " + record.offset() +
-                                    ", key: " + record.key() + ", topic: " + record.topic() +
-                                    ", partition: " + partition + ", recordTimestamp: " + record.timestamp() +
-                                    ", eventTimestamp: " + eventTimestamp + ", checksum: " + record.checksum());
-                        }
-                        for (int i = 0; i < requiredProperties.length; i++) {
-                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_PARTITION)) {
-                                trpProperties[i] = String.valueOf(record.partition());
+                        if (isRecordWithinRange(record)) {
+                            int partition = record.partition();
+                            Object event = record.value();
+                            Object eventBody = null;
+                            String header = null;
+                            long eventTimestamp = System.currentTimeMillis();
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("Event received in Kafka Event Adaptor with offSet: " + record.offset() +
+                                        ", key: " + record.key() + ", topic: " + record.topic() +
+                                        ", partition: " + partition + ", recordTimestamp: " + record.timestamp() +
+                                        ", eventTimestamp: " + eventTimestamp + ", checksum: " + record.checksum());
                             }
-                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_TOPIC)) {
-                                trpProperties[i] = record.topic();
+                            for (int i = 0; i < requiredProperties.length; i++) {
+                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_PARTITION)) {
+                                    trpProperties[i] = String.valueOf(record.partition());
+                                }
+                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_TOPIC)) {
+                                    trpProperties[i] = record.topic();
+                                }
+                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_KEY)) {
+                                    trpProperties[i] = String.valueOf(record.key());
+                                }
+                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_RECORD_TIMESTAMP)) {
+                                    trpProperties[i] = String.valueOf(record.timestamp());
+                                }
+                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_EVENT_TIMESTAMP)) {
+                                    trpProperties[i] = String.valueOf(eventTimestamp);
+                                }
+                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_CHECK_SUM)) {
+                                    trpProperties[i] = String.valueOf(record.checksum());
+                                }
+                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_OFFSET)) {
+                                    trpProperties[i] = String.valueOf(record.offset());
+                                }
                             }
-                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_KEY)) {
-                                trpProperties[i] = String.valueOf(record.key());
-                            }
-                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_RECORD_TIMESTAMP)) {
-                                trpProperties[i] = String.valueOf(record.timestamp());
-                            }
-                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_EVENT_TIMESTAMP)) {
-                                trpProperties[i] = String.valueOf(eventTimestamp);
-                            }
-                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_CHECK_SUM)) {
-                                trpProperties[i] = String.valueOf(record.checksum());
-                            }
-                            if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_OFFSET)) {
-                                trpProperties[i] = String.valueOf(record.offset());
-                            }
-                        }
-                        String transportSyncProperties = "topic:" + record.topic() + ",partition:" + record.partition()
-                                + ",offSet:" + record.offset();
-                        String[] transportSyncPropertiesArr = new String[]{transportSyncProperties};
-                        if (lastReceivedSeqNoMap == null) {
-                            sourceEventListener.onEvent(event, trpProperties, transportSyncPropertiesArr);
-                        } else {
-                            if (isBinaryMessage) {
-                                byte[] byteEvents = (byte[]) event;
-                                int stringSize = ByteBuffer.wrap(byteEvents).getInt();
-                                header = new String(byteEvents, 4, stringSize - 1, Charset.defaultCharset());
-                                eventBody = Arrays.copyOfRange(byteEvents, stringSize + 4,
-                                        byteEvents.length);
+                            String transportSyncProperties = "topic:" + record.topic() + ",partition:" + record.partition()
+                                    + ",offSet:" + record.offset();
+                            String[] transportSyncPropertiesArr = new String[]{transportSyncProperties};
+                            if (lastReceivedSeqNoMap == null) {
+                                sourceEventListener.onEvent(event, trpProperties, transportSyncPropertiesArr);
                             } else {
-                                String stringEvent = event.toString();
-                                int headerStartingIndex = stringEvent.indexOf(KafkaSink.SEQ_NO_HEADER_DELIMITER);
-                                eventBody = stringEvent.substring(headerStartingIndex + 1);
-                                if (headerStartingIndex > 0) {
-                                    header = stringEvent.substring(0, headerStartingIndex);
-                                }
-                            }
-                            if (null != header && !header.isEmpty()) {
-                                String[] headerElements = header.split(KafkaSink.SEQ_NO_HEADER_FIELD_SEPERATOR);
-                                String sequenceId = headerElements[0];
-                                Integer seqNo = Integer.parseInt(headerElements[1]);
-                                SequenceKey sequenceKey = new SequenceKey(sequenceId, partition);
-                                Integer lastReceivedSeqNo = lastReceivedSeqNoMap.get(sequenceKey);
-                                if (lastReceivedSeqNo == null) {
-                                    lastReceivedSeqNo = -1;
-                                }
-                                if (lastReceivedSeqNo < seqNo) {
-                                    lastReceivedSeqNoMap.put(sequenceKey, seqNo);
-                                    sourceEventListener.onEvent(eventBody, trpProperties, transportSyncPropertiesArr);
-                                    if (LOG.isDebugEnabled()) {
-                                        LOG.debug("Last Received SeqNo Updated to:" + seqNo + " for " + "SeqKey:["
-                                                + sequenceKey.toString() + "] in Kafka consumer thread:"
-                                                + consumerThreadId);
-                                    }
+                                if (isBinaryMessage) {
+                                    byte[] byteEvents = (byte[]) event;
+                                    int stringSize = ByteBuffer.wrap(byteEvents).getInt();
+                                    header = new String(byteEvents, 4, stringSize - 1, Charset.defaultCharset());
+                                    eventBody = Arrays.copyOfRange(byteEvents, stringSize + 4,
+                                            byteEvents.length);
                                 } else {
-                                    if (LOG.isDebugEnabled()) {
-                                        LOG.debug("Duplicate Message arrived at Kafka Consumer Thread:"
-                                                + consumerThreadId + ". SeqKey:[" + sequenceKey.toString() + "]"
-                                                + ", Latest SeqNo:" + lastReceivedSeqNo
-                                                + ", this message SeqNo:" + seqNo + ". Ignoring the message.");
+                                    String stringEvent = event.toString();
+                                    int headerStartingIndex = stringEvent.indexOf(KafkaSink.SEQ_NO_HEADER_DELIMITER);
+                                    eventBody = stringEvent.substring(headerStartingIndex + 1);
+                                    if (headerStartingIndex > 0) {
+                                        header = stringEvent.substring(0, headerStartingIndex);
                                     }
                                 }
+                                if (null != header && !header.isEmpty()) {
+                                    String[] headerElements = header.split(KafkaSink.SEQ_NO_HEADER_FIELD_SEPERATOR);
+                                    String sequenceId = headerElements[0];
+                                    Integer seqNo = Integer.parseInt(headerElements[1]);
+                                    SequenceKey sequenceKey = new SequenceKey(sequenceId, partition);
+                                    Integer lastReceivedSeqNo = lastReceivedSeqNoMap.get(sequenceKey);
+                                    if (lastReceivedSeqNo == null) {
+                                        lastReceivedSeqNo = -1;
+                                    }
+                                    if (lastReceivedSeqNo < seqNo) {
+                                        lastReceivedSeqNoMap.put(sequenceKey, seqNo);
+                                        sourceEventListener.onEvent(eventBody, trpProperties, transportSyncPropertiesArr);
+                                        if (LOG.isDebugEnabled()) {
+                                            LOG.debug("Last Received SeqNo Updated to:" + seqNo + " for " + "SeqKey:["
+                                                    + sequenceKey.toString() + "] in Kafka consumer thread:"
+                                                    + consumerThreadId);
+                                        }
+                                    } else {
+                                        if (LOG.isDebugEnabled()) {
+                                            LOG.debug("Duplicate Message arrived at Kafka Consumer Thread:"
+                                                    + consumerThreadId + ". SeqKey:[" + sequenceKey.toString() + "]"
+                                                    + ", Latest SeqNo:" + lastReceivedSeqNo
+                                                    + ", this message SeqNo:" + seqNo + ". Ignoring the message.");
+                                        }
+                                    }
 
-                            } else {
-                                LOG.warn("'Sequenced' option is set to true in Kafka source configuration. "
-                                        + "But this message does not contain the sequence number in consumer thread :"
-                                        + consumerThreadId + ". Dropping the message");
+                                } else {
+                                    LOG.warn("'Sequenced' option is set to true in Kafka source configuration. "
+                                            + "But this message does not contain the sequence number in consumer thread :"
+                                            + consumerThreadId + ". Dropping the message");
+                                }
                             }
+                            if (!isReplayThread) {
+                                kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(),
+                                        record.offset());
+                            }
+                        } else {
+                            inactive = true;
+                            break;
                         }
-                        kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(),
-                                record.offset());
                     } else {
-                        kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(),
-                                record.offset());
+                        if (!isReplayThread) {
+                            kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(),
+                                    record.offset());
+                        }
                         break;
                     }
                 }
-                if (enableOffsetCommit && !enableAutoCommit) {
+                if (!isReplayThread && enableOffsetCommit && !enableAutoCommit) {
                     try {
                         consumerLock.lock();
                         if (!records.isEmpty()) {
@@ -313,7 +322,9 @@ public class KafkaConsumerThread implements Runnable {
 
     void seekToRequiredOffset() {}
 
-    void checkLoopConditions() {}
+    boolean isRecordWithinRange(ConsumerRecord record) {
+        return true;
+    }
 
     void shutdownConsumer() {
         try {

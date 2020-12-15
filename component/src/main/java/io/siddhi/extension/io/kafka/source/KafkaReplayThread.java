@@ -19,6 +19,8 @@
 package io.siddhi.extension.io.kafka.source;
 
 import io.siddhi.core.stream.input.source.SourceEventListener;
+import io.siddhi.extension.io.kafka.util.KafkaReplayResponseSourceRegistry;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import java.util.Properties;
 
@@ -38,6 +40,7 @@ public class KafkaReplayThread extends KafkaConsumerThread {
         this.sinkId = sinkId;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
+        this.isReplayThread = true;
     }
 
     @Override
@@ -46,7 +49,16 @@ public class KafkaReplayThread extends KafkaConsumerThread {
     }
 
     @Override
-    void checkLoopConditions() {
-
+    boolean isRecordWithinRange(ConsumerRecord record) {
+        if (record.offset() >= startOffset) {
+            if (record.offset() > endOffset) {
+                KafkaReplayResponseSourceRegistry.getInstance().getKafkaReplayResponseSource(sinkId)
+                        .onReplayFinish(threadId);
+                return false;
+            } else {
+                return true;
+            }
+        }
+        return false;
     }
 }
