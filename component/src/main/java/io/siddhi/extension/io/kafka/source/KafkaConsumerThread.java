@@ -51,7 +51,7 @@ import static io.siddhi.extension.io.kafka.source.KafkaSource.ADAPTOR_ENABLE_AUT
 public class KafkaConsumerThread implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(KafkaConsumerThread.class);
-    private final KafkaConsumer<byte[], byte[]> consumer;
+    final KafkaConsumer<byte[], byte[]> consumer;
     // KafkaConsumer is not thread safe, hence we need a lock
     private final Lock consumerLock = new ReentrantLock();
     private final String partitions[];
@@ -59,7 +59,7 @@ public class KafkaConsumerThread implements Runnable {
     private String topics[];
     private volatile boolean paused;
     private volatile boolean inactive;
-    private List<TopicPartition> partitionsList = new ArrayList<>();
+    List<TopicPartition> partitionsList = new ArrayList<>();
     private String consumerThreadId;
     private boolean isPartitionWiseThreading = false;
     private boolean isBinaryMessage = false;
@@ -172,6 +172,7 @@ public class KafkaConsumerThread implements Runnable {
                 // TODO add a huge value because, when there are so many equal group ids, the group balancing
                 // takes time and if this value is small, there will be an CommitFailedException while
                 // trying to retrieve data
+                seekToRequiredOffset();
                 records = consumer.poll(100);
             } catch (CommitFailedException ex) {
                 LOG.warn("Consumer poll() failed." + ex.getMessage(), ex);
@@ -186,6 +187,7 @@ public class KafkaConsumerThread implements Runnable {
                 for (ConsumerRecord record : records) {
                     String[] trpProperties = new String[trpLength];
                     if (!consumerClosed) {
+                        checkLoopConditions();
                         int partition = record.partition();
                         Object event = record.value();
                         Object eventBody = null;
@@ -308,6 +310,10 @@ public class KafkaConsumerThread implements Runnable {
             }
         }
     }
+
+    void seekToRequiredOffset() {}
+
+    void checkLoopConditions() {}
 
     void shutdownConsumer() {
         try {
