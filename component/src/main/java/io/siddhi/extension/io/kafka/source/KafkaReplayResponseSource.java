@@ -30,6 +30,7 @@ import io.siddhi.core.exception.ConnectionUnavailableException;
 import io.siddhi.core.exception.SiddhiAppRuntimeException;
 import io.siddhi.core.util.transport.OptionHolder;
 import io.siddhi.extension.io.kafka.Constants;
+import io.siddhi.extension.io.kafka.KafkaIOUtils;
 import io.siddhi.extension.io.kafka.util.KafkaReplayResponseSourceRegistry;
 
 import java.util.ArrayList;
@@ -76,11 +77,12 @@ public class KafkaReplayResponseSource extends KafkaSource {
         KafkaReplayResponseSourceRegistry.getInstance().putKafkaReplayResponseSource(sinkId, this);
     }
 
-    public void onReplayRequest(String startOffset, String endOffset) throws ConnectionUnavailableException {
+    public void onReplayRequest(String partitionForReplay, String startOffset, String endOffset) throws ConnectionUnavailableException {
         try {
+            String[] partitionAsListForReplay = new String[]{partitionForReplay};
             ExecutorService executorService = siddhiAppContext.getExecutorService();
             KafkaReplayThread kafkaReplayThread =
-                    new KafkaReplayThread(sourceEventListener, topics, partitions,
+                    new KafkaReplayThread(sourceEventListener, topics, partitionAsListForReplay,
                             KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
                                     isBinaryMessage, enableOffsetCommit), false, isBinaryMessage, enableOffsetCommit,
                             enableAsyncCommit, requiredProperties, Integer.parseInt(startOffset),

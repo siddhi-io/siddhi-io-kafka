@@ -240,7 +240,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     ConsumerKafkaGroup consumerKafkaGroup;
     String bootstrapServers;
     String groupID;
-    String[] partitions;
+    private String[] partitions;
     String[] topics;
     String optionalConfigs;
     private boolean seqEnabled = false;
