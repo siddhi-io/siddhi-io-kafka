@@ -48,7 +48,7 @@ public class KafkaReplayThread extends KafkaConsumerThread {
 
     @Override
     void seekToRequiredOffset() {
-        consumer.seekToBeginning(partitionsList);
+        consumer.seekToBeginning(partitionsList); // TODO: 2020-12-11 seek to start offset
     }
 
     @Override
@@ -58,7 +58,7 @@ public class KafkaReplayThread extends KafkaConsumerThread {
 
     @Override
     boolean endReplay(ConsumerRecord record) {
-        if (record.offset() > endOffset) {
+        if (record.offset() >= endOffset) {
             KafkaReplayResponseSourceRegistry.getInstance().getKafkaReplayResponseSource(sinkId)
                     .onReplayFinish(threadId);
             return true;
