@@ -60,7 +60,8 @@ import java.util.concurrent.Future;
         }
 )
 public class KafkaReplayResponseSource extends KafkaSource {
-    // TODO: 2020-12-11 test with partition. think about allowing multiple partitions at a time or one partition at a time
+    // TODO: 2020-12-11 test with partition. think about allowing multiple partitions at a time or
+    //  one partition at a time
     private String sinkId;
     private List<Future<?>> futureList = new ArrayList<>();
     private List<KafkaReplayThread> kafkaReplayThreadList = new ArrayList<>();

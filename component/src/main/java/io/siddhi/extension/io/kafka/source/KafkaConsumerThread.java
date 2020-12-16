@@ -188,7 +188,7 @@ public class KafkaConsumerThread implements Runnable {
                 for (ConsumerRecord record : records) {
                     String[] trpProperties = new String[trpLength];
                     if (!consumerClosed) {
-                        if (isRecordWithinRange(record)) {
+                        if (isRecordAfterStartOffset(record)) {
                             int partition = record.partition();
                             Object event = record.value();
                             Object eventBody = null;
@@ -223,8 +223,8 @@ public class KafkaConsumerThread implements Runnable {
                                     trpProperties[i] = String.valueOf(record.offset());
                                 }
                             }
-                            String transportSyncProperties = "topic:" + record.topic() + ",partition:" + record.partition()
-                                    + ",offSet:" + record.offset();
+                            String transportSyncProperties = "topic:" + record.topic() + ",partition:"
+                                    + record.partition() + ",offSet:" + record.offset();
                             String[] transportSyncPropertiesArr = new String[]{transportSyncProperties};
                             if (lastReceivedSeqNoMap == null) {
                                 sourceEventListener.onEvent(event, trpProperties, transportSyncPropertiesArr);
@@ -254,7 +254,8 @@ public class KafkaConsumerThread implements Runnable {
                                     }
                                     if (lastReceivedSeqNo < seqNo) {
                                         lastReceivedSeqNoMap.put(sequenceKey, seqNo);
-                                        sourceEventListener.onEvent(eventBody, trpProperties, transportSyncPropertiesArr);
+                                        sourceEventListener.onEvent(eventBody, trpProperties,
+                                                transportSyncPropertiesArr);
                                         if (LOG.isDebugEnabled()) {
                                             LOG.debug("Last Received SeqNo Updated to:" + seqNo + " for " + "SeqKey:["
                                                     + sequenceKey.toString() + "] in Kafka consumer thread:"
@@ -271,17 +272,18 @@ public class KafkaConsumerThread implements Runnable {
 
                                 } else {
                                     LOG.warn("'Sequenced' option is set to true in Kafka source configuration. "
-                                            + "But this message does not contain the sequence number in consumer thread :"
-                                            + consumerThreadId + ". Dropping the message");
+                                            + "But this message does not contain the sequence number in consumer " +
+                                            "thread :" + consumerThreadId + ". Dropping the message");
                                 }
                             }
                             if (!isReplayThread) {
                                 kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(),
                                         record.offset());
                             }
-                        } else {
-                            inactive = true;
-                            break;
+                            if (endReplay(record)) {
+                                inactive = true;
+                                break;
+                            }
                         }
                     } else {
                         if (!isReplayThread) {
@@ -322,8 +324,12 @@ public class KafkaConsumerThread implements Runnable {
 
     void seekToRequiredOffset() {}
 
-    boolean isRecordWithinRange(ConsumerRecord record) {
+    boolean isRecordAfterStartOffset(ConsumerRecord record) {
         return true;
+    }
+
+    boolean endReplay(ConsumerRecord record) {
+        return false;
     }
 
     void shutdownConsumer() {

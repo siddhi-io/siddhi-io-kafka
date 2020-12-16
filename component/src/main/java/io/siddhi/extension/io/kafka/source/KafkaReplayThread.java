@@ -24,6 +24,9 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import java.util.Properties;
 
+/**
+ * This runnable processes each Kafka message and sends it to siddhi.
+ */
 public class KafkaReplayThread extends KafkaConsumerThread {
     private int startOffset;
     private int endOffset;
@@ -49,16 +52,18 @@ public class KafkaReplayThread extends KafkaConsumerThread {
     }
 
     @Override
-    boolean isRecordWithinRange(ConsumerRecord record) {
-        if (record.offset() >= startOffset) {
-            if (record.offset() > endOffset) {
-                KafkaReplayResponseSourceRegistry.getInstance().getKafkaReplayResponseSource(sinkId)
-                        .onReplayFinish(threadId);
-                return false;
-            } else {
-                return true;
-            }
+    boolean isRecordAfterStartOffset(ConsumerRecord record) {
+        return record.offset() >= startOffset;
+    }
+
+    @Override
+    boolean endReplay(ConsumerRecord record) {
+        if (record.offset() > endOffset) {
+            KafkaReplayResponseSourceRegistry.getInstance().getKafkaReplayResponseSource(sinkId)
+                    .onReplayFinish(threadId);
+            return true;
+        } else {
+            return false;
         }
-        return false;
     }
 }
