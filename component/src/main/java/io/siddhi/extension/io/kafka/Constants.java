@@ -11,5 +11,5 @@ public class Constants {
     public static final String TRP_PARTITION = "partition";
     public static final String TRP_KEY = "key";
     public static final String TRP_OFFSET = "offset";
-    public static final String ID = "id";
+    public static final String SINK_ID = "sink.id";
 }

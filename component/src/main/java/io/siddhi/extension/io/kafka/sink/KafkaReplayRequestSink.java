@@ -75,7 +75,7 @@ public class KafkaReplayRequestSink extends Sink {
     @Override
     protected StateFactory init(StreamDefinition outputStreamDefinition, OptionHolder optionHolder,
                                 ConfigReader sinkConfigReader, SiddhiAppContext siddhiAppContext) {
-        this.sinkID = optionHolder.validateAndGetOption(Constants.ID).getValue();
+        this.sinkID = optionHolder.validateAndGetOption(Constants.SINK_ID).getValue();
         return null;
     }
 

@@ -30,7 +30,6 @@ import io.siddhi.core.exception.ConnectionUnavailableException;
 import io.siddhi.core.exception.SiddhiAppRuntimeException;
 import io.siddhi.core.util.transport.OptionHolder;
 import io.siddhi.extension.io.kafka.Constants;
-import io.siddhi.extension.io.kafka.KafkaIOUtils;
 import io.siddhi.extension.io.kafka.util.KafkaReplayResponseSourceRegistry;
 
 import java.util.ArrayList;
@@ -48,7 +47,7 @@ import java.util.concurrent.Future;
         parameters = {
                 @Parameter(
                         name = "sink.id",
-                        description = "a unique ID that should be set for each grpc-call source. There is a 1:1 " +
+                        description = "a unique SINK_ID that should be set for each grpc-call source. There is a 1:1 " +
                                 "mapping between grpc-call sinks and grpc-call-response sources. Each sink has one " +
                                 "particular source listening to the responses to requests published from that sink. " +
                                 "So the same sink.id should be given when writing the sink also.",
@@ -73,11 +72,12 @@ public class KafkaReplayResponseSource extends KafkaSource {
 
     @Override
     public void setSinkId(OptionHolder optionHolder) {
-        this.sinkId = optionHolder.validateAndGetStaticValue(Constants.ID); // TODO: 2020-12-11 Rename id to sink.id
+        this.sinkId = optionHolder.validateAndGetStaticValue(Constants.SINK_ID); // TODO: 2020-12-11 Rename id to sink.id
         KafkaReplayResponseSourceRegistry.getInstance().putKafkaReplayResponseSource(sinkId, this);
     }
 
-    public void onReplayRequest(String partitionForReplay, String startOffset, String endOffset) throws ConnectionUnavailableException {
+    public void onReplayRequest(String partitionForReplay, String startOffset, String endOffset)
+            throws ConnectionUnavailableException {
         try {
             String[] partitionAsListForReplay = new String[]{partitionForReplay};
             ExecutorService executorService = siddhiAppContext.getExecutorService();
