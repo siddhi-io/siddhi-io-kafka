@@ -143,25 +143,25 @@ import java.util.concurrent.atomic.AtomicInteger;
 )
 public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
 
-    private static final String LAST_SENT_SEQ_NO_PERSIST_KEY = "lastSentSequenceNo";
     public static final String SEQ_NO_HEADER_DELIMITER = "~";
     public static final String SEQ_NO_HEADER_FIELD_SEPERATOR = ":";
     protected static final String KAFKA_PUBLISH_TOPIC = "topic";
-    private static final String KAFKA_BROKER_LIST = "bootstrap.servers";
     protected static final String KAFKA_MESSAGE_KEY = "key";
-    private static final String KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
     protected static final String KAFKA_PARTITION_NO = "partition.no";
+    private static final String LAST_SENT_SEQ_NO_PERSIST_KEY = "lastSentSequenceNo";
+    private static final String KAFKA_BROKER_LIST = "bootstrap.servers";
+    private static final String KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
     private static final String SEQ_ID = "sequence.id";
     private static final String IS_BINARY_MESSAGE = "is.binary.message";
     private static final Logger LOG = Logger.getLogger(KafkaSink.class);
-    private Option topicOption = null;
     protected String bootstrapServers;
     protected String optionalConfigs;
-    private Option partitionOption;
-    private Boolean isSequenced = false;
     protected String sequenceId = null;
     protected Boolean isBinaryMessage;
     protected Option keyOption;
+    private Option topicOption = null;
+    private Option partitionOption;
+    private Boolean isSequenced = false;
     private Producer<String, Object> producer;
     private SinkMetrics metrics;
     private String streamId;
@@ -169,11 +169,21 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
     @Override
     protected StateFactory<KafkaSinkState> init(StreamDefinition outputStreamDefinition, OptionHolder optionHolder,
                                                 ConfigReader sinkConfigReader, SiddhiAppContext siddhiAppContext) {
-        bootstrapServers = optionHolder.validateAndGetStaticValue(KAFKA_BROKER_LIST);
-        optionalConfigs = optionHolder.validateAndGetStaticValue(KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES, null);
+
+        if (sinkConfigReader != null) {
+            bootstrapServers = sinkConfigReader.readConfig(KAFKA_BROKER_LIST,
+                    optionHolder.validateAndGetStaticValue(KAFKA_BROKER_LIST));
+            optionalConfigs = sinkConfigReader.readConfig(KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES,
+                    optionHolder.validateAndGetStaticValue(KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES, null));
+            sequenceId = sinkConfigReader.readConfig(SEQ_ID, optionHolder.validateAndGetStaticValue(SEQ_ID, null));
+
+        } else {
+            bootstrapServers = optionHolder.validateAndGetStaticValue(KAFKA_BROKER_LIST);
+            optionalConfigs = optionHolder.validateAndGetStaticValue(KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES, null);
+            sequenceId = optionHolder.validateAndGetStaticValue(SEQ_ID, null);
+        }
         topicOption = optionHolder.validateAndGetOption(KAFKA_PUBLISH_TOPIC);
         partitionOption = optionHolder.getOrCreateOption(KAFKA_PARTITION_NO, null);
-        sequenceId = optionHolder.validateAndGetStaticValue(SEQ_ID, null);
         isBinaryMessage = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(IS_BINARY_MESSAGE,
                 "false"));
         isSequenced = sequenceId != null;
@@ -243,13 +253,13 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
 
             if (null == partitionNo) {
                 producer.send(new ProducerRecord<>(topic, null, System.currentTimeMillis(), key,
-                        payloadToSend),
+                                payloadToSend),
                         new KafkaProducerCallBack(topic, null, System.currentTimeMillis()));
             } else {
                 Integer partition = Integer.parseInt(partitionNo);
                 long currentTime = System.currentTimeMillis();
                 producer.send(new ProducerRecord<>(topic, partition, currentTime,
-                        key, payloadToSend),
+                                key, payloadToSend),
                         new KafkaProducerCallBack(topic, partition, currentTime));
             }
         } catch (UnsupportedEncodingException e) {
