@@ -60,8 +60,6 @@ import java.util.concurrent.Future;
         }
 )
 public class KafkaReplayResponseSource extends KafkaSource {
-    // TODO: 2020-12-11 test with partition. think about allowing multiple partitions at a time or
-    //  one partition at a time
     private String sinkId;
     private List<Future<?>> futureList = new ArrayList<>();
     private List<KafkaReplayThread> kafkaReplayThreadList = new ArrayList<>();
@@ -72,7 +70,7 @@ public class KafkaReplayResponseSource extends KafkaSource {
 
     @Override
     public void setSinkId(OptionHolder optionHolder) {
-        this.sinkId = optionHolder.validateAndGetStaticValue(Constants.SINK_ID); // TODO: 2020-12-11 Rename id to sink.id
+        this.sinkId = optionHolder.validateAndGetStaticValue(Constants.SINK_ID);
         KafkaReplayResponseSourceRegistry.getInstance().putKafkaReplayResponseSource(sinkId, this);
     }
 
@@ -90,7 +88,6 @@ public class KafkaReplayResponseSource extends KafkaSource {
             // TODO: 2020-12-11 can use Thread.getId()
             kafkaReplayThreadList.add(kafkaReplayThread);
             futureList.add(executorService.submit(kafkaReplayThread));
-//            KafkaReplayResponseSourceRegistry.putThreadFuture(thread.id, executorService.submit(kafkaReplayThread))
         } catch (SiddhiAppRuntimeException e) {
             throw e;
         } catch (Throwable e) {
