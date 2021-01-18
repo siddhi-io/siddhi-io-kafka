@@ -32,12 +32,17 @@ import io.siddhi.core.util.snapshot.state.StateFactory;
 import io.siddhi.core.util.transport.DynamicOptions;
 import io.siddhi.core.util.transport.Option;
 import io.siddhi.core.util.transport.OptionHolder;
+import io.siddhi.extension.io.kafka.Constants;
 import io.siddhi.extension.io.kafka.KafkaIOUtils;
+import io.siddhi.extension.io.kafka.metrics.SinkMetrics;
 import io.siddhi.query.api.definition.StreamDefinition;
+import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.log4j.Logger;
+import org.wso2.carbon.si.metrics.core.internal.MetricsDataHolder;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
@@ -138,40 +143,64 @@ import java.util.concurrent.atomic.AtomicInteger;
 )
 public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
 
-    private static final String LAST_SENT_SEQ_NO_PERSIST_KEY = "lastSentSequenceNo";
     public static final String SEQ_NO_HEADER_DELIMITER = "~";
     public static final String SEQ_NO_HEADER_FIELD_SEPERATOR = ":";
     protected static final String KAFKA_PUBLISH_TOPIC = "topic";
-    private static final String KAFKA_BROKER_LIST = "bootstrap.servers";
     protected static final String KAFKA_MESSAGE_KEY = "key";
-    private static final String KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
     protected static final String KAFKA_PARTITION_NO = "partition.no";
+    private static final String LAST_SENT_SEQ_NO_PERSIST_KEY = "lastSentSequenceNo";
+    private static final String KAFKA_BROKER_LIST = "bootstrap.servers";
+    private static final String KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
     private static final String SEQ_ID = "sequence.id";
     private static final String IS_BINARY_MESSAGE = "is.binary.message";
     private static final Logger LOG = Logger.getLogger(KafkaSink.class);
-    private Option topicOption = null;
     protected String bootstrapServers;
     protected String optionalConfigs;
-    private Option partitionOption;
-    private Boolean isSequenced = false;
     protected String sequenceId = null;
     protected Boolean isBinaryMessage;
     protected Option keyOption;
+    private Option topicOption = null;
+    private Option partitionOption;
+    private Boolean isSequenced = false;
     private Producer<String, Object> producer;
+    private SinkMetrics metrics;
+    private String streamId;
 
     @Override
     protected StateFactory<KafkaSinkState> init(StreamDefinition outputStreamDefinition, OptionHolder optionHolder,
                                                 ConfigReader sinkConfigReader, SiddhiAppContext siddhiAppContext) {
-        bootstrapServers = optionHolder.validateAndGetStaticValue(KAFKA_BROKER_LIST);
-        optionalConfigs = optionHolder.validateAndGetStaticValue(KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES, null);
+
+        if (sinkConfigReader != null) {
+            bootstrapServers = sinkConfigReader.readConfig(KAFKA_BROKER_LIST,
+                    optionHolder.validateAndGetStaticValue(KAFKA_BROKER_LIST));
+            optionalConfigs = sinkConfigReader.readConfig(KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES,
+                    optionHolder.validateAndGetStaticValue(KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES, null));
+            sequenceId = sinkConfigReader.readConfig(SEQ_ID, optionHolder.validateAndGetStaticValue(SEQ_ID, null));
+
+        } else {
+            bootstrapServers = optionHolder.validateAndGetStaticValue(KAFKA_BROKER_LIST);
+            optionalConfigs = optionHolder.validateAndGetStaticValue(KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES, null);
+            sequenceId = optionHolder.validateAndGetStaticValue(SEQ_ID, null);
+        }
         topicOption = optionHolder.validateAndGetOption(KAFKA_PUBLISH_TOPIC);
         partitionOption = optionHolder.getOrCreateOption(KAFKA_PARTITION_NO, null);
-        sequenceId = optionHolder.validateAndGetStaticValue(SEQ_ID, null);
         isBinaryMessage = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(IS_BINARY_MESSAGE,
                 "false"));
         isSequenced = sequenceId != null;
         keyOption = optionHolder.getOrCreateOption(KAFKA_MESSAGE_KEY, null);
-
+        if (MetricsDataHolder.getInstance().getMetricService() != null &&
+                MetricsDataHolder.getInstance().getMetricManagementService().isEnabled()) {
+            try {
+                if (MetricsDataHolder.getInstance().getMetricManagementService().isReporterRunning(
+                        Constants.PROMETHEUS_REPORTER_NAME)) {
+                    metrics = new SinkMetrics(siddhiAppContext.getName(), streamId);
+                    streamId = outputStreamDefinition.getId();
+                }
+            } catch (IllegalArgumentException e) {
+                LOG.debug("Prometheus reporter is not running. Hence kafka metrics will not be initialized for "
+                        + siddhiAppContext.getName());
+            }
+        }
         return () -> new KafkaSinkState(isSequenced);
     }
 
@@ -224,10 +253,14 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
 
             if (null == partitionNo) {
                 producer.send(new ProducerRecord<>(topic, null, System.currentTimeMillis(), key,
-                        payloadToSend));
+                                payloadToSend),
+                        new KafkaProducerCallBack(topic, null, System.currentTimeMillis()));
             } else {
-                producer.send(new ProducerRecord<>(topic, Integer.parseInt(partitionNo), System.currentTimeMillis(),
-                        key, payloadToSend));
+                Integer partition = Integer.parseInt(partitionNo);
+                long currentTime = System.currentTimeMillis();
+                producer.send(new ProducerRecord<>(topic, partition, currentTime,
+                                key, payloadToSend),
+                        new KafkaProducerCallBack(topic, partition, currentTime));
             }
         } catch (UnsupportedEncodingException e) {
             LOG.error("Error while converting the received string payload to byte[].", e);
@@ -297,6 +330,48 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
         byteBuffer.put(strPayload.toString().getBytes(Charset.defaultCharset()));
         byteBuffer.put(payload);
         return byteBuffer.array();
+    }
+
+    private class KafkaProducerCallBack implements Callback {
+
+        //The time which the message was attempted to be submitted by the KafkaSink
+        private long pushedTimestamp;
+        private String topic;
+        private Integer partition;
+
+
+        KafkaProducerCallBack(String topic, Integer partition, long pushedTimestamp) {
+            this.topic = topic;
+            this.pushedTimestamp = pushedTimestamp;
+            this.partition = partition;
+        }
+
+        @Override
+        public void onCompletion(RecordMetadata metadata, Exception exception) {
+            if (metrics != null) {
+                metrics.getTotalWrites().inc();
+
+                if (metadata != null) {
+                    String topic = metadata.topic();
+                    int partition = metadata.partition();
+
+                    metrics.getWriteCountPerStream(streamId, topic, partition).inc();
+                    metrics.getLastMessageSize(topic, partition, streamId, metadata.serializedValueSize());
+                    metrics.getLastMessageAckLatency(topic, partition, streamId,
+                            metadata.timestamp() - pushedTimestamp);
+                    metrics.getLastMessagePublishedTime(topic, partition, streamId, pushedTimestamp);
+                    metrics.getLastCommittedOffset(topic, partition, streamId, metadata.offset());
+                } else {  //error has occurred
+                    metrics.getErrorCountWithoutPartition(
+                            this.topic, streamId, exception.getClass().getSimpleName()).inc();
+                    // When the siddhi app user has not given a partition, then this stat won't be published.
+                    if (this.partition != null) {
+                        metrics.getErrorCountPerStream(
+                                streamId, this.topic, this.partition, exception.getClass().getSimpleName()).inc();
+                    }
+                }
+            }
+        }
     }
 
     /**

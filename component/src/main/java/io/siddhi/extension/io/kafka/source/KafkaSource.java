@@ -34,13 +34,16 @@ import io.siddhi.core.util.config.ConfigReader;
 import io.siddhi.core.util.snapshot.state.State;
 import io.siddhi.core.util.snapshot.state.StateFactory;
 import io.siddhi.core.util.transport.OptionHolder;
+import io.siddhi.extension.io.kafka.Constants;
 import io.siddhi.extension.io.kafka.KafkaIOUtils;
+import io.siddhi.extension.io.kafka.metrics.SourceMetrics;
 import io.siddhi.query.api.exception.SiddhiAppValidationException;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.log4j.Logger;
+import org.wso2.carbon.si.metrics.core.internal.MetricsDataHolder;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -217,8 +220,6 @@ import java.util.concurrent.ExecutorService;
 public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements SourceSyncCallback {
 
     public static final String SINGLE_THREADED = "single.thread";
-    static final String TOPIC_WISE = "topic.wise";
-    static final String PARTITION_WISE = "partition.wise";
     public static final String ADAPTOR_SUBSCRIBER_TOPIC = "topic.list";
     public static final String ADAPTOR_SUBSCRIBER_GROUP_ID = "group.id";
     public static final String ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS = "bootstrap.servers";
@@ -227,15 +228,18 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     public static final String ADAPTOR_ENABLE_OFFSET_COMMIT = "enable.offsets.commit";
     public static final String ADAPTOR_ENABLE_ASYNC_COMMIT = "enable.async.commit";
     public static final String ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
-    private static final String TOPIC_OFFSET_MAP = "topic.offsets.map";
     public static final String THREADING_OPTION = "threading.option";
     public static final String SEQ_ENABLED = "seq.enabled";
-    private static final String LAST_RECEIVED_SEQ_NO_KEY = "lastReceivedSeqNo";
     public static final String IS_BINARY_MESSAGE = "is.binary.message";
+    static final String TOPIC_WISE = "topic.wise";
+    static final String PARTITION_WISE = "partition.wise";
+    private static final String TOPIC_OFFSET_MAP = "topic.offsets.map";
+    private static final String LAST_RECEIVED_SEQ_NO_KEY = "lastReceivedSeqNo";
     private static final Logger LOG = Logger.getLogger(KafkaSource.class);
     private static final String TOPIC = "topic";
     private static final String PARTITION = "partition";
     private static final String OFFSET = "offSet";
+    String partitionList;
     private OptionHolder optionHolder;
     ConsumerKafkaGroup consumerKafkaGroup;
     String bootstrapServers;
@@ -253,6 +257,8 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     String threadingOption;
     SourceEventListener sourceEventListener;
     String[] requiredProperties;
+    private SourceMetrics metrics;
+    private String topicList;
 
     @Override
     public StateFactory<KafkaSourceState> init(SourceEventListener sourceEventListener, OptionHolder optionHolder,
@@ -262,12 +268,48 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         this.optionHolder = optionHolder;
         this.requiredProperties = requiredProperties.clone();
         this.sourceEventListener = sourceEventListener;
-        bootstrapServers = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS);
-        groupID = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_GROUP_ID);
-        threadingOption = optionHolder.validateAndGetStaticValue(THREADING_OPTION);
-        String partitionList = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_PARTITION_NO_LIST, null);
+        if (configReader != null) {
+            bootstrapServers = configReader.readConfig(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS,
+                    optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS));
+            groupID = configReader.readConfig(ADAPTOR_SUBSCRIBER_GROUP_ID,
+                    optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_GROUP_ID));
+            threadingOption = configReader.readConfig(THREADING_OPTION,
+                    optionHolder.validateAndGetStaticValue(THREADING_OPTION));
+            partitionList = configReader.readConfig(ADAPTOR_SUBSCRIBER_PARTITION_NO_LIST,
+                    optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_PARTITION_NO_LIST, null));
+            topicList = configReader.readConfig(ADAPTOR_SUBSCRIBER_TOPIC,
+                    optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_TOPIC));
+            seqEnabled = configReader.readConfig(SEQ_ENABLED,
+                    optionHolder.validateAndGetStaticValue(SEQ_ENABLED, "false"))
+                    .equalsIgnoreCase("true");
+            optionalConfigs = configReader.readConfig(ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES,
+                    optionHolder.validateAndGetStaticValue(ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES, null));
+            isBinaryMessage = Boolean.parseBoolean(configReader.readConfig(IS_BINARY_MESSAGE,
+                    optionHolder.validateAndGetStaticValue(IS_BINARY_MESSAGE, "false")));
+            enableOffsetCommit = Boolean.parseBoolean(configReader.readConfig(ADAPTOR_ENABLE_OFFSET_COMMIT,
+                    optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_OFFSET_COMMIT, "true")));
+            enableAsyncCommit = Boolean.parseBoolean(configReader.readConfig(ADAPTOR_ENABLE_ASYNC_COMMIT,
+                    optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_ASYNC_COMMIT, "true")));
+            topicOffsetMapConfig = configReader.readConfig(TOPIC_OFFSET_MAP,
+                    optionHolder.validateAndGetStaticValue(TOPIC_OFFSET_MAP, null));
+
+        } else {
+            bootstrapServers = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS);
+            groupID = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_GROUP_ID);
+            threadingOption = optionHolder.validateAndGetStaticValue(THREADING_OPTION);
+            partitionList = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_PARTITION_NO_LIST, null);
+            topicList = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_TOPIC);
+            seqEnabled = optionHolder.validateAndGetStaticValue(SEQ_ENABLED, "false").equalsIgnoreCase("true");
+            optionalConfigs = optionHolder.validateAndGetStaticValue(ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES, null);
+            isBinaryMessage = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(IS_BINARY_MESSAGE,
+                    "false"));
+            enableOffsetCommit = Boolean.parseBoolean(optionHolder.
+                    validateAndGetStaticValue(ADAPTOR_ENABLE_OFFSET_COMMIT, "true"));
+            enableAsyncCommit = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_ASYNC_COMMIT,
+                    "true"));
+            topicOffsetMapConfig = optionHolder.validateAndGetStaticValue(TOPIC_OFFSET_MAP, null);
+        }
         partitions = (partitionList != null) ? partitionList.split(KafkaIOUtils.HEADER_SEPARATOR) : null;
-        String topicList = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_TOPIC);
         topics = topicList.split(KafkaIOUtils.HEADER_SEPARATOR);
         seqEnabled = optionHolder.validateAndGetStaticValue(SEQ_ENABLED, "false").equalsIgnoreCase("true");
         optionalConfigs = optionHolder.validateAndGetStaticValue(ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES, null);
@@ -279,11 +321,24 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                 "true"));
         topicOffsetMapConfig = optionHolder.validateAndGetStaticValue(TOPIC_OFFSET_MAP, null);
         setSinkId(optionHolder);
+
         if (PARTITION_WISE.equals(threadingOption) && null == partitions) {
             throw new SiddhiAppValidationException("Threading option is selected as 'partition.wise' but " +
                     "there are no partitions given");
         }
-
+        if (MetricsDataHolder.getInstance().getMetricService() != null &&
+                MetricsDataHolder.getInstance().getMetricManagementService().isEnabled()) {
+            try {
+                if (MetricsDataHolder.getInstance().getMetricManagementService().isReporterRunning(
+                        Constants.PROMETHEUS_REPORTER_NAME)) {
+                    metrics = new SourceMetrics(siddhiAppContext.getName(),
+                            sourceEventListener.getStreamDefinition().getId());
+                }
+            } catch (IllegalArgumentException e) {
+                LOG.debug("Prometheus reporter is not running. Hence kafka metrics will not be initialized for "
+                        + siddhiAppContext.getName());
+            }
+        }
         return () -> new KafkaSourceState(seqEnabled);
     }
 
@@ -305,7 +360,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                             KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
                                     isBinaryMessage, enableOffsetCommit),
                             threadingOption, executorService, isBinaryMessage, enableOffsetCommit, enableAsyncCommit,
-                            sourceEventListener, requiredProperties);
+                            sourceEventListener, requiredProperties, metrics);
             checkTopicsAvailableInCluster();
             checkPartitionsAvailableForTheTopicsInCluster();
             this.kafkaSourceState = kafkaSourceState;
@@ -316,13 +371,38 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                 }
                 consumerKafkaGroup.setKafkaSourceState(kafkaSourceState);
                 consumerKafkaGroup.restoreState();
+
             } else {
                 consumerKafkaGroup.setKafkaSourceState(kafkaSourceState);
             }
+            if (metrics != null && kafkaSourceState.topicOffsetMap != null) {
+                metrics.setTopicOffsetMap(kafkaSourceState.topicOffsetMap);
+                for (String topic : kafkaSourceState.topicOffsetMap.keySet()) {
+                    Map<Integer, Long> partitionMap = kafkaSourceState.topicOffsetMap.get(topic);
+                    for (Map.Entry<Integer, Long> entry : partitionMap.entrySet()) {
+                        metrics.getCurrentOffset(topic, entry.getKey(), groupID);
+                    }
+                }
+            }
             consumerKafkaGroup.run();
+            if (metrics != null) {
+                for (String topic : topics) {
+                    metrics.getErrorCountPerStream(topic, groupID, "null");
+                }
+            }
         } catch (SiddhiAppRuntimeException e) {
+            if (metrics != null) {
+                for (String topic : topics) {
+                    metrics.getErrorCountPerStream(topic, groupID, "SiddhiAppRuntimeException").inc();
+                }
+            }
             throw e;
         } catch (Throwable e) {
+            if (metrics != null) {
+                for (String topic : topics) {
+                    metrics.getErrorCountPerStream(topic, groupID, e.getClass().getSimpleName()).inc();
+                }
+            }
             throw new ConnectionUnavailableException("Error when initiating connection with Kafka server: " +
                     bootstrapServers + " in Siddhi App: " + siddhiAppContext.getName(), e);
         }
