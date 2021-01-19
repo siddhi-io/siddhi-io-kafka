@@ -58,7 +58,7 @@
         <text.mapper.version>2.0.5</text.mapper.version>
         <binary.mapper.version>2.0.5</binary.mapper.version>
         <jacoco.version>0.7.9</jacoco.version>
-        <carbon.analytics.version>3.0.48-SNAPSHOT</carbon.analytics.version>
+        <carbon.analytics.version>3.0.48</carbon.analytics.version>
 
         <mavan.findbugsplugin.exclude.file>findbugs-exclude.xml</mavan.findbugsplugin.exclude.file>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

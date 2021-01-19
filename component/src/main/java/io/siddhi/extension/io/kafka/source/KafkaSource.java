@@ -240,23 +240,23 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     private static final String PARTITION = "partition";
     private static final String OFFSET = "offSet";
     String partitionList;
-    private OptionHolder optionHolder;
-    private ConsumerKafkaGroup consumerKafkaGroup;
-    private String bootstrapServers;
-    private String groupID;
+    OptionHolder optionHolder;
+    ConsumerKafkaGroup consumerKafkaGroup;
+    String bootstrapServers;
+    String groupID;
     private String[] partitions;
-    private String[] topics;
-    private String optionalConfigs;
-    private boolean seqEnabled = false;
-    private boolean isBinaryMessage;
-    private boolean enableOffsetCommit;
-    private boolean enableAsyncCommit;
-    private String topicOffsetMapConfig;
-    private SiddhiAppContext siddhiAppContext;
-    private KafkaSourceState kafkaSourceState;
-    private String threadingOption;
-    private SourceEventListener sourceEventListener;
-    private String[] requiredProperties;
+    String[] topics;
+    String optionalConfigs;
+    boolean seqEnabled = false;
+    boolean isBinaryMessage;
+    boolean enableOffsetCommit;
+    boolean enableAsyncCommit;
+    String topicOffsetMapConfig;
+    SiddhiAppContext siddhiAppContext;
+    KafkaSourceState kafkaSourceState;
+    String threadingOption;
+    SourceEventListener sourceEventListener;
+    String[] requiredProperties;
     private SourceMetrics metrics;
     private String topicList;
 
@@ -311,6 +311,16 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         }
         partitions = (partitionList != null) ? partitionList.split(KafkaIOUtils.HEADER_SEPARATOR) : null;
         topics = topicList.split(KafkaIOUtils.HEADER_SEPARATOR);
+        seqEnabled = optionHolder.validateAndGetStaticValue(SEQ_ENABLED, "false").equalsIgnoreCase("true");
+        optionalConfigs = optionHolder.validateAndGetStaticValue(ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES, null);
+        isBinaryMessage = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(IS_BINARY_MESSAGE,
+                "false"));
+        enableOffsetCommit = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_OFFSET_COMMIT,
+                "true"));
+        enableAsyncCommit = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_ASYNC_COMMIT,
+                "true"));
+        topicOffsetMapConfig = optionHolder.validateAndGetStaticValue(TOPIC_OFFSET_MAP, null);
+
         if (PARTITION_WISE.equals(threadingOption) && null == partitions) {
             throw new SiddhiAppValidationException("Threading option is selected as 'partition.wise' but " +
                     "there are no partitions given");
@@ -466,7 +476,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         return null;
     }
 
-    private Map<String, Map<Integer, Long>> readTopicOffsetsConfig(String topicOffsetsConfig) {
+    Map<String, Map<Integer, Long>> readTopicOffsetsConfig(String topicOffsetsConfig) {
         Map<String, Map<Integer, Long>> perTopicPerPartitionOffset = new HashMap<>();
         String[] topicOffsets = topicOffsetsConfig.split(",");
         for (String entry : topicOffsets) {
@@ -492,7 +502,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         return perTopicPerPartitionOffset;
     }
 
-    private void checkTopicsAvailableInCluster() {
+    void checkTopicsAvailableInCluster() {
         Properties props = KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
                 isBinaryMessage, enableOffsetCommit);
         props.put("group.id", "test-consumer-group");
@@ -537,7 +547,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         }
     }
 
-    private void checkPartitionsAvailableForTheTopicsInCluster() {
+    void checkPartitionsAvailableForTheTopicsInCluster() {
         //checking whether the defined partitions are available in the defined topic
         Properties configProperties = createProducerConfig(bootstrapServers, optionalConfigs, isBinaryMessage);
         org.apache.kafka.clients.producer.Producer producer = new KafkaProducer(configProperties);
@@ -573,7 +583,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         }
     }
 
-    private static Properties createConsumerConfig(String zkServerList, String groupId, String optionalConfigs,
+    protected static Properties createConsumerConfig(String zkServerList, String groupId, String optionalConfigs,
                                                    boolean isBinaryMessage, boolean enableOffsetCommit) {
         Properties props = new Properties();
         props.put(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS, zkServerList);
@@ -621,9 +631,9 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
      */
     public class KafkaSourceState extends State {
 
-        private Map<String, Map<Integer, Long>> topicOffsetMap = new HashMap<>();
+        Map<String, Map<Integer, Long>> topicOffsetMap = new HashMap<>();
         private Map<String, Map<SequenceKey, Integer>> consumerLastReceivedSeqNoMap = null;
-        private boolean isRestored = false;
+        boolean isRestored = false;
 
         public Map<String, Map<Integer, Long>> getTopicOffsetMap() {
             return topicOffsetMap;
