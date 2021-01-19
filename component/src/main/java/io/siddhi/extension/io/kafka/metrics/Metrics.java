@@ -19,7 +19,7 @@
 package io.siddhi.extension.io.kafka.metrics;
 
 /**
- * Parent metric class for Kafka Source & Sink
+ * Parent metric class for Kafka Source and Sink
  */
 public class Metrics {
 
