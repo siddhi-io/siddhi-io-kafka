@@ -41,16 +41,34 @@ import io.siddhi.query.api.definition.StreamDefinition;
 @Extension(
         name = "kafka-replay-request",
         namespace = "sink",
-        description = "sdgsfg",
+        description = "This sink is used to request replay of specific range of events on a specified partition of a " +
+                "topic.",
         parameters = {
-                @Parameter(name = "id",
-                        description = "sdfsdf",
+                @Parameter(name = "sink.id",
+                        description = "a unique SINK_ID should be set. This sink id will be used to match with the " +
+                                "appropriate kafka-replay-response source",
                         type = {DataType.STRING})
         },
         examples = {
                 @Example(
-                        syntax = "sdfsdf",
-                        description = "sdfsdf")
+                        syntax = "@App:name('TestKafkaReplay')\n" +
+                                "\n" +
+                                "@sink(type='kafka-replay-request', sink.id='1')\n" +
+                                "define stream BarStream (topicForReplay string, partitionForReplay string, " +
+                                "startOffset string, endOffset string);\n" +
+                                "\n" +
+                                "@info(name = 'query1')\n" +
+                                "@source(type='kafka-replay-response',  group.id='group', threading.option=" +
+                                "'single.thread', bootstrap.servers='localhost:9092', sink.id='1',\n" +
+                                "@map(type='json'))\n" +
+                                "Define stream FooStream (symbol string, amount double);\n" +
+                                "\n" +
+                                "@sink(type='log')\n" +
+                                "Define stream logStream(symbol string, amount double);\n" +
+                                "\n" +
+                                "from FooStream select * insert into logStream;",
+                        description = "In this app we can send replay request events into BarStream and observe the " +
+                                "replayed events in the logStream")
         }
 )
 

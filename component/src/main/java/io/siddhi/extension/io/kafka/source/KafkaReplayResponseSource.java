@@ -42,25 +42,55 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 /**
- * aerer
+ * This source is used to listen to replayed events requested from kafka-replay-request sink
  */
 @Extension(
         name = "kafka-replay-response",
         namespace = "source",
         description = "This source is used to listen to replayed events requested from kafka-replay-request sink",
         parameters = {
+                @Parameter(name = "bootstrap.servers",
+                        description = "This specifies the list of Kafka servers to which the Kafka source " +
+                                "must listen. This list can be provided as a set of comma-separated values.\n" +
+                                "e.g., `localhost:9092,localhost:9093`",
+                        type = {DataType.STRING}),
+                @Parameter(name = "group.id",
+                        description = "This is an ID to identify the Kafka source group. The group ID ensures " +
+                                "that sources with the same topic and partition that are in the same group do not" +
+                                " receive the same event.",
+                        type = {DataType.STRING}),
+                @Parameter(name = "threading.option",
+                        description = " This specifies whether the Kafka source is to be run on a single thread," +
+                                " or in multiple threads based on a condition. Possible values are as follows:\n" +
+                                "`single.thread`: To run the Kafka source on a single thread.\n" +
+                                "`topic.wise`: To use a separate thread per topic.\n" +
+                                "`partition.wise`: To use a separate thread per partition.",
+                        type = {DataType.STRING}),
                 @Parameter(
                         name = "sink.id",
-                        description = "a unique SINK_ID that should be set for each grpc-call source. There is a 1:1 " +
-                                "mapping between grpc-call sinks and grpc-call-response sources. Each sink has one " +
-                                "particular source listening to the responses to requests published from that sink. " +
-                                "So the same sink.id should be given when writing the sink also.",
+                        description = "a unique SINK_ID .",
                         type = {DataType.INT}),
         },
         examples = {
                 @Example(
-                        syntax = "sdfsdf",
-                        description = "sdfsdf")
+                        syntax = "@App:name('TestKafkaReplay')\n" +
+                                "\n" +
+                                "@sink(type='kafka-replay-request', sink.id='1')\n" +
+                                "define stream BarStream (topicForReplay string, partitionForReplay string, " +
+                                "startOffset string, endOffset string);\n" +
+                                "\n" +
+                                "@info(name = 'query1')\n" +
+                                "@source(type='kafka-replay-response',  group.id='group', threading.option=" +
+                                "'single.thread', bootstrap.servers='localhost:9092', sink.id='1',\n" +
+                                "@map(type='json'))\n" +
+                                "Define stream FooStream (symbol string, amount double);\n" +
+                                "\n" +
+                                "@sink(type='log')\n" +
+                                "Define stream logStream(symbol string, amount double);\n" +
+                                "\n" +
+                                "from FooStream select * insert into logStream;",
+                        description = "In this app we can send replay request events into BarStream and observe the " +
+                                "replayed events in the logStream")
         }
 )
 public class KafkaReplayResponseSource extends KafkaSource {
