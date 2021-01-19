@@ -85,6 +85,7 @@ public class KafkaReplayRequestSink extends Sink {
         String partitionForReplay;
         String startOffset;
         String endOffset;
+        String replayTopic;
         Object[] replayParams;
         if (payload instanceof Event[]) {
             replayParams = ((Event[]) payload)[0].getData();
@@ -93,11 +94,12 @@ public class KafkaReplayRequestSink extends Sink {
         } else {
             throw new ConnectionUnavailableException("Unknown type");
         }
-        partitionForReplay = (String) replayParams[0];
-        startOffset = (String) replayParams[1];
-        endOffset = (String) replayParams[2];
+        replayTopic = (String) replayParams[0];
+        partitionForReplay = (String) replayParams[1];
+        startOffset = (String) replayParams[2];
+        endOffset = (String) replayParams[3];
         KafkaReplayResponseSourceRegistry.getInstance().getKafkaReplayResponseSource(sinkID)
-                .onReplayRequest(partitionForReplay, startOffset, endOffset);
+                .onReplayRequest(partitionForReplay, startOffset, endOffset, replayTopic);
     }
 
     @Override

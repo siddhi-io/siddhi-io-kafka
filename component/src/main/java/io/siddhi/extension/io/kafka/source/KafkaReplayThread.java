@@ -38,7 +38,7 @@ public class KafkaReplayThread extends KafkaConsumerThread {
                       boolean enableAsyncCommit, String[] requiredProperties, int startOffset, int endOffset,
                       int threadId, String sinkId) {
         super(sourceEventListener, topics, partitions, props, isPartitionWiseThreading, isBinaryMessage,
-                enableOffsetCommit, enableAsyncCommit, requiredProperties);
+                enableOffsetCommit, enableAsyncCommit, requiredProperties, null);
         this.threadId = threadId;
         this.sinkId = sinkId;
         this.startOffset = startOffset;
@@ -48,7 +48,7 @@ public class KafkaReplayThread extends KafkaConsumerThread {
 
     @Override
     void seekToRequiredOffset() {
-        consumer.seekToBeginning(partitionsList); // TODO: 2020-12-11 seek to start offset
+        consumer.seekToBeginning(partitionsList);
     }
 
     @Override

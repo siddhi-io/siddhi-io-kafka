@@ -240,14 +240,14 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     private static final String PARTITION = "partition";
     private static final String OFFSET = "offSet";
     String partitionList;
-    private OptionHolder optionHolder;
+    OptionHolder optionHolder;
     ConsumerKafkaGroup consumerKafkaGroup;
     String bootstrapServers;
     String groupID;
     private String[] partitions;
     String[] topics;
     String optionalConfigs;
-    private boolean seqEnabled = false;
+    boolean seqEnabled = false;
     boolean isBinaryMessage;
     boolean enableOffsetCommit;
     boolean enableAsyncCommit;
@@ -320,7 +320,6 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         enableAsyncCommit = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_ASYNC_COMMIT,
                 "true"));
         topicOffsetMapConfig = optionHolder.validateAndGetStaticValue(TOPIC_OFFSET_MAP, null);
-        setSinkId(optionHolder);
 
         if (PARTITION_WISE.equals(threadingOption) && null == partitions) {
             throw new SiddhiAppValidationException("Threading option is selected as 'partition.wise' but " +
@@ -341,8 +340,6 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         }
         return () -> new KafkaSourceState(seqEnabled);
     }
-
-    public void setSinkId(OptionHolder optionHolder) {}
 
     @Override
     public Class[] getOutputEventClasses() {

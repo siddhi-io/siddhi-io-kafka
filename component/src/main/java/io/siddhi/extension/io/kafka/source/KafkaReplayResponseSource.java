@@ -26,8 +26,12 @@ import io.siddhi.annotation.Example;
 import io.siddhi.annotation.Extension;
 import io.siddhi.annotation.Parameter;
 import io.siddhi.annotation.util.DataType;
+import io.siddhi.core.config.SiddhiAppContext;
 import io.siddhi.core.exception.ConnectionUnavailableException;
 import io.siddhi.core.exception.SiddhiAppRuntimeException;
+import io.siddhi.core.stream.input.source.SourceEventListener;
+import io.siddhi.core.util.config.ConfigReader;
+import io.siddhi.core.util.snapshot.state.StateFactory;
 import io.siddhi.core.util.transport.OptionHolder;
 import io.siddhi.extension.io.kafka.Constants;
 import io.siddhi.extension.io.kafka.util.KafkaReplayResponseSourceRegistry;
@@ -43,7 +47,7 @@ import java.util.concurrent.Future;
 @Extension(
         name = "kafka-replay-response",
         namespace = "source",
-        description = "sdfsdf",
+        description = "This source is used to listen to replayed events requested from kafka-replay-request sink",
         parameters = {
                 @Parameter(
                         name = "sink.id",
@@ -65,27 +69,72 @@ public class KafkaReplayResponseSource extends KafkaSource {
     private List<KafkaReplayThread> kafkaReplayThreadList = new ArrayList<>();
 
     @Override
-    public void connect(ConnectionCallback connectionCallback, KafkaSourceState kafkaSourceState) {
+    public StateFactory<KafkaSourceState> init(SourceEventListener sourceEventListener, OptionHolder optionHolder,
+                                               String[] requiredProperties, ConfigReader configReader,
+                                               SiddhiAppContext siddhiAppContext) {
+        this.siddhiAppContext = siddhiAppContext;
+        this.optionHolder = optionHolder;
+        this.requiredProperties = requiredProperties.clone();
+        this.sourceEventListener = sourceEventListener;
+        if (configReader != null) {
+            bootstrapServers = configReader.readConfig(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS,
+                    optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS));
+            groupID = configReader.readConfig(ADAPTOR_SUBSCRIBER_GROUP_ID,
+                    optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_GROUP_ID));
+            threadingOption = configReader.readConfig(THREADING_OPTION,
+                    optionHolder.validateAndGetStaticValue(THREADING_OPTION));
+            seqEnabled = configReader.readConfig(SEQ_ENABLED,
+                    optionHolder.validateAndGetStaticValue(SEQ_ENABLED, "false"))
+                    .equalsIgnoreCase("true");
+            optionalConfigs = configReader.readConfig(ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES,
+                    optionHolder.validateAndGetStaticValue(ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES, null));
+            isBinaryMessage = Boolean.parseBoolean(configReader.readConfig(IS_BINARY_MESSAGE,
+                    optionHolder.validateAndGetStaticValue(IS_BINARY_MESSAGE, "false")));
+            enableOffsetCommit = Boolean.parseBoolean(configReader.readConfig(ADAPTOR_ENABLE_OFFSET_COMMIT,
+                    optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_OFFSET_COMMIT, "true")));
+            enableAsyncCommit = Boolean.parseBoolean(configReader.readConfig(ADAPTOR_ENABLE_ASYNC_COMMIT,
+                    optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_ASYNC_COMMIT, "true")));
+
+        } else {
+            bootstrapServers = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS);
+            groupID = optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_GROUP_ID);
+            threadingOption = optionHolder.validateAndGetStaticValue(THREADING_OPTION);
+            optionalConfigs = optionHolder.validateAndGetStaticValue(ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES, null);
+            isBinaryMessage = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(IS_BINARY_MESSAGE,
+                    "false"));
+            enableOffsetCommit = Boolean.parseBoolean(optionHolder.
+                    validateAndGetStaticValue(ADAPTOR_ENABLE_OFFSET_COMMIT, "true"));
+            enableAsyncCommit = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_ASYNC_COMMIT,
+                    "true"));
+        }
+        seqEnabled = optionHolder.validateAndGetStaticValue(SEQ_ENABLED, "false").equalsIgnoreCase("true");
+        optionalConfigs = optionHolder.validateAndGetStaticValue(ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES, null);
+        isBinaryMessage = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(IS_BINARY_MESSAGE,
+                "false"));
+        enableOffsetCommit = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_OFFSET_COMMIT,
+                "true"));
+        enableAsyncCommit = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_ASYNC_COMMIT,
+                "true"));
+        this.sinkId = optionHolder.validateAndGetStaticValue(Constants.SINK_ID);
+        KafkaReplayResponseSourceRegistry.getInstance().putKafkaReplayResponseSource(sinkId, this);
+        return () -> new KafkaSourceState(seqEnabled);
     }
 
     @Override
-    public void setSinkId(OptionHolder optionHolder) {
-        this.sinkId = optionHolder.validateAndGetStaticValue(Constants.SINK_ID);
-        KafkaReplayResponseSourceRegistry.getInstance().putKafkaReplayResponseSource(sinkId, this);
+    public void connect(ConnectionCallback connectionCallback, KafkaSourceState kafkaSourceState) {
     }
 
-    public void onReplayRequest(String partitionForReplay, String startOffset, String endOffset)
+    public void onReplayRequest(String partitionForReplay, String startOffset, String endOffset, String replayTopic)
             throws ConnectionUnavailableException {
         try {
             String[] partitionAsListForReplay = new String[]{partitionForReplay};
             ExecutorService executorService = siddhiAppContext.getExecutorService();
             KafkaReplayThread kafkaReplayThread =
-                    new KafkaReplayThread(sourceEventListener, topics, partitionAsListForReplay,
+                    new KafkaReplayThread(sourceEventListener, new String[]{replayTopic}, partitionAsListForReplay,
                             KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
                                     isBinaryMessage, enableOffsetCommit), false, isBinaryMessage, enableOffsetCommit,
                             enableAsyncCommit, requiredProperties, Integer.parseInt(startOffset),
                             Integer.parseInt(endOffset), futureList.size(), sinkId);
-            // TODO: 2020-12-11 can use Thread.getId()
             kafkaReplayThreadList.add(kafkaReplayThread);
             futureList.add(executorService.submit(kafkaReplayThread));
         } catch (SiddhiAppRuntimeException e) {
