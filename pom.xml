@@ -59,7 +59,7 @@
         <binary.mapper.version>2.0.5</binary.mapper.version>
         <jacoco.version>0.7.9</jacoco.version>
         <carbon.analytics.version>3.0.48</carbon.analytics.version>
-
+        <confluent.version>3.0.0</confluent.version>
         <mavan.findbugsplugin.exclude.file>findbugs-exclude.xml</mavan.findbugsplugin.exclude.file>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -74,6 +74,26 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>io.confluent</groupId>
+                <artifactId>common-config</artifactId>
+                <version>${confluent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.confluent</groupId>
+                <artifactId>common-utils</artifactId>
+                <version>${confluent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.confluent</groupId>
+                <artifactId>kafka-schema-registry-client</artifactId>
+                <version>${confluent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.confluent</groupId>
+                <artifactId>kafka-avro-serializer</artifactId>
+                <version>${confluent.version}</version>
+            </dependency>
             <dependency>
                 <groupId>io.siddhi</groupId>
                 <artifactId>siddhi-query-api</artifactId>
@@ -312,6 +332,10 @@
             <releases>
                 <enabled>false</enabled>
             </releases>
+        </repository>
+        <repository>
+            <id>confluent</id>
+            <url>http://packages.confluent.io/maven/</url>
         </repository>
     </repositories>
 

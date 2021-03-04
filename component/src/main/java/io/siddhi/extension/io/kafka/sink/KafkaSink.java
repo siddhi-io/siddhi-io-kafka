@@ -24,8 +24,10 @@ import io.siddhi.annotation.Parameter;
 import io.siddhi.annotation.util.DataType;
 import io.siddhi.core.config.SiddhiAppContext;
 import io.siddhi.core.exception.ConnectionUnavailableException;
+import io.siddhi.core.exception.SiddhiAppCreationException;
 import io.siddhi.core.stream.ServiceDeploymentInfo;
 import io.siddhi.core.stream.output.sink.Sink;
+import io.siddhi.core.util.SiddhiConstants;
 import io.siddhi.core.util.config.ConfigReader;
 import io.siddhi.core.util.snapshot.state.State;
 import io.siddhi.core.util.snapshot.state.StateFactory;
@@ -35,7 +37,9 @@ import io.siddhi.core.util.transport.OptionHolder;
 import io.siddhi.extension.io.kafka.Constants;
 import io.siddhi.extension.io.kafka.KafkaIOUtils;
 import io.siddhi.extension.io.kafka.metrics.SinkMetrics;
+import io.siddhi.query.api.annotation.Annotation;
 import io.siddhi.query.api.definition.StreamDefinition;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -48,6 +52,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -165,6 +170,9 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
     private Producer<String, Object> producer;
     private SinkMetrics metrics;
     private String streamId;
+    private boolean useAvroSerializer = false;
+    private String schemaRegistry;
+    private String siddhiAppName;
 
     @Override
     protected StateFactory<KafkaSinkState> init(StreamDefinition outputStreamDefinition, OptionHolder optionHolder,
@@ -201,6 +209,8 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
                         + siddhiAppContext.getName());
             }
         }
+        useAvroSerializer = useAvroSerializer(outputStreamDefinition);
+        siddhiAppName = siddhiAppContext.getName();
         return () -> new KafkaSinkState(isSequenced);
     }
 
@@ -210,7 +220,7 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
         String topic = topicOption.getValue(dynamicOptions);
         String partitionNo = partitionOption.getValue(dynamicOptions);
         String key = keyOption.getValue(dynamicOptions);
-        Object payloadToSend;
+        Object payloadToSend = null;
 
         try {
             //If the received payload is String.
@@ -240,8 +250,14 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
                     payloadToSend = payload.toString().getBytes("UTF-8");
                 }
 
-                //if the received payload to send is binary.
-            } else {
+            } else if (useAvroSerializer) {  //Case: useAvroSerializer is true
+                if (payload instanceof GenericRecord) {
+                    payloadToSend = payload;
+                } else {
+                    LOG.error("use.avro.serializer property is set to true in Avro Mapper. Expected " +
+                            "GenericRecord but received " + payload.getClass().getName() + " Hence dropping event!");
+                }
+            } else { //if the received payload to send is binary.
                 byte[] byteEvents = ((ByteBuffer) payload).array();
                 if (isSequenced) {
                     payloadToSend = getSequencedBinaryPayloadToSend(byteEvents, kafkaSinkState);
@@ -279,7 +295,10 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
         props.put("buffer.memory", 33554432);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
-        if (!isBinaryMessage) {
+        if (useAvroSerializer) {
+            props.put("value.serializer", "io.confluent.kafka.serializers.KafkaAvroSerializer");
+            props.put("schema.registry.url", schemaRegistry);
+        } else if (!isBinaryMessage) {
             props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         } else {
             props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
@@ -330,6 +349,41 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
         byteBuffer.put(strPayload.toString().getBytes(Charset.defaultCharset()));
         byteBuffer.put(payload);
         return byteBuffer.array();
+    }
+
+    private boolean useAvroSerializer(StreamDefinition outputStreamDefinition) {
+        Iterator iterator = outputStreamDefinition.getAnnotations().iterator();
+        Annotation sinkAnnotation = null;
+        while (iterator.hasNext()) {
+            Annotation annotation = (Annotation) iterator.next();
+            if (annotation.getName().equalsIgnoreCase(SiddhiConstants.ANNOTATION_SINK)) {
+                sinkAnnotation = annotation;
+                break;
+            }
+        }
+        if (sinkAnnotation == null) {
+            throw new SiddhiAppCreationException(SiddhiConstants.ANNOTATION_SINK + " annotation not found in " +
+                    outputStreamDefinition.getId() + ", in Siddhi app: " + siddhiAppName);
+        }
+        Iterator sinkAnnotationIterator = sinkAnnotation.getAnnotations().iterator();
+        while (sinkAnnotationIterator.hasNext()) {
+            Annotation annotation = (Annotation) sinkAnnotationIterator.next();
+            if (annotation.getName().equalsIgnoreCase(SiddhiConstants.ANNOTATION_MAP)) {
+                String type = annotation.getElement(SiddhiConstants.ANNOTATION_ELEMENT_TYPE);
+                if (type != null && type.equalsIgnoreCase("avro")) {
+                    schemaRegistry = annotation.getElement("schema.registry");
+                    String useAvroStr = annotation.getElement("use.avro.serializer");
+                    boolean useAvro = Boolean.parseBoolean(useAvroStr);
+                    if (useAvro && (schemaRegistry == null || schemaRegistry.isEmpty())) {
+                        throw new SiddhiAppCreationException("Property schema.registry is mandatory when " +
+                                "use.avro.serializer property is set to true. In Kafka Sink for: " +
+                                outputStreamDefinition.getId() + ", in Siddhi app: " + siddhiAppName);
+                    }
+                    return useAvro;
+                }
+            }
+        }
+        return false;
     }
 
     private class KafkaProducerCallBack implements Callback {
