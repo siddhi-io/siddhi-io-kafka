@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -111,7 +112,13 @@ import java.util.concurrent.atomic.AtomicInteger;
                                 "e.g., `producer.type:async,batch.size:200`",
                         optional = true,
                         type = {DataType.STRING},
-                        defaultValue = "null")
+                        defaultValue = "null"),
+                @Parameter(name = "is.synchronous",
+                        description = "The Kafka sync will publish the events to the server synchronously when the" +
+                                "value is set to `true`, and asynchronously if otherwise",
+                        optional = true,
+                        type = {DataType.BOOL},
+                        defaultValue = "false")
         },
         examples = {
                 @Example(
@@ -151,6 +158,7 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
     public static final String SEQ_NO_HEADER_DELIMITER = "~";
     public static final String SEQ_NO_HEADER_FIELD_SEPERATOR = ":";
     protected static final String KAFKA_PUBLISH_TOPIC = "topic";
+    protected static final String IS_SYNCHRONOUS = "is.synchronous";
     protected static final String KAFKA_MESSAGE_KEY = "key";
     protected static final String KAFKA_PARTITION_NO = "partition.no";
     private static final String LAST_SENT_SEQ_NO_PERSIST_KEY = "lastSentSequenceNo";
@@ -173,6 +181,7 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
     private boolean useAvroSerializer = false;
     private String schemaRegistry;
     private String siddhiAppName;
+    private boolean isSynchronous;
 
     @Override
     protected StateFactory<KafkaSinkState> init(StreamDefinition outputStreamDefinition, OptionHolder optionHolder,
@@ -190,6 +199,7 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
             optionalConfigs = optionHolder.validateAndGetStaticValue(KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES, null);
             sequenceId = optionHolder.validateAndGetStaticValue(SEQ_ID, null);
         }
+        isSynchronous = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(IS_SYNCHRONOUS, "false"));
         topicOption = optionHolder.validateAndGetOption(KAFKA_PUBLISH_TOPIC);
         partitionOption = optionHolder.getOrCreateOption(KAFKA_PARTITION_NO, null);
         isBinaryMessage = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(IS_BINARY_MESSAGE,
@@ -266,22 +276,64 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
                     payloadToSend = byteEvents;
                 }
             }
-
-            if (null == partitionNo) {
-                producer.send(new ProducerRecord<>(topic, null, System.currentTimeMillis(), key,
-                                payloadToSend),
-                        new KafkaProducerCallBack(topic, null, System.currentTimeMillis()));
+            if (isSynchronous) {
+                long pushedTimestamp = System.currentTimeMillis();
+                RecordMetadata metadata;
+                try {
+                    if (null == partitionNo) {
+                        metadata = producer.send(new ProducerRecord<>(topic, null, System.currentTimeMillis(), key,
+                                payloadToSend)).get();
+                    } else {
+                        Integer partition = Integer.parseInt(partitionNo);
+                        long currentTime = System.currentTimeMillis();
+                        metadata = producer.send(new ProducerRecord<>(topic, partition, currentTime,
+                                key, payloadToSend)).get();
+                    }
+                    sendToMetrics(metadata, pushedTimestamp);
+                } catch (ExecutionException e) {
+                    metrics.getErrorCountWithoutPartition(
+                            topic, streamId, e.getClass().getSimpleName()).inc();
+                    // When the siddhi app user has not given a partition, then this stat won't be published.
+                    if (partitionNo != null) {
+                        metrics.getErrorCountPerStream(
+                                streamId, topic, Integer.parseInt(partitionNo), e.getClass().getSimpleName()).inc();
+                    }
+                }
             } else {
-                Integer partition = Integer.parseInt(partitionNo);
-                long currentTime = System.currentTimeMillis();
-                producer.send(new ProducerRecord<>(topic, partition, currentTime,
-                                key, payloadToSend),
-                        new KafkaProducerCallBack(topic, partition, currentTime));
+                if (null == partitionNo) {
+                    producer.send(new ProducerRecord<>(topic, null, System.currentTimeMillis(), key,
+                                    payloadToSend),
+                            new KafkaProducerCallBack(topic, null, System.currentTimeMillis()));
+                } else {
+                    Integer partition = Integer.parseInt(partitionNo);
+                    long currentTime = System.currentTimeMillis();
+                    producer.send(new ProducerRecord<>(topic, partition, currentTime,
+                                    key, payloadToSend),
+                            new KafkaProducerCallBack(topic, partition, currentTime));
+                }
             }
         } catch (UnsupportedEncodingException e) {
             LOG.error("Error while converting the received string payload to byte[].", e);
+        } catch (InterruptedException e) {
+            LOG.error("Error when sending the event synchronously.", e);
         }
+    }
 
+    public void sendToMetrics(RecordMetadata metadata, long pushedTimestamp) {
+        if (metrics != null) {
+            metrics.getTotalWrites().inc();
+            if (metadata != null) {
+                String topic = metadata.topic();
+                int partition = metadata.partition();
+
+                metrics.getWriteCountPerStream(streamId, topic, partition).inc();
+                metrics.getLastMessageSize(topic, partition, streamId, metadata.serializedValueSize());
+                metrics.getLastMessageAckLatency(topic, partition, streamId,
+                        metadata.timestamp() - pushedTimestamp);
+                metrics.getLastMessagePublishedTime(topic, partition, streamId, pushedTimestamp);
+                metrics.getLastCommittedOffset(topic, partition, streamId, metadata.offset());
+            }
+        }
     }
 
     @Override
