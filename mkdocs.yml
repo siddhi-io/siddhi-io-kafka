@@ -34,6 +34,7 @@ pages:
 - Information: index.md
 - API Docs:
   - latest: api/latest.md
+  - 5.0.12: api/5.0.12.md
   - 5.0.11: api/5.0.11.md
   - 5.0.10: api/5.0.10.md
   - 5.0.9: api/5.0.9.md
