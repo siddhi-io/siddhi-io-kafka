@@ -299,8 +299,8 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
                                 streamId, topic, Integer.parseInt(partitionNo), e.getClass().getSimpleName()).inc();
                     }
                     if (e.getMessage().contains("apache.kafka.common.errors.TimeoutException")) {
-                        throw new ConnectionUnavailableException("Error occurred when trying to send message. " +
-                                "Broker may not be unavailable.", e);
+                        throw new ConnectionUnavailableException("TimeoutException occurred when trying to send " +
+                                "message. Broker may not be unavailable.", e);
                     }
                 }
             } else {
