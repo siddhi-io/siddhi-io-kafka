@@ -114,7 +114,7 @@ import java.util.concurrent.atomic.AtomicInteger;
                         type = {DataType.STRING},
                         defaultValue = "null"),
                 @Parameter(name = "is.synchronous",
-                        description = "The Kafka sync will publish the events to the server synchronously when the" +
+                        description = "The Kafka sink will publish the events to the server synchronously when the" +
                                 "value is set to `true`, and asynchronously if otherwise",
                         optional = true,
                         type = {DataType.BOOL},
@@ -297,6 +297,10 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
                     if (partitionNo != null) {
                         metrics.getErrorCountPerStream(
                                 streamId, topic, Integer.parseInt(partitionNo), e.getClass().getSimpleName()).inc();
+                    }
+                    if (e.getMessage().contains("apache.kafka.common.errors.TimeoutException")) {
+                        throw new ConnectionUnavailableException("TimeoutException occurred when trying to send " +
+                                "message. Broker may not be unavailable.", e);
                     }
                 }
             } else {
