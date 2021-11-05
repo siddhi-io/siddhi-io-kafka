@@ -291,12 +291,14 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
                     }
                     sendToMetrics(metadata, pushedTimestamp);
                 } catch (ExecutionException e) {
-                    metrics.getErrorCountWithoutPartition(
-                            topic, streamId, e.getClass().getSimpleName()).inc();
-                    // When the siddhi app user has not given a partition, then this stat won't be published.
-                    if (partitionNo != null) {
-                        metrics.getErrorCountPerStream(
-                                streamId, topic, Integer.parseInt(partitionNo), e.getClass().getSimpleName()).inc();
+                    if (metrics != null) {
+                        metrics.getErrorCountWithoutPartition(
+                                topic, streamId, e.getClass().getSimpleName()).inc();
+                        // When the siddhi app user has not given a partition, then this stat won't be published.
+                        if (partitionNo != null) {
+                            metrics.getErrorCountPerStream(
+                                    streamId, topic, Integer.parseInt(partitionNo), e.getClass().getSimpleName()).inc();
+                        }
                     }
                     if (e.getMessage().contains("apache.kafka.common.errors.TimeoutException")) {
                         throw new ConnectionUnavailableException("TimeoutException occurred when trying to send " +
