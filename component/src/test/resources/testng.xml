@@ -26,6 +26,7 @@
             <class name="io.siddhi.extension.io.kafka.sink.KafkaSinkTestCase" />
             <class name="io.siddhi.extension.io.kafka.source.KafkaSourceTestCase" />
             <class name="io.siddhi.extension.io.kafka.sink.KafkaSinkwithBinaryMapperTestCase" />
+            <class name="io.siddhi.extension.io.kafka.sink.ErrorHandlingTestCase" />
 
             <class name="io.siddhi.extension.io.kafka.multidc.KafkaMultiDCSinkTestCases"/>
             <class name="io.siddhi.extension.io.kafka.multidc.KafkaMultiDCSourceTestCases"/>
