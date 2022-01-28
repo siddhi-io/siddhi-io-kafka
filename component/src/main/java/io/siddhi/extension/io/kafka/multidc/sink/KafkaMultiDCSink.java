@@ -35,7 +35,8 @@ import io.siddhi.query.api.exception.SiddhiAppValidationException;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
@@ -119,7 +120,7 @@ import java.util.Properties;
         }
 )
 public class KafkaMultiDCSink extends KafkaSink {
-    private static final Logger LOG = Logger.getLogger(KafkaMultiDCSink.class);
+    private static final Logger LOG = LogManager.getLogger(KafkaMultiDCSink.class);
     List<Producer<String, String>> producers = new ArrayList<>();
     private String topic;
     private Integer partitionNo;

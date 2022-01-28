@@ -19,28 +19,50 @@
 
 package io.siddhi.extension.io.kafka;
 
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.Core;
+import org.apache.logging.log4j.core.Filter;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.plugins.Plugin;
+import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
+import org.apache.logging.log4j.core.config.plugins.PluginElement;
+import org.apache.logging.log4j.core.config.plugins.PluginFactory;
+import org.mvel2.util.StringAppender;
 
-public class UnitTestAppender extends AppenderSkeleton {
-    private String messages;
+@Plugin(name = "UnitTestAppender",
+        category = Core.CATEGORY_NAME, elementType = Appender.ELEMENT_TYPE)
+public class UnitTestAppender extends AbstractAppender {
+
+    private StringAppender messages = new StringAppender();
+
+    public UnitTestAppender(String name, Filter filter) {
+
+        super(name, filter, null);
+    }
+
+    @PluginFactory
+    public static UnitTestAppender createAppender(
+            @PluginAttribute("name") String name,
+            @PluginElement("Filter") Filter filter) {
+
+        return new UnitTestAppender(name, filter);
+    }
 
     public String getMessages() {
-        return messages;
+
+        String results = messages.toString();
+        if (results.isEmpty()) {
+            return null;
+        }
+        return results;
     }
 
     @Override
-    protected void append(LoggingEvent loggingEvent) {
-        messages = loggingEvent.getRenderedMessage();
+    public void append(LogEvent event) {
+
+        messages.append(event.getMessage().getFormattedMessage());
     }
 
-    @Override
-    public void close() {
-
-    }
-
-    @Override
-    public boolean requiresLayout() {
-        return false;
-    }
 }
+

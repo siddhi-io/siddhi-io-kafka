@@ -20,7 +20,8 @@ package io.siddhi.extension.io.kafka.source;
 
 import io.siddhi.core.stream.input.source.SourceEventListener;
 import io.siddhi.extension.io.kafka.metrics.SourceMetrics;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +34,7 @@ import java.util.concurrent.Future;
  * This processes the Kafka messages using a thread pool.
  */
 public class ConsumerKafkaGroup {
-    private static final Logger LOG = Logger.getLogger(ConsumerKafkaGroup.class);
+    private static final Logger LOG = LogManager.getLogger(ConsumerKafkaGroup.class);
     private final String topics[];
     private final String partitions[];
     private final Properties props;

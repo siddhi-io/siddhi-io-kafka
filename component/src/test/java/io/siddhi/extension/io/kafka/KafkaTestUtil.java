@@ -32,7 +32,8 @@ import org.apache.curator.test.TestingServer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +45,7 @@ import java.util.Properties;
 public class KafkaTestUtil {
     public static final String ZK_SERVER_CON_STRING = "localhost:2181";
     public static final String ZK_SERVER2_CON_STRING = "localhost:2182";
-    private static final Logger log = Logger.getLogger(KafkaTestUtil.class);
+    private static final Logger log = LogManager.getLogger(KafkaTestUtil.class);
     private static final String kafkaLogDir = "tmp_kafka_dir";
     private static final String kafkaLogDir2 = "tmp_kafka_dir2";
     private static final long CLEANER_BUFFER_SIZE = 2 * 1024 * 1024L;

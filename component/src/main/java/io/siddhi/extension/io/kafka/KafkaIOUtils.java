@@ -18,7 +18,8 @@
 
 package io.siddhi.extension.io.kafka;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Properties;
 
@@ -29,7 +30,7 @@ public class KafkaIOUtils {
 
     public static final String HEADER_SEPARATOR = ",";
     private static final String ENTRY_SEPARATOR = ":";
-    private static final Logger LOG = Logger.getLogger(KafkaIOUtils.class);
+    private static final Logger LOG = LogManager.getLogger(KafkaIOUtils.class);
 
     public static void splitHeaderValues(String optionalConfigs, Properties configProperties) {
         if (optionalConfigs != null && !optionalConfigs.isEmpty()) {

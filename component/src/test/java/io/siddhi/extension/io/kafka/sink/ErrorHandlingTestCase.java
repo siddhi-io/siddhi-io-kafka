@@ -23,13 +23,14 @@ import io.siddhi.core.SiddhiManager;
 import io.siddhi.core.event.Event;
 import io.siddhi.core.stream.input.InputHandler;
 import io.siddhi.core.stream.output.StreamCallback;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 public class ErrorHandlingTestCase {
-    static final Logger LOG = Logger.getLogger(ErrorHandlingTestCase.class);
+    private static final Logger LOG = LogManager.getLogger(ErrorHandlingTestCase.class);
     private volatile int count;
     private volatile boolean eventArrived;
 

@@ -21,14 +21,15 @@ package io.siddhi.extension.io.kafka.source;
 import io.siddhi.core.SiddhiAppRuntime;
 import io.siddhi.core.SiddhiManager;
 import io.siddhi.core.event.Event;
-import io.siddhi.core.stream.input.source.Source;
 import io.siddhi.core.stream.output.StreamCallback;
 import io.siddhi.core.util.SiddhiTestHelper;
 import io.siddhi.extension.io.kafka.KafkaTestUtil;
 import io.siddhi.extension.io.kafka.UnitTestAppender;
 import io.siddhi.query.api.exception.SiddhiAppValidationException;
 import org.I0Itec.zkclient.exception.ZkTimeoutException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Logger;
 import org.testng.AssertJUnit;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -44,7 +45,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Class implementing the Test cases for Kafka Source.
  */
 public class KafkaSourceTestCase {
-    private static final Logger log = Logger.getLogger(KafkaSourceTestCase.class);
+    private static final Logger log = (Logger) LogManager.getLogger(KafkaSourceTestCase.class);
     private volatile int count;
     private volatile boolean eventArrived;
     private volatile List<String> receivedEventNameList;
@@ -183,9 +184,12 @@ public class KafkaSourceTestCase {
         receivedEventNameList = new ArrayList<>(2);
         receivedValueList = new ArrayList<>(2);
         SiddhiManager siddhiManager = new SiddhiManager();
-        Logger logger = Logger.getLogger(Source.class);
-        UnitTestAppender appender = new UnitTestAppender();
+        UnitTestAppender appender = new UnitTestAppender("UnitTestAppender", null);
+        final Logger logger = (Logger) LogManager.getRootLogger();
+        logger.setLevel(Level.ALL);
         logger.addAppender(appender);
+        appender.start();
+
         SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                 "@App:name('TestExecutionPlan') @App:transportChannelCreationEnabled('false')" +
                         "define stream BarStream (symbol string, price float, volume long); " +
@@ -199,7 +203,8 @@ public class KafkaSourceTestCase {
         siddhiAppRuntime.start();
         Thread.sleep(5000);
         if (appender.getMessages() != null) {
-            AssertJUnit.assertTrue(appender.getMessages().contains("Error on 'TestExecutionPlan'. Topic(s) " +
+            AssertJUnit.assertTrue(((UnitTestAppender) logger.getAppenders().
+                    get("UnitTestAppender")).getMessages().contains("Error on 'TestExecutionPlan'. Topic(s) " +
                     "single_topic creation failed. User has disabled topic creation by setting " +
                     "transportChannelCreationEnabled property to false. Hence Siddhi App deployment will be aborted"));
         }
@@ -352,9 +357,12 @@ public class KafkaSourceTestCase {
             String topics[] = new String[]{"topic_without_some_partition"};
             KafkaTestUtil.createTopic(topics, 2);
             SiddhiManager siddhiManager = new SiddhiManager();
-            Logger logger = Logger.getLogger(Source.class);
-            UnitTestAppender appender = new UnitTestAppender();
+            UnitTestAppender appender = new UnitTestAppender("UnitTestAppender", null);
+            final Logger logger = (Logger) LogManager.getRootLogger();
+            logger.setLevel(Level.ALL);
             logger.addAppender(appender);
+            appender.start();
+
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
                     "@App:name('TestExecutionPlan') " +
                             "define stream BarStream (symbol string, price float, volume long); " +
@@ -369,7 +377,8 @@ public class KafkaSourceTestCase {
             siddhiAppRuntime.start();
             Thread.sleep(5000);
             if (appender.getMessages() != null) {
-                AssertJUnit.assertTrue(appender.getMessages().contains("Error on 'TestExecutionPlan'. Partition " +
+                AssertJUnit.assertTrue(((UnitTestAppender) logger.getAppenders().
+                        get("UnitTestAppender")).getMessages().contains("Error on 'TestExecutionPlan'. Partition " +
                         "number(s) 2 aren't available for the topic: topic_without_some_partition Error while " +
                         "connecting at Source 'kafka' at 'FooStream'."));
             }

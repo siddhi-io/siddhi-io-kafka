@@ -18,7 +18,8 @@
 package io.siddhi.extension.io.kafka.multidc.source;
 
 import io.siddhi.core.stream.input.source.SourceEventListener;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * The source Synchronize to merge events from two kafka source
  */
 public class SourceSynchronizer {
-    private static final Logger LOG = Logger.getLogger(SourceSynchronizer.class);
+    private static final Logger LOG = LogManager.getLogger(SourceSynchronizer.class);
     private final SourceEventListener eventListener;
     boolean isEventGap = false;
     // Buffer events sorting by the sequence number.
@@ -228,7 +229,7 @@ public class SourceSynchronizer {
     }
 
     class BufferFlushTask extends TimerTask {
-        private final Logger log = Logger.getLogger(BufferFlushTask.class);
+        private final Logger log = LogManager.getLogger(BufferFlushTask.class);
 
         @Override
         public synchronized void run() {

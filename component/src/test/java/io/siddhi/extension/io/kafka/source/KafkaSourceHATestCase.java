@@ -37,7 +37,8 @@ import io.siddhi.query.api.execution.query.input.stream.InputStream;
 import io.siddhi.query.api.execution.query.selection.Selector;
 import io.siddhi.query.api.expression.Variable;
 import org.I0Itec.zkclient.exception.ZkTimeoutException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -58,7 +59,7 @@ import static org.junit.Assert.assertTrue;
  * Class implementing the Test cases for KafkaSourceHA Test Cases.
  */
 public class KafkaSourceHATestCase {
-    private static final Logger log = Logger.getLogger(KafkaSourceHATestCase.class);
+    private static final Logger log = LogManager.getLogger(KafkaSourceHATestCase.class);
     private static ExecutorService executorService;
     private volatile int count;
     private volatile boolean eventArrived;

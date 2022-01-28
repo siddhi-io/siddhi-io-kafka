@@ -21,7 +21,8 @@ package io.siddhi.extension.io.kafka.multidc;
 import io.siddhi.core.stream.input.source.SourceEventListener;
 import io.siddhi.extension.io.kafka.multidc.source.SourceSynchronizer;
 import io.siddhi.query.api.definition.StreamDefinition;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.testng.annotations.BeforeMethod;
@@ -33,7 +34,7 @@ import java.util.List;
  * Class implementing the Test cases for KafkaMultiDCSource Synchronize Test Case.
  */
 public class KafkaMultiDCSourceSynchronizerTestCases {
-    private static final Logger LOG = Logger.getLogger(KafkaMultiDCSourceSynchronizerTestCases.class);
+    private static final Logger LOG = LogManager.getLogger(KafkaMultiDCSourceSynchronizerTestCases.class);
     private static final String SOURCE_1 = "source:9000";
     private static final String SOURCE_2 = "source2:9000";
     private static String[] servers = {SOURCE_1, SOURCE_2};

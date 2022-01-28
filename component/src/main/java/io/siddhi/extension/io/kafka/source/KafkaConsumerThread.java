@@ -30,7 +30,8 @@ import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.consumer.OffsetCommitCallback;
 import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -52,7 +53,7 @@ import static io.siddhi.extension.io.kafka.source.KafkaSource.ADAPTOR_SUBSCRIBER
  */
 public class KafkaConsumerThread implements Runnable {
 
-    private static final Logger LOG = Logger.getLogger(KafkaConsumerThread.class);
+    private static final Logger LOG = LogManager.getLogger(KafkaConsumerThread.class);
     final KafkaConsumer<byte[], byte[]> consumer;
     // KafkaConsumer is not thread safe, hence we need a lock
     private final Lock consumerLock = new ReentrantLock();

@@ -25,7 +25,8 @@ import io.siddhi.core.stream.input.InputHandler;
 import io.siddhi.core.stream.output.StreamCallback;
 import io.siddhi.core.util.SiddhiTestHelper;
 import io.siddhi.extension.io.kafka.KafkaTestUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -41,7 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Class implementing the Test cases for KafkaMultiDCSink.
  */
 public class KafkaMultiDCSinkTestCases {
-    private static final Logger LOG = Logger.getLogger(KafkaMultiDCSinkTestCases.class);
+    private static final Logger LOG = LogManager.getLogger(KafkaMultiDCSinkTestCases.class);
     private static ExecutorService executorService;
     private AtomicInteger count;
 

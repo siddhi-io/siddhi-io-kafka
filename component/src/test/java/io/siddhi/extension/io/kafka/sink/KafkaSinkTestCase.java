@@ -25,7 +25,8 @@ import io.siddhi.core.stream.input.InputHandler;
 import io.siddhi.core.stream.output.StreamCallback;
 import io.siddhi.extension.io.kafka.KafkaTestUtil;
 import org.I0Itec.zkclient.exception.ZkTimeoutException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.testng.AssertJUnit;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -40,7 +41,7 @@ import java.util.List;
  * Class implementing the Test cases for Kafka Sink.
  */
 public class KafkaSinkTestCase {
-    static final Logger LOG = Logger.getLogger(KafkaSinkTestCase.class);
+    private static final Logger LOG = LogManager.getLogger(KafkaSinkTestCase.class);
     private volatile int count;
     private volatile boolean eventArrived;
     private volatile List<String> receivedEventNameList;

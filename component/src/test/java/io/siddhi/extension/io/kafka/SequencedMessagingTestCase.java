@@ -25,7 +25,8 @@ import io.siddhi.core.exception.CannotRestoreSiddhiAppStateException;
 import io.siddhi.core.stream.output.StreamCallback;
 import io.siddhi.core.util.EventPrinter;
 import io.siddhi.core.util.persistence.InMemoryPersistenceStore;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -42,7 +43,7 @@ import java.util.concurrent.Future;
  * Class implementing the Test cases for Sequenced Messaging.
  */
 public class SequencedMessagingTestCase {
-    static final Logger LOG = Logger.getLogger(SequencedMessagingTestCase.class);
+    private static final Logger LOG = LogManager.getLogger(SequencedMessagingTestCase.class);
     private static ExecutorService executorService;
     private volatile int count;
     private volatile boolean eventArrived;

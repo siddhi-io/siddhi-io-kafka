@@ -26,7 +26,8 @@ import io.siddhi.core.stream.output.StreamCallback;
 import io.siddhi.core.util.EventPrinter;
 import io.siddhi.extension.io.kafka.KafkaTestUtil;
 import org.I0Itec.zkclient.exception.ZkTimeoutException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.testng.AssertJUnit;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -41,7 +42,7 @@ import java.util.List;
  * Test Class Implementing send message via binary mapping.
  */
 public class KafkaSinkwithBinaryMapperTestCase {
-    static final Logger LOG = Logger.getLogger(KafkaSinkTestCase.class);
+    private static final Logger LOG = LogManager.getLogger(KafkaSinkwithBinaryMapperTestCase.class);
     private volatile int count;
     private volatile boolean eventArrived;
     private volatile List<String> receivedEventNameList;

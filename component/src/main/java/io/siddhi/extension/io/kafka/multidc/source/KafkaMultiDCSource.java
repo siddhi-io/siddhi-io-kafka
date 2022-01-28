@@ -35,7 +35,8 @@ import io.siddhi.extension.io.kafka.sink.KafkaSink;
 import io.siddhi.extension.io.kafka.source.KafkaSource;
 import io.siddhi.query.api.definition.StreamDefinition;
 import io.siddhi.query.api.exception.SiddhiAppValidationException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -105,7 +106,7 @@ import java.util.UUID;
 public class KafkaMultiDCSource extends Source<KafkaMultiDCSource.KafkaMultiDCSourceState> {
     private static final String KAFKA_TOPIC = "topic";
     private static final String KAFKA_PARTITION_NO = "partition.no";
-    private static final Logger LOG = Logger.getLogger(KafkaMultiDCSource.class);
+    private static final Logger LOG = LogManager.getLogger(KafkaMultiDCSource.class);
     private static final String LAST_RECEIVED_SEQ_NO_KEY = "lastConsumedSeqNo";
     private SourceEventListener eventListener;
     private Map<String, KafkaSource> sources = new HashMap<>();
@@ -292,7 +293,7 @@ public class KafkaMultiDCSource extends Source<KafkaMultiDCSource.KafkaMultiDCSo
 
 
 class Interceptor implements SourceEventListener {
-    private static final Logger LOG = Logger.getLogger(Interceptor.class);
+    private static final Logger LOG = LogManager.getLogger(Interceptor.class);
     private String sourceId;
     private SourceSynchronizer synchronizer;
     private boolean isBinaryMessage;

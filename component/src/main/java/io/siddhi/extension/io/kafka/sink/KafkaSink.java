@@ -45,7 +45,8 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.wso2.carbon.si.metrics.core.internal.MetricsDataHolder;
 
 import java.io.UnsupportedEncodingException;
@@ -166,7 +167,7 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
     private static final String KAFKA_OPTIONAL_CONFIGURATION_PROPERTIES = "optional.configuration";
     private static final String SEQ_ID = "sequence.id";
     private static final String IS_BINARY_MESSAGE = "is.binary.message";
-    private static final Logger LOG = Logger.getLogger(KafkaSink.class);
+    private static final Logger LOG = LogManager.getLogger(KafkaSink.class);
     protected String bootstrapServers;
     protected String optionalConfigs;
     protected String sequenceId = null;

@@ -45,7 +45,8 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.PartitionInfo;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.wso2.carbon.si.metrics.core.internal.MetricsDataHolder;
 
 import java.nio.ByteBuffer;
@@ -239,7 +240,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     static final String PARTITION_WISE = "partition.wise";
     private static final String TOPIC_OFFSET_MAP = "topic.offsets.map";
     private static final String LAST_RECEIVED_SEQ_NO_KEY = "lastReceivedSeqNo";
-    private static final Logger LOG = Logger.getLogger(KafkaSource.class);
+    private static final Logger LOG = LogManager.getLogger(KafkaSource.class);
     private static final String TOPIC = "topic";
     private static final String PARTITION = "partition";
     private static final String OFFSET = "offSet";

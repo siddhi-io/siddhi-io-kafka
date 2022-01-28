@@ -24,7 +24,8 @@ import io.siddhi.core.event.Event;
 import io.siddhi.core.stream.input.InputHandler;
 import io.siddhi.core.stream.output.StreamCallback;
 import io.siddhi.extension.io.kafka.KafkaTestUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -41,7 +42,7 @@ import java.util.concurrent.Executors;
  * Class implementing the Test cases for Sequenced Messaging.
  */
 public class KafkaMultiDCSourceTestCases {
-    static final Logger LOG = Logger.getLogger(KafkaMultiDCSourceTestCases.class);
+    private static final Logger LOG = LogManager.getLogger(KafkaMultiDCSourceTestCases.class);
     private static ExecutorService executorService;
     private volatile int count;
     private volatile boolean eventArrived;
