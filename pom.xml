@@ -68,7 +68,7 @@
         <glassfish.jersey.version>2.34</glassfish.jersey.version>
         <glassfish.version>2.4.0</glassfish.version>
         <jakarta.version>3.0.0</jakarta.version>
-        <fasterxml.version>2.9.8</fasterxml.version>
+        <fasterxml.version>2.9.10.8</fasterxml.version>
         <squareup.version>3.6.0</squareup.version>
         <guava.version>30.1.1-jre</guava.version>
         <kotlin.version>1.4.10</kotlin.version>
