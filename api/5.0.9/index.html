@@ -296,6 +296,18 @@
 
 
   <li class="md-nav__item">
+    <a href="../5.0.14/" title="5.0.14" class="md-nav__link">
+      5.0.14
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
     <a href="../5.0.13/" title="5.0.13" class="md-nav__link">
       5.0.13
     </a>
@@ -1084,7 +1096,7 @@
 <p style="word-wrap: break-word;margin: 0;">A Kafka sink publishes events processed by WSO2 SP to a topic with a partition for a Kafka cluster. The events can be published in the <code>TEXT</code> <code>XML</code> <code>JSON</code> or <code>Binary</code> format.<br>If the topic is not already created in the Kafka cluster, the Kafka sink creates the default partition for the given topic. The publishing topic and partition can be a dynamic value taken from the Siddhi event.<br>To configure a sink to use the Kafka transport, the <code>type</code> parameter should have <code>kafka</code> as its value.</p>
 <p></p>
 <span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
-<pre><code>@sink(type=&quot;kafka&quot;, bootstrap.servers=&quot;&lt;STRING&gt;&quot;, topic=&quot;&lt;STRING&gt;&quot;, partition.no=&quot;&lt;INT&gt;&quot;, sequence.id=&quot;&lt;STRING&gt;&quot;, key=&quot;&lt;STRING&gt;&quot;, is.binary.message=&quot;&lt;BOOL&gt;&quot;, optional.configuration=&quot;&lt;STRING&gt;&quot;, @map(...)))
+<pre><code>@sink(type=&quot;kafka&quot;, bootstrap.servers=&quot;&lt;STRING&gt;&quot;, topic=&quot;&lt;STRING&gt;&quot;, partition.no=&quot;&lt;INT&gt;&quot;, sequence.id=&quot;&lt;STRING&gt;&quot;, key=&quot;&lt;STRING&gt;&quot;, is.binary.message=&quot;&lt;BOOL&gt;&quot;, optional.configuration=&quot;&lt;STRING&gt;&quot;, is.synchronous=&quot;&lt;BOOL&gt;&quot;, @map(...)))
 </code></pre>
 
 <p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
@@ -1150,6 +1162,14 @@
         <td style="vertical-align: top; word-wrap: break-word"><p style="word-wrap: break-word;margin: 0;">This parameter contains all the other possible configurations that the producer is created with. <br>e.g., <code>producer.type:async,batch.size:200</code></p></td>
         <td style="vertical-align: top">null</td>
         <td style="vertical-align: top">STRING</td>
+        <td style="vertical-align: top">Yes</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">is.synchronous</td>
+        <td style="vertical-align: top; word-wrap: break-word"><p style="word-wrap: break-word;margin: 0;">The Kafka sync will publish the events to the server synchronously when thevalue is set to <code>true</code>, and asynchronously if otherwise</p></td>
+        <td style="vertical-align: top">false</td>
+        <td style="vertical-align: top">BOOL</td>
         <td style="vertical-align: top">Yes</td>
         <td style="vertical-align: top">No</td>
     </tr>
