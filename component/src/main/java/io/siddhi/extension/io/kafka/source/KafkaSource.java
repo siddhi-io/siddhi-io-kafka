@@ -18,6 +18,7 @@
 
 package io.siddhi.extension.io.kafka.source;
 
+import com.google.protobuf.GeneratedMessageV3;
 import io.siddhi.annotation.Example;
 import io.siddhi.annotation.Extension;
 import io.siddhi.annotation.Parameter;
@@ -356,7 +357,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
 
     @Override
     public Class[] getOutputEventClasses() {
-        return new Class[]{String.class, ByteBuffer.class};
+        return new Class[]{String.class, ByteBuffer.class, GeneratedMessageV3.class};
     }
 
     @Override

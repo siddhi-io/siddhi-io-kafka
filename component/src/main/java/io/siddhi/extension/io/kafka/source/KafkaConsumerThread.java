@@ -185,6 +185,8 @@ public class KafkaConsumerThread implements Runnable {
                 records = consumer.poll(100);
             } catch (CommitFailedException ex) {
                 LOG.warn("Consumer poll() failed." + ex.getMessage(), ex);
+            } catch (Throwable t) {
+                LOG.error("Consumer poll() failed.", t);
             } finally {
                 consumerLock.unlock();
             }
