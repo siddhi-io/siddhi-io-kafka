@@ -64,14 +64,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <protobuf.version>3.17.3</protobuf.version>
         <codehaus.version>1.9.10</codehaus.version>
-        <ws.rs.version>2.0</ws.rs.version>
-        <glassfish.jersey.version>2.34</glassfish.jersey.version>
-        <glassfish.version>2.4.0</glassfish.version>
-        <jakarta.version>3.0.0</jakarta.version>
-        <fasterxml.version>2.9.8</fasterxml.version>
-        <squareup.version>3.6.0</squareup.version>
-        <guava.version>30.1.1-jre</guava.version>
-        <kotlin.version>1.4.10</kotlin.version>
+        <fasterxml.version>2.12.6</fasterxml.version>
     </properties>
 
     <scm>
@@ -297,49 +290,9 @@
                 <version>${protobuf.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.confluent</groupId>
-                <artifactId>kafka-schema-registry</artifactId>
-                <version>${confluent.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.confluent</groupId>
-                <artifactId>kafka-protobuf-serializer</artifactId>
-                <version>${confluent.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.codehaus.jackson</groupId>
                 <artifactId>jackson-jaxrs</artifactId>
                 <version>${codehaus.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.ws.rs</groupId>
-                <artifactId>javax.ws.rs-api</artifactId>
-                <version>${ws.rs.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.jersey.core</groupId>
-                <artifactId>jersey-common</artifactId>
-                <version>${glassfish.jersey.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-api</artifactId>
-                <version>${glassfish.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-locator</artifactId>
-                <version>${glassfish.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-utils</artifactId>
-                <version>${glassfish.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.ws.rs</groupId>
-                <artifactId>jakarta.ws.rs-api</artifactId>
-                <version>${jakarta.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
@@ -355,21 +308,6 @@
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-annotations</artifactId>
                 <version>${fasterxml.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.squareup.wire</groupId>
-                <artifactId>wire-schema</artifactId>
-                <version>${squareup.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-stdlib</artifactId>
-                <version>${kotlin.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

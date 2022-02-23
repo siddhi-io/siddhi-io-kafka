@@ -116,40 +116,8 @@
             <artifactId>protobuf-java</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.confluent</groupId>
-            <artifactId>kafka-schema-registry</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.confluent</groupId>
-            <artifactId>kafka-protobuf-serializer</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-jaxrs</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2-locator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2-utils</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.ws.rs</groupId>
-            <artifactId>jakarta.ws.rs-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -162,18 +130,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup.wire</groupId>
-            <artifactId>wire-schema</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib</artifactId>
         </dependency>
     </dependencies>
 
@@ -215,31 +171,16 @@
                             io.confluent.*,
                             !com.google.protobuf.*,
                             com.google.*,
+                            org.codehaus.jackson.*,
                         </Export-Package>
                         <Import-Package>
                             io.siddhi.core.*;version="${siddhi.version.range}",
                             io.siddhi.annotation.*;version="${siddhi.version.range}",
                             io.siddhi.query.api.*;version="${siddhi.version.range}",
-                            org.apache.kafka.*,
-                            org.apache.log4j.*,
-                            com.google.protobuf.*,
-                            org.wso2.carbon.si.metrics.core.*,
-                            org.wso2.carbon.metrics.core.*,
-                            org.slf4j.*,
-                            com.google.protobuf.*,
+                            *;resolution:=optional
                         </Import-Package>
                         <Private-Package>
-                            org.glassfish.jersey.*,
-                            jakarta.ws.rs.*,
-                            javax.ws.rs.*,
-                            org.codehaus.jackson.*,
-                            org.glassfish.jersey.*,
-                            org.glassfish.hk2.*,
                             com.fasterxml.jackson.*,
-                            com.squareup.wire.*,
-                            com.google.guava.*
-                            com.google.common.base.*,
-                            kotlin.*
                         </Private-Package>
                         <Include-Resource>
                             META-INF=target/classes/META-INF
