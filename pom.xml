@@ -65,7 +65,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <protobuf.version>3.17.3</protobuf.version>
         <codehaus.version>1.9.10</codehaus.version>
-        <fasterxml.version>2.12.6</fasterxml.version>
+        <fasterxml.version>2.13.3</fasterxml.version>
     </properties>
 
     <scm>
@@ -449,7 +449,7 @@
         </repository>
         <repository>
             <id>confluent</id>
-            <url>http://packages.confluent.io/maven/</url>
+            <url>https://packages.confluent.io/maven/</url>
         </repository>
     </repositories>
 

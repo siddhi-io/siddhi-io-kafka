@@ -30,6 +30,7 @@ import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.consumer.OffsetCommitCallback;
 import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.utils.Bytes;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -203,7 +204,7 @@ public class KafkaConsumerThread implements Runnable {
                     long recordTimestamp = record.timestamp();
                     if (!consumerClosed) {
                         if (isRecordAfterStartOffset(record)) {
-                            Object event = record.value();
+                            Object event = isBinaryMessage ? ((Bytes) record.value()).get() : record.value();
                             Object eventBody = null;
                             String header = null;
                             long eventTimestamp = System.currentTimeMillis();

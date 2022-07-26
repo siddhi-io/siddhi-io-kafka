@@ -25,7 +25,6 @@ import io.siddhi.annotation.Parameter;
 import io.siddhi.annotation.util.DataType;
 import io.siddhi.core.config.SiddhiAppContext;
 import io.siddhi.core.exception.ConnectionUnavailableException;
-import io.siddhi.core.exception.SiddhiAppCreationException;
 import io.siddhi.core.exception.SiddhiAppRuntimeException;
 import io.siddhi.core.stream.ServiceDeploymentInfo;
 import io.siddhi.core.stream.input.source.Source;
@@ -39,13 +38,13 @@ import io.siddhi.core.util.transport.OptionHolder;
 import io.siddhi.extension.io.kafka.Constants;
 import io.siddhi.extension.io.kafka.KafkaIOUtils;
 import io.siddhi.extension.io.kafka.metrics.SourceMetrics;
-import io.siddhi.query.api.annotation.Annotation;
-import io.siddhi.query.api.definition.StreamDefinition;
 import io.siddhi.query.api.exception.SiddhiAppValidationException;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.PartitionInfo;
+import org.apache.kafka.common.serialization.BytesDeserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.carbon.si.metrics.core.internal.MetricsDataHolder;
@@ -53,7 +52,6 @@ import org.wso2.carbon.si.metrics.core.internal.MetricsDataHolder;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -265,8 +263,6 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     String[] requiredProperties;
     private SourceMetrics metrics;
     private String topicList;
-    private boolean useAvroDeserializer = false;
-    private String schemaRegistry;
     private String siddhiAppName;
 
     @Override
@@ -347,10 +343,6 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                         + siddhiAppContext.getName());
             }
         }
-        StreamDefinition streamDefinition = sourceEventListener.getStreamDefinition();
-        if (streamDefinition != null) {
-            useAvroDeserializer = useAvroDeserializer(streamDefinition);
-        }
         siddhiAppName = siddhiAppContext.getName();
         return () -> new KafkaSourceState(seqEnabled);
     }
@@ -369,7 +361,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                     new ConsumerKafkaGroup(
                             topics, partitions,
                             KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
-                                    isBinaryMessage, enableOffsetCommit, useAvroDeserializer, schemaRegistry),
+                                    isBinaryMessage, enableOffsetCommit),
                             threadingOption, executorService, isBinaryMessage, enableOffsetCommit, enableAsyncCommit,
                             sourceEventListener, requiredProperties, metrics);
             checkTopicsAvailableInCluster();
@@ -518,7 +510,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
 
     void checkTopicsAvailableInCluster() {
         Properties props = KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
-                isBinaryMessage, enableOffsetCommit, useAvroDeserializer, schemaRegistry);
+                isBinaryMessage, enableOffsetCommit);
         props.put("group.id", "test-consumer-group");
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
         Map<String, List<PartitionInfo>> testTopicList = consumer.listTopics();
@@ -598,8 +590,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     }
 
     protected static Properties createConsumerConfig(String zkServerList, String groupId, String optionalConfigs,
-                                                   boolean isBinaryMessage, boolean enableOffsetCommit,
-                                                     boolean useAvroDeserializer, String schemaRegistry) {
+                                                   boolean isBinaryMessage, boolean enableOffsetCommit) {
         Properties props = new Properties();
         props.put(ADAPTOR_SUBSCRIBER_ZOOKEEPER_CONNECT_SERVERS, zkServerList);
         props.put(ADAPTOR_SUBSCRIBER_GROUP_ID, groupId);
@@ -611,16 +602,9 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
             props.put(ADAPTOR_ENABLE_AUTO_COMMIT, "false");
         }
         props.put("auto.offset.reset", "earliest");
-        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        if (useAvroDeserializer) {
-            props.put("value.deserializer", "io.confluent.kafka.serializers.KafkaAvroDeserializer");
-            props.put("schema.registry.url", schemaRegistry);
-        } else if (!isBinaryMessage) {
-            props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        } else {
-            props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
-        }
-
+        props.put("key.deserializer", StringDeserializer.class.getName());
+        props.put("value.deserializer",
+                isBinaryMessage ? BytesDeserializer.class.getName() : StringDeserializer.class.getName());
         KafkaIOUtils.splitHeaderValues(optionalConfigs, props);
         return props;
     }
@@ -642,46 +626,6 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         }
         return configProperties;
     }
-
-    private boolean useAvroDeserializer(StreamDefinition streamDefinition) {
-        List<Annotation> annotations = streamDefinition.getAnnotations();
-        if (annotations == null) {
-            return false;
-        }
-        Iterator iterator = annotations.iterator();
-        Annotation sinkAnnotation = null;
-        while (iterator.hasNext()) {
-            Annotation annotation = (Annotation) iterator.next();
-            if (annotation.getName().equalsIgnoreCase(SiddhiConstants.ANNOTATION_SOURCE)) {
-                sinkAnnotation = annotation;
-                break;
-            }
-        }
-        if (sinkAnnotation == null) {
-            throw new SiddhiAppCreationException(SiddhiConstants.ANNOTATION_SOURCE + " annotation not found!. " +
-                    "In Kafka Source for: " + streamDefinition.getId() + ", in Siddhi app: " + siddhiAppName);
-        }
-        Iterator sinkAnnotationIterator = sinkAnnotation.getAnnotations().iterator();
-        while (sinkAnnotationIterator.hasNext()) {
-            Annotation annotation = (Annotation) sinkAnnotationIterator.next();
-            if (annotation.getName().equalsIgnoreCase(SiddhiConstants.ANNOTATION_MAP)) {
-                String type = annotation.getElement(SiddhiConstants.ANNOTATION_ELEMENT_TYPE);
-                if (type != null && type.equalsIgnoreCase("avro")) {
-                    schemaRegistry = annotation.getElement("schema.registry");
-                    String useAvroStr = annotation.getElement("use.avro.deserializer");
-                    boolean useAvro = Boolean.parseBoolean(useAvroStr);
-                    if (useAvro && (schemaRegistry == null || schemaRegistry.isEmpty())) {
-                        throw new SiddhiAppCreationException("Property schema.registry is mandatory when " +
-                                "use.avro.deserializer property is set to true. In Kafka Source for: " +
-                                streamDefinition.getId() + ", in Siddhi app: " + siddhiAppName);
-                    }
-                    return useAvro;
-                }
-            }
-        }
-        return false;
-    }
-
 
     /**
      * State class for Kafka source.

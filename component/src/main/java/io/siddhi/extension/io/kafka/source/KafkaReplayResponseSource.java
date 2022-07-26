@@ -162,7 +162,7 @@ public class KafkaReplayResponseSource extends KafkaSource {
             KafkaReplayThread kafkaReplayThread =
                     new KafkaReplayThread(sourceEventListener, new String[]{replayTopic}, partitionAsListForReplay,
                             KafkaSource.createConsumerConfig(bootstrapServers, groupID, optionalConfigs,
-                                    isBinaryMessage, enableOffsetCommit, false, null),
+                                    isBinaryMessage, enableOffsetCommit),
                             false, isBinaryMessage, enableOffsetCommit,
                             enableAsyncCommit, requiredProperties, Integer.parseInt(startOffset),
                             Integer.parseInt(endOffset), futureList.size(), sinkId);
