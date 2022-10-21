@@ -175,7 +175,6 @@
                             io.siddhi.extension.io.kafka.*,
                             io.confluent.*,
                             !com.google.protobuf.*,
-                            com.google.*,
                             org.codehaus.jackson.*,
                         </Export-Package>
                         <Import-Package>
@@ -185,7 +184,7 @@
                             *;resolution:=optional
                         </Import-Package>
                         <Private-Package>
-                            com.fasterxml.jackson.*,
+                            com.google.*,
                         </Private-Package>
                         <Include-Resource>
                             META-INF=target/classes/META-INF
