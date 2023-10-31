@@ -126,7 +126,6 @@ public class KafkaConsumerThread implements Runnable {
     }
 
     void resume() {
-        restore();
         paused = false;
         try {
             lock.lock();
