@@ -440,10 +440,8 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     public void resume() {
         if (consumerKafkaGroup != null) {
             consumerKafkaGroup.resume();
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Kafka Adapter resumed for topic(s): " + optionHolder.validateAndGetStaticValue
+            LOG.info("Kafka Adapter resumed for topic(s): " + optionHolder.validateAndGetStaticValue
                         (ADAPTOR_SUBSCRIBER_TOPIC));
-            }
         }
     }
 
