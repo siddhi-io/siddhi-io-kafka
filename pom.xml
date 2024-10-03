@@ -53,7 +53,7 @@
         <kafka_2.11.version>0.10.0.0</kafka_2.11.version>
         <curator-test.version>2.7.1</curator-test.version>
         <zookeeper.version>3.4.0</zookeeper.version>
-        <commons-io.version>2.5</commons-io.version>
+        <commons-io.version>2.14.0</commons-io.version>
         <kafka.client.version>0.10.0.0</kafka.client.version>
         <xml.mapper.version>5.2.2</xml.mapper.version>
         <text.mapper.version>2.1.1</text.mapper.version>
