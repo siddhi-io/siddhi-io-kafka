@@ -108,17 +108,17 @@ public class KafkaConsumerThread implements Runnable {
             for (String topic : topics) {
                 for (String partition1 : partitions) {
                     TopicPartition partition = new TopicPartition(topic, Integer.parseInt(partition1));
-                    LOG.info("Adding partition " + partition1 + " for topic: " + topic);
+                    LOG.info("Adding partition {} for topic: {}", partition1, topic);
                     partitionsList.add(partition);
                 }
-                LOG.info("Adding partitions " + Arrays.toString(partitions) + " for topic: " + topic);
+                LOG.info("Adding partitions {} for topic: {}", Arrays.toString(partitions), topic);
                 consumer.assign(partitionsList);
             }
         } else {
             consumer.subscribe(Arrays.asList(topics));
         }
         consumerClosed = false;
-        LOG.info("Subscribed for topics: " + Arrays.toString(topics));
+        LOG.info("Subscribed for topics: {}", Arrays.toString(topics));
     }
 
     void pause() {
@@ -144,8 +144,8 @@ public class KafkaConsumerThread implements Runnable {
                     for (Map.Entry<Integer, Long> entry : offsetMap.entrySet()) {
                         TopicPartition partition = new TopicPartition(topic, entry.getKey());
                         if (partitionsList.contains(partition)) {
-                            LOG.info("Seeking partition: " + partition + " for topic: " + topic + " offset: " + (entry
-                                    .getValue() + 1));
+                            LOG.info("Seeking partition: {} for topic: {} offset: {}", partition, topic, entry
+                                    .getValue() + 1);
                             try {
                                 consumerLock.lock();
                                 consumer.seek(partition, entry.getValue() + 1);
@@ -184,7 +184,7 @@ public class KafkaConsumerThread implements Runnable {
                 seekToRequiredOffset();
                 records = consumer.poll(100);
             } catch (CommitFailedException ex) {
-                LOG.warn("Consumer poll() failed." + ex.getMessage(), ex);
+                LOG.warn("Consumer poll() failed.{}", ex.getMessage(), ex);
             } catch (Throwable t) {
                 LOG.error("Consumer poll() failed.", t);
             } finally {
@@ -208,10 +208,10 @@ public class KafkaConsumerThread implements Runnable {
                             String header = null;
                             long eventTimestamp = System.currentTimeMillis();
                             if (LOG.isDebugEnabled()) {
-                                LOG.debug("Event received in Kafka Event Adaptor with offSet: " + offset +
-                                        ", key: " + record.key() + ", topic: " + topic +
-                                        ", partition: " + partition + ", recordTimestamp: " + recordTimestamp +
-                                        ", eventTimestamp: " + eventTimestamp + ", checksum: " + record.checksum());
+                                LOG.debug("Event received in Kafka Event Adaptor with offSet: {}, key: {}," +
+                                          " topic: {}, partition: {}, recordTimestamp: {}, eventTimestamp: {}," +
+                                          " checksum: {}", offset, record.key(), topic, partition,
+                                        recordTimestamp, record.checksum());
                             }
                             for (int i = 0; i < requiredProperties.length; i++) {
                                 if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_PARTITION)) {
@@ -270,23 +270,23 @@ public class KafkaConsumerThread implements Runnable {
                                             sourceEventListener.onEvent(eventBody, trpProperties,
                                                     transportSyncPropertiesArr);
                                             if (LOG.isDebugEnabled()) {
-                                                LOG.debug("Last Received SeqNo Updated to:" + seqNo + " for "
-                                                        + "SeqKey:[" + sequenceKey.toString()
-                                                        + "] in Kafka consumer thread:" + consumerThreadId);
+                                                LOG.debug("Last Received SeqNo Updated to:{} for SeqKey:[{}] " +
+                                                          "in Kafka consumer thread:{}", seqNo,
+                                                          sequenceKey.toString(), consumerThreadId);
                                             }
                                         } else {
                                             if (LOG.isDebugEnabled()) {
-                                                LOG.debug("Duplicate Message arrived at Kafka Consumer Thread:"
-                                                        + consumerThreadId + ". SeqKey:[" + sequenceKey.toString() + "]"
-                                                        + ", Latest SeqNo:" + lastReceivedSeqNo
-                                                        + ", this message SeqNo:" + seqNo + ". Ignoring the message.");
+                                                LOG.debug("Duplicate Message arrived at Kafka Consumer Thread:{}. " +
+                                                          "SeqKey:[{}], Latest SeqNo:{}, this message SeqNo:{}." +
+                                                          " Ignoring the message.", consumerThreadId,
+                                                          sequenceKey.toString(), lastReceivedSeqNo, seqNo);
                                             }
                                         }
 
                                     } else {
-                                        LOG.warn("'Sequenced' option is set to true in Kafka source configuration. "
-                                                + "But this message does not contain the sequence number in consumer " +
-                                                "thread :" + consumerThreadId + ". Dropping the message");
+                                        LOG.warn("'Sequenced' option is set to true in Kafka source configuration." +
+                                                 " But this message does not contain the sequence number in " +
+                                                 "consumer thread :{}. Dropping the message", consumerThreadId);
                                     }
                                 }
                                 if (!isReplayThread) {
@@ -411,15 +411,15 @@ public class KafkaConsumerThread implements Runnable {
             if (exception == null) {
                 if (LOG.isDebugEnabled()) {
                     for (Map.Entry<TopicPartition, OffsetAndMetadata> entry : offsets.entrySet()) {
-                        LOG.debug("Asynchronously commit offset done for " + entry.getKey().topic() +
-                                " with offset of: " + entry.getValue().offset());
+                        LOG.debug("Asynchronously commit offset done for {} with offset of: {}", entry.getKey().topic(),
+                                entry.getValue().offset());
                     }
                 }
             } else {
                 if (LOG.isDebugEnabled()) {
                     for (Map.Entry<TopicPartition, OffsetAndMetadata> entry : offsets.entrySet()) {
-                        LOG.debug("Commit offset exception for " + entry.getKey().topic() +
-                                " with offset of: " + entry.getValue().offset());
+                        LOG.debug("Commit offset exception for {} with offset of: {}", entry.getKey().topic(),
+                                entry.getValue().offset());
                     }
                 }
                 LOG.error("Exception occurred when committing offsets asynchronously.", exception);

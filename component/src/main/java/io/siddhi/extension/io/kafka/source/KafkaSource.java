@@ -339,8 +339,8 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                             sourceEventListener.getStreamDefinition().getId());
                 }
             } catch (IllegalArgumentException e) {
-                LOG.debug("Prometheus reporter is not running. Hence kafka metrics will not be initialized for "
-                        + siddhiAppContext.getName());
+                LOG.debug("Prometheus reporter is not running. Hence kafka metrics will not be initialized for {}",
+                        siddhiAppContext.getName());
             }
         }
         siddhiAppName = siddhiAppContext.getName();
@@ -417,7 +417,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         if (consumerKafkaGroup != null) {
             consumerKafkaGroup.setKafkaSourceState(null);
             consumerKafkaGroup.shutdown();
-            LOG.info("Kafka Adapter disconnected for topic(s): " +
+            LOG.info("Kafka Adapter disconnected for topic(s): {}",
                     optionHolder.validateAndGetStaticValue(ADAPTOR_SUBSCRIBER_TOPIC));
         }
     }
@@ -431,7 +431,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     public void pause() {
         if (consumerKafkaGroup != null) {
             consumerKafkaGroup.pause();
-            LOG.info("Kafka Adapter paused for topic(s): " + optionHolder.validateAndGetStaticValue
+            LOG.info("Kafka Adapter paused for topic(s): {}", optionHolder.validateAndGetStaticValue
                     (ADAPTOR_SUBSCRIBER_TOPIC));
         }
     }
@@ -440,8 +440,8 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
     public void resume() {
         if (consumerKafkaGroup != null) {
             consumerKafkaGroup.resume();
-            LOG.info("Kafka Adapter resumed for topic(s): " + optionHolder.validateAndGetStaticValue
-                        (ADAPTOR_SUBSCRIBER_TOPIC));
+            LOG.info("Kafka Adapter resumed for topic(s): {}", optionHolder.validateAndGetStaticValue
+                    (ADAPTOR_SUBSCRIBER_TOPIC));
         }
     }
 
@@ -492,7 +492,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
 
             boolean isTopicListed = Arrays.stream(topics).anyMatch(topic -> topic.equals(topicOffset[0]));
             if (!isTopicListed) {
-                LOG.error("Topic " + topicOffset[0] + " not listed in topic.list config");
+                LOG.error("Topic {} not listed in topic.list config", topicOffset[0]);
                 return null;
             }
 
@@ -528,20 +528,20 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                 } else {
                     invalidTopics.append(',').append(topic);
                 }
-                LOG.warn("Topic, " + topic + " is not available.");
+                LOG.warn("Topic, {} is not available.", topic);
             }
         }
         if (null != partitions && !(partitions.length == 1 && partitions[0].equals("0")) && !topicsAvailable) {
             String errorMessage = "Topic(s) " + invalidTopics + " aren't available. Topics won't be created "
                     + "since there are partition numbers defined in the query.";
-            LOG.error(errorMessage);
+            LOG.error("{}", errorMessage);
             throw new SiddhiAppRuntimeException("Topic(s) " + invalidTopics + " aren't available. "
                     + "Topics won't be created since there "
                     + "are partition numbers defined in the query.");
         } else if (!topicsAvailable) {
             if (siddhiAppContext.isTransportChannelCreationEnabled()) {
-                LOG.warn("Topic(s) " + invalidTopics + " aren't available. "
-                        + "These Topics will be created with the default partition.");
+                LOG.warn("Topic(s) {} aren't available. These Topics will be created with the default partition.",
+                        invalidTopics);
             } else {
                 throw new SiddhiAppRuntimeException("Topic(s) " + invalidTopics + " creation failed. " +
                         "User has disabled topic creation by setting " +
@@ -574,8 +574,8 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                         } else {
                             invalidPartitions.append(',').append(partition);
                         }
-                        LOG.error("Partition number, " + partition
-                                + " in 'partition.id' is not available in topic partitions");
+                        LOG.error("Partition number, {} in 'partition.id' is not available in topic partitions",
+                                partition);
                     }
                 }
                 if (!partitionsAvailable) {

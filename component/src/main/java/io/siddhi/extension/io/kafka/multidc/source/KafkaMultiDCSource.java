@@ -130,7 +130,7 @@ public class KafkaMultiDCSource extends Source<KafkaMultiDCSource.KafkaMultiDCSo
         }
         synchronizer = new SourceSynchronizer(sourceEventListener, bootstrapServers, 1000,
                 10);
-        LOG.info("Initializing kafka source for bootstrap server :" + bootstrapServers[0]);
+        LOG.info("Initializing kafka source for bootstrap server :{}", bootstrapServers[0]);
         Interceptor interceptor = new Interceptor(bootstrapServers[0], synchronizer, isBinaryMessage);
         OptionHolder options = createOptionHolders(bootstrapServers[0], optionHolder);
         KafkaSource source = new KafkaSource();
@@ -138,7 +138,7 @@ public class KafkaMultiDCSource extends Source<KafkaMultiDCSource.KafkaMultiDCSo
                 configReader, siddhiAppContext));
         sources.put(bootstrapServers[0], source);
 
-        LOG.info("Initializing kafka source for bootstrap server :" + bootstrapServers[1]);
+        LOG.info("Initializing kafka source for bootstrap server :{}", bootstrapServers[1]);
         interceptor = new Interceptor(bootstrapServers[1], synchronizer, isBinaryMessage);
         options = createOptionHolders(bootstrapServers[1], optionHolder);
         source = new KafkaSource();
@@ -164,7 +164,7 @@ public class KafkaMultiDCSource extends Source<KafkaMultiDCSource.KafkaMultiDCSo
                         get(entry.getKey().toString());
                 ((KafkaSource) entry.getValue()).connect((Source.ConnectionCallback) connectionCallback,
                         kafkaSourceState);
-                LOG.info("Connect to bootstrap server " + entry.getKey());
+                LOG.info("Connect to bootstrap server {}", entry.getKey());
             } catch (ConnectionUnavailableException e) {
                 errorMessage.append("Error occurred while connecting to ")
                         .append(entry.getKey()).append(":")
@@ -173,7 +173,7 @@ public class KafkaMultiDCSource extends Source<KafkaMultiDCSource.KafkaMultiDCSo
         }
 
         if (!errorMessage.toString().isEmpty()) {
-            LOG.error("Error while trying to connect boot strap server(s): " + errorMessage.toString());
+            LOG.error("Error while trying to connect boot strap server(s): {}", errorMessage.toString());
             throw new ConnectionUnavailableException(errorMessage.toString());
         }
     }
@@ -341,7 +341,7 @@ class Interceptor implements SourceEventListener {
                 Integer seqNo = Integer.parseInt(headerElements[1]);
                 synchronizer.onEvent(sourceId, seqNo, eventBody, transportProperties);
             } else {
-                LOG.warn("Sequence number is not contained in the message. Dropping the message :" + eventString);
+                LOG.warn("Sequence number is not contained in the message. Dropping the message :{}", eventString);
             }
         } else {
             byte[] byteEvents = (byte[]) event;

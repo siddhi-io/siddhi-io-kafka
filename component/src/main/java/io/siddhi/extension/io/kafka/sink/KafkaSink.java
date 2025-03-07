@@ -216,8 +216,8 @@ public class KafkaSink extends Sink<KafkaSink.KafkaSinkState> {
                     streamId = outputStreamDefinition.getId();
                 }
             } catch (IllegalArgumentException e) {
-                LOG.debug("Prometheus reporter is not running. Hence kafka metrics will not be initialized for "
-                        + siddhiAppContext.getName());
+                LOG.debug("Prometheus reporter is not running. Hence kafka metrics will not be initialized for {}",
+                        siddhiAppContext.getName());
             }
         }
         useAvroSerializer = useAvroSerializer(outputStreamDefinition);
