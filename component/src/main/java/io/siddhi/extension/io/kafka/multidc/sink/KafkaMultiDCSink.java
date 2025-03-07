@@ -170,7 +170,7 @@ public class KafkaMultiDCSink extends KafkaSink {
             props.put("bootstrap.servers", server);
             Producer<String, String> producer = new KafkaProducer<>(props);
             producers.add(producer);
-            LOG.info("Kafka producer created for Kafka cluster :" + server);
+            LOG.info("Kafka producer created for Kafka cluster :{}", server);
         }
     }
 
@@ -212,8 +212,8 @@ public class KafkaMultiDCSink extends KafkaSink {
             try {
                 producer.send(new ProducerRecord<>(topic, partitionNo, key, payloadToSend));
             } catch (Exception e) {
-                LOG.error(String.format("Failed to publish the message to [topic] %s. Error: %s. Sequence Number " +
-                        ": %d", topic, e.getMessage(), kafkaSinkState.lastSentSequenceNo.get() - 1), e);
+                LOG.error("Failed to publish the message to [topic] {}. Error: {}. Sequence Number " +
+                        ": {}", topic, e.getMessage(), kafkaSinkState.lastSentSequenceNo.get() - 1, e);
             }
         }
     }

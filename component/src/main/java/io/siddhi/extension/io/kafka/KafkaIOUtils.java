@@ -41,8 +41,7 @@ public class KafkaIOUtils {
                         String[] configPropertyWithValue = header.split(ENTRY_SEPARATOR, 2);
                         configProperties.put(configPropertyWithValue[0], configPropertyWithValue[1]);
                     } catch (Exception e) {
-                        LOG.warn("Optional property '" + header + "' is not defined in the correct format.",
-                                e);
+                        LOG.warn("Optional property '{}' is not defined in the correct format.", header, e);
                     }
                 }
             }
