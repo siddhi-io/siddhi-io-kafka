@@ -58,7 +58,7 @@
         <xml.mapper.version>5.2.2</xml.mapper.version>
         <text.mapper.version>2.1.1</text.mapper.version>
         <binary.mapper.version>2.1.1</binary.mapper.version>
-        <jacoco.version>0.7.9</jacoco.version>
+        <jacoco.version>0.8.12</jacoco.version>
         <carbon.analytics.version>3.0.56</carbon.analytics.version>
         <confluent.version>7.0.1</confluent.version>
         <maven.findbugsplugin.version.exclude>findbugs-exclude.xml</maven.findbugsplugin.version.exclude>
