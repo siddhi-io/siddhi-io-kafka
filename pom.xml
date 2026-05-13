@@ -65,6 +65,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <protobuf.version>3.25.5</protobuf.version>
         <codehaus.version>1.9.10</codehaus.version>
+        <maven.bundle.plugin.version>5.1.9</maven.bundle.plugin.version>
         <fasterxml.version>2.13.5</fasterxml.version>
     </properties>
 
@@ -381,6 +382,11 @@
                             </configuration>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>maven-bundle-plugin</artifactId>
+                    <version>${maven.bundle.plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
