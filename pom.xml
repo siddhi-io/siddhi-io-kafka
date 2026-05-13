@@ -44,29 +44,29 @@
     </profiles>
 
     <properties>
-        <siddhi.version>5.1.21</siddhi.version>
+        <siddhi.version>5.1.32</siddhi.version>
         <siddhi.version.range>[5.0.0,6.0.0)</siddhi.version.range>
-        <log4j.version>2.17.1</log4j.version>
+        <log4j.version>2.25.4</log4j.version>
         <log4j1.version>1.2.17</log4j1.version>
         <testng.version>6.8</testng.version>
         <commons.logging.version>1.1.1</commons.logging.version>
         <kafka_2.11.version>0.10.0.0</kafka_2.11.version>
         <curator-test.version>2.7.1</curator-test.version>
-        <zookeeper.version>3.4.0</zookeeper.version>
-        <commons-io.version>2.5</commons-io.version>
+        <zookeeper.version>3.8.4</zookeeper.version>
+        <commons-io.version>2.15.1</commons-io.version>
         <kafka.client.version>0.10.0.0</kafka.client.version>
         <xml.mapper.version>5.2.2</xml.mapper.version>
         <text.mapper.version>2.1.1</text.mapper.version>
         <binary.mapper.version>2.1.1</binary.mapper.version>
-        <jacoco.version>0.7.9</jacoco.version>
+        <jacoco.version>0.8.12</jacoco.version>
         <carbon.analytics.version>3.0.56</carbon.analytics.version>
         <confluent.version>7.0.1</confluent.version>
         <maven.findbugsplugin.version.exclude>findbugs-exclude.xml</maven.findbugsplugin.version.exclude>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <protobuf.version>3.17.3</protobuf.version>
+        <protobuf.version>3.25.5</protobuf.version>
         <codehaus.version>1.9.10</codehaus.version>
-        <fasterxml.version>2.13.3</fasterxml.version>
         <maven.bundle.plugin.version>5.1.9</maven.bundle.plugin.version>
+        <fasterxml.version>2.13.5</fasterxml.version>
     </properties>
 
     <scm>
