@@ -290,8 +290,8 @@ public class KafkaConsumerThread implements Runnable {
                                     }
                                 }
                                 if (!isReplayThread) {
-                                    kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(),
-                                            record.offset());
+                                    kafkaSourceState.getTopicOffsetMap().get(record.topic())
+                                            .putIfAbsent(record.partition(), record.offset());
                                 }
                                 if (endReplay(record)) {
                                     inactive = true;
@@ -300,7 +300,7 @@ public class KafkaConsumerThread implements Runnable {
                             }
                     } else {
                         if (!isReplayThread) {
-                            kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(),
+                            kafkaSourceState.getTopicOffsetMap().get(record.topic()).putIfAbsent(record.partition(),
                                   record.offset());
                         }
                         if (metrics != null) {
@@ -351,7 +351,13 @@ public class KafkaConsumerThread implements Runnable {
     void seekToRequiredOffset() {}
 
     boolean isRecordAfterStartOffset(ConsumerRecord record) {
-        return true;
+        Map<Integer, Long> partitionMap = kafkaSourceState.getTopicOffsetMap().get(record.topic());
+        if (partitionMap == null) {
+            return true;
+        }
+
+        Long offsetThreshold = partitionMap.get(record.partition());
+        return offsetThreshold == null || record.offset() > offsetThreshold;
     }
 
     boolean endReplay(ConsumerRecord record) {

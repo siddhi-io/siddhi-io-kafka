@@ -19,27 +19,15 @@
 
 <FindBugsFilter>
     <Match>
-        <Class name="io.siddhi.extension.io.kafka.source.KafkaSource"/>
-        <Bug pattern="IMPROPER_UNICODE"/>
-    </Match>
-    <Match>
-        <Class name="io.siddhi.extension.io.kafka.source.KafkaReplayResponseSource"/>
-        <Bug pattern="IMPROPER_UNICODE"/>
-    </Match>
-    <Match>
-        <Class name="io.siddhi.extension.io.kafka.source.KafkaConsumerThread"/>
-        <Bug pattern="IMPROPER_UNICODE"/>
-    </Match>
-    <Match>
-        <Class name="io.siddhi.extension.io.kafka.sink.KafkaSink"/>
-        <Bug pattern="IMPROPER_UNICODE"/>
-    </Match>
-    <Match>
         <Class name="io.siddhi.extension.io.kafka.multidc.source.SourceSynchronizer"/>
         <Bug pattern="DLS_DEAD_LOCAL_STORE"/>
     </Match>
     <Match>
         <Package name="~io\.siddhi\.extension\.io\.kafka.*"/>
         <Bug pattern="SIC_INNER_SHOULD_BE_STATIC"/>
+    </Match>
+    <Match>
+        <Class name="io.siddhi.extension.io.kafka.source.KafkaSource"/>
+        <Bug pattern="RCN_REDUNDANT_COMPARISON_OF_NULL_AND_NONNULL_VALUE"/>
     </Match>
 </FindBugsFilter>
