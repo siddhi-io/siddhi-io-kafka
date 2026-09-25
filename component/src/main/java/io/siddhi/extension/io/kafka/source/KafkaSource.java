@@ -316,15 +316,6 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
         }
         partitions = (partitionList != null) ? partitionList.split(KafkaIOUtils.HEADER_SEPARATOR) : null;
         topics = topicList.split(KafkaIOUtils.HEADER_SEPARATOR);
-        seqEnabled = optionHolder.validateAndGetStaticValue(SEQ_ENABLED, "false").equalsIgnoreCase("true");
-        optionalConfigs = optionHolder.validateAndGetStaticValue(ADAPTOR_OPTIONAL_CONFIGURATION_PROPERTIES, null);
-        isBinaryMessage = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(IS_BINARY_MESSAGE,
-                "false"));
-        enableOffsetCommit = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_OFFSET_COMMIT,
-                "true"));
-        enableAsyncCommit = Boolean.parseBoolean(optionHolder.validateAndGetStaticValue(ADAPTOR_ENABLE_ASYNC_COMMIT,
-                "true"));
-        topicOffsetMapConfig = optionHolder.validateAndGetStaticValue(TOPIC_OFFSET_MAP, null);
 
         if (PARTITION_WISE.equals(threadingOption) && null == partitions) {
             throw new SiddhiAppValidationException("Threading option is selected as 'partition.wise' but " +
