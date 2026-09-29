@@ -23,6 +23,7 @@ import io.siddhi.core.SiddhiManager;
 import io.siddhi.core.event.Event;
 import io.siddhi.core.stream.output.StreamCallback;
 import io.siddhi.core.util.SiddhiTestHelper;
+import io.siddhi.core.util.config.InMemoryConfigManager;
 import io.siddhi.extension.io.kafka.KafkaTestUtil;
 import io.siddhi.extension.io.kafka.UnitTestAppender;
 import io.siddhi.query.api.exception.SiddhiAppValidationException;
@@ -36,10 +37,14 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.lang.management.ManagementFactory;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
+import javax.management.ObjectName;
 
 /**
  * Class implementing the Test cases for Kafka Source.
@@ -1380,5 +1385,49 @@ public class KafkaSourceTestCase {
             log.warn("No zookeeper may not be available.", ex);
         }
     }
-}
 
+    @Test
+    public void testKafkaSourceOptionalConfigFromConfigManager() throws Exception {
+        try {
+            log.info("Creating test for optional.configuration read from the config manager");
+            String topics[] = new String[]{"config_manager_topic"};
+            KafkaTestUtil.createTopic(topics, 1);
+            Thread.sleep(1000);
+            Map<String, String> configs = new HashMap<>();
+            configs.put("source.kafka.optional.configuration", "client.id:cfgtest");
+            SiddhiManager siddhiManager = new SiddhiManager();
+            siddhiManager.setConfigManager(new InMemoryConfigManager(configs, new HashMap<>()));
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(
+                    "@App:name('TestExecutionPlan') @App:transportChannelCreationEnabled('false')" +
+                            "define stream BarStream (symbol string, price float, volume long); " +
+                            "@info(name = 'query1') " +
+                            "@source(type='kafka', topic.list='config_manager_topic', " +
+                            "group.id='test_config_manager_topic', threading.option='single.thread', " +
+                            "bootstrap.servers='localhost:9092', @map(type='xml'))" +
+                            "Define stream FooStream (symbol string, price float, volume long);" +
+                            "from FooStream select symbol, price, volume insert into BarStream;");
+            siddhiAppRuntime.addCallback("BarStream", new StreamCallback() {
+                @Override
+                public void receive(Event[] events) {
+                    for (Event event : events) {
+                        log.info(event);
+                        count++;
+                    }
+                }
+            });
+            siddhiAppRuntime.start();
+            Thread.sleep(2000);
+            AssertJUnit.assertFalse("Kafka consumer did not use client.id from the config manager",
+                    ManagementFactory.getPlatformMBeanServer().queryNames(
+                            new ObjectName("kafka.consumer:type=consumer-metrics,client-id=cfgtest"), null)
+                            .isEmpty());
+            KafkaTestUtil.kafkaPublisher(topics, 1, 2, false, null, true);
+            SiddhiTestHelper.waitForEvents(2000, 2, count, 20000);
+            AssertJUnit.assertEquals(2, count);
+            KafkaTestUtil.deleteTopic(topics);
+            siddhiAppRuntime.shutdown();
+        } catch (ZkTimeoutException ex) {
+            log.warn("No zookeeper may not be available.", ex);
+        }
+    }
+}
