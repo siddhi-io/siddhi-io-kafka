@@ -30,12 +30,14 @@ import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.consumer.OffsetCommitCallback;
 import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -78,12 +80,12 @@ public class KafkaConsumerThread implements Runnable {
     private int trpLength;
     boolean isReplayThread = false;
     private SourceMetrics metrics;
-    private String groupId; //Needed for metrics
+    private String groupId;
 
     KafkaConsumerThread(SourceEventListener sourceEventListener, String[] topics, String[] partitions,
-                        Properties props, boolean isPartitionWiseThreading, boolean isBinaryMessage,
-                        boolean enableOffsetCommit, boolean enableAsyncCommit, String[] requiredProperties,
-                        SourceMetrics metrics) {
+            Properties props, boolean isPartitionWiseThreading, boolean isBinaryMessage,
+            boolean enableOffsetCommit, boolean enableAsyncCommit, String[] requiredProperties,
+            SourceMetrics metrics) {
         this.consumer = new KafkaConsumer<>(props);
         this.sourceEventListener = sourceEventListener;
         this.topics = topics;
@@ -173,13 +175,16 @@ public class KafkaConsumerThread implements Runnable {
                     lock.unlock();
                 }
             }
-            // The time, in milliseconds, spent waiting in poll if data is not available. If 0, returns
+            // The time, in milliseconds, spent waiting in poll if data is not available. If
+            // 0, returns
             // immediately with any records that are available now. Must not be negative
             ConsumerRecords<byte[], byte[]> records = null;
             try {
                 consumerLock.lock();
-                // TODO add a huge value because, when there are so many equal group ids, the group balancing
-                // takes time and if this value is small, there will be an CommitFailedException while
+                // TODO add a huge value because, when there are so many equal group ids, the
+                // group balancing
+                // takes time and if this value is small, there will be an CommitFailedException
+                // while
                 // trying to retrieve data
                 seekToRequiredOffset();
                 records = consumer.poll(100);
@@ -196,11 +201,20 @@ public class KafkaConsumerThread implements Runnable {
                     lastReceivedSeqNoMap = kafkaSourceState.getConsumerLastReceivedSeqNoMap().get(consumerThreadId);
                 }
                 for (ConsumerRecord record : records) {
+                    Map<String, String> kafkaHeaders = new HashMap<>();
                     String[] trpProperties = new String[trpLength];
                     int partition = record.partition();
                     long offset = record.offset();
                     String topic = record.topic();
                     long recordTimestamp = record.timestamp();
+                    for (Header header : record.headers()) {
+                        byte[] headerValue = header.value();
+                        if (headerValue != null) {
+                            kafkaHeaders.put(header.key(), new String(headerValue, StandardCharsets.UTF_8));
+                        } else {
+                            kafkaHeaders.put(header.key(), null);
+                        }
+                    }
                     if (!consumerClosed) {
                         if (isRecordAfterStartOffset(record)) {
                             Object event = isBinaryMessage ? ((Bytes) record.value()).get() : record.value();
@@ -209,36 +223,55 @@ public class KafkaConsumerThread implements Runnable {
                             long eventTimestamp = System.currentTimeMillis();
                             if (LOG.isDebugEnabled()) {
                                 LOG.debug("Event received in Kafka Event Adaptor with offSet: {}, key: {}," +
-                                          " topic: {}, partition: {}, recordTimestamp: {}, eventTimestamp: {}," +
-                                          " checksum: {}", offset, record.key(), topic, partition,
+                                        " topic: {}, partition: {}, recordTimestamp: {}, eventTimestamp: {}," +
+                                        " checksum: {}", offset, record.key(), topic, partition,
                                         recordTimestamp, record.checksum());
                             }
                             for (int i = 0; i < requiredProperties.length; i++) {
-                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_PARTITION)) {
+
+                                String property = requiredProperties[i];
+
+                                if (Constants.TRP_PARTITION.equalsIgnoreCase(property)) {
+
                                     trpProperties[i] = String.valueOf(partition);
-                                }
-                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_TOPIC)) {
+
+                                } else if (Constants.TRP_TOPIC.equalsIgnoreCase(property)) {
+
                                     trpProperties[i] = topic;
-                                }
-                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_KEY)) {
+
+                                } else if (Constants.TRP_KEY.equalsIgnoreCase(property)) {
+
                                     trpProperties[i] = String.valueOf(record.key());
-                                }
-                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_RECORD_TIMESTAMP)) {
+
+                                } else if (Constants.TRP_RECORD_TIMESTAMP.equalsIgnoreCase(property)) {
+
                                     trpProperties[i] = String.valueOf(recordTimestamp);
-                                }
-                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_EVENT_TIMESTAMP)) {
+
+                                } else if (Constants.TRP_EVENT_TIMESTAMP.equalsIgnoreCase(property)) {
+
                                     trpProperties[i] = String.valueOf(eventTimestamp);
-                                }
-                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_CHECK_SUM)) {
+
+                                } else if (Constants.TRP_CHECK_SUM.equalsIgnoreCase(property)) {
+
                                     trpProperties[i] = String.valueOf(record.checksum());
-                                }
-                                if (requiredProperties[i].equalsIgnoreCase(Constants.TRP_OFFSET)) {
+
+                                } else if (Constants.TRP_OFFSET.equalsIgnoreCase(property)) {
+
                                     trpProperties[i] = String.valueOf(offset);
+
+                                } else {
+
+                                    String value = kafkaHeaders.get(property);
+
+                                    if (value != null) {
+                                        trpProperties[i] = value;
+                                    }
+
                                 }
                             }
                             String transportSyncProperties = "topic:" + topic + ",partition:" + partition
                                     + ",offSet:" + offset;
-                            String[] transportSyncPropertiesArr = new String[]{transportSyncProperties};
+                            String[] transportSyncPropertiesArr = new String[] { transportSyncProperties };
                             if (lastReceivedSeqNoMap == null) {
                                 sourceEventListener.onEvent(event, trpProperties, transportSyncPropertiesArr);
                             } else {
@@ -254,54 +287,54 @@ public class KafkaConsumerThread implements Runnable {
                                     eventBody = stringEvent.substring(headerStartingIndex + 1);
                                     if (headerStartingIndex > 0) {
                                         header = stringEvent.substring(0, headerStartingIndex);
-                                        }
                                     }
-                                    if (null != header && !header.isEmpty()) {
-                                        String[] headerElements = header.split(KafkaSink.SEQ_NO_HEADER_FIELD_SEPERATOR);
-                                        String sequenceId = headerElements[0];
-                                        Integer seqNo = Integer.parseInt(headerElements[1]);
-                                        SequenceKey sequenceKey = new SequenceKey(sequenceId, partition);
-                                        Integer lastReceivedSeqNo = lastReceivedSeqNoMap.get(sequenceKey);
-                                        if (lastReceivedSeqNo == null) {
-                                            lastReceivedSeqNo = -1;
+                                }
+                                if (null != header && !header.isEmpty()) {
+                                    String[] headerElements = header.split(KafkaSink.SEQ_NO_HEADER_FIELD_SEPERATOR);
+                                    String sequenceId = headerElements[0];
+                                    Integer seqNo = Integer.parseInt(headerElements[1]);
+                                    SequenceKey sequenceKey = new SequenceKey(sequenceId, partition);
+                                    Integer lastReceivedSeqNo = lastReceivedSeqNoMap.get(sequenceKey);
+                                    if (lastReceivedSeqNo == null) {
+                                        lastReceivedSeqNo = -1;
+                                    }
+                                    if (lastReceivedSeqNo < seqNo) {
+                                        lastReceivedSeqNoMap.put(sequenceKey, seqNo);
+                                        sourceEventListener.onEvent(eventBody, trpProperties,
+                                                transportSyncPropertiesArr);
+                                        if (LOG.isDebugEnabled()) {
+                                            LOG.debug("Last Received SeqNo Updated to:{} for SeqKey:[{}] " +
+                                                    "in Kafka consumer thread:{}", seqNo,
+                                                    sequenceKey.toString(), consumerThreadId);
                                         }
-                                        if (lastReceivedSeqNo < seqNo) {
-                                            lastReceivedSeqNoMap.put(sequenceKey, seqNo);
-                                            sourceEventListener.onEvent(eventBody, trpProperties,
-                                                    transportSyncPropertiesArr);
-                                            if (LOG.isDebugEnabled()) {
-                                                LOG.debug("Last Received SeqNo Updated to:{} for SeqKey:[{}] " +
-                                                          "in Kafka consumer thread:{}", seqNo,
-                                                          sequenceKey.toString(), consumerThreadId);
-                                            }
-                                        } else {
-                                            if (LOG.isDebugEnabled()) {
-                                                LOG.debug("Duplicate Message arrived at Kafka Consumer Thread:{}. " +
-                                                          "SeqKey:[{}], Latest SeqNo:{}, this message SeqNo:{}." +
-                                                          " Ignoring the message.", consumerThreadId,
-                                                          sequenceKey.toString(), lastReceivedSeqNo, seqNo);
-                                            }
-                                        }
-
                                     } else {
-                                        LOG.warn("'Sequenced' option is set to true in Kafka source configuration." +
-                                                 " But this message does not contain the sequence number in " +
-                                                 "consumer thread :{}. Dropping the message", consumerThreadId);
+                                        if (LOG.isDebugEnabled()) {
+                                            LOG.debug("Duplicate Message arrived at Kafka Consumer Thread:{}. " +
+                                                    "SeqKey:[{}], Latest SeqNo:{}, this message SeqNo:{}." +
+                                                    " Ignoring the message.", consumerThreadId,
+                                                    sequenceKey.toString(), lastReceivedSeqNo, seqNo);
+                                        }
                                     }
-                                }
-                                if (!isReplayThread) {
-                                    kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(),
-                                            record.offset());
-                                }
-                                if (endReplay(record)) {
-                                    inactive = true;
-                                    break;
+
+                                } else {
+                                    LOG.warn("'Sequenced' option is set to true in Kafka source configuration." +
+                                            " But this message does not contain the sequence number in " +
+                                            "consumer thread :{}. Dropping the message", consumerThreadId);
                                 }
                             }
+                            if (!isReplayThread) {
+                                kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(),
+                                        record.offset());
+                            }
+                            if (endReplay(record)) {
+                                inactive = true;
+                                break;
+                            }
+                        }
                     } else {
                         if (!isReplayThread) {
                             kafkaSourceState.getTopicOffsetMap().get(record.topic()).put(record.partition(),
-                                  record.offset());
+                                    record.offset());
                         }
                         if (metrics != null) {
                             updateMetrics(topic, partition, recordTimestamp);
@@ -320,7 +353,7 @@ public class KafkaConsumerThread implements Runnable {
                                     consumer.commitSync();
                                 } catch (KafkaException e) {
                                     if (metrics != null) {
-                                        for (String topic: topics) {
+                                        for (String topic : topics) {
                                             metrics.getErrorCountPerStream(topic, groupId, "KafkaException").inc();
                                         }
                                     }
@@ -330,7 +363,7 @@ public class KafkaConsumerThread implements Runnable {
                         }
                     } catch (CommitFailedException e) {
                         if (metrics != null) {
-                            for (String topic: topics) {
+                            for (String topic : topics) {
                                 metrics.getErrorCountPerStream(topic, groupId, "CommitFailedException").inc();
                             }
                         }
@@ -340,7 +373,7 @@ public class KafkaConsumerThread implements Runnable {
                     }
                 }
             }
-            try { //To avoid thread spin
+            try { // To avoid thread spin
                 Thread.sleep(1);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -348,7 +381,8 @@ public class KafkaConsumerThread implements Runnable {
         }
     }
 
-    void seekToRequiredOffset() {}
+    void seekToRequiredOffset() {
+    }
 
     boolean isRecordAfterStartOffset(ConsumerRecord record) {
         return true;
@@ -378,7 +412,6 @@ public class KafkaConsumerThread implements Runnable {
                 key.append(":");
             }
         }
-
 
         if (partitions != null && isPartitionWiseThreading) {
             count = partitions.length - 1;
@@ -437,9 +470,11 @@ public class KafkaConsumerThread implements Runnable {
 }
 
 /**
- * This class represents the key which message sequences are tracked against. Any two consequent Messages having the
+ * This class represents the key which message sequences are tracked against.
+ * Any two consequent Messages having the
  * same sequence key must have increasing sequence numbers.
- * SequenceKey consists of the SequenceId which is a unique identifier for each kafka Sink and the kafka partition Id.
+ * SequenceKey consists of the SequenceId which is a unique identifier for each
+ * kafka Sink and the kafka partition Id.
  */
 class SequenceKey {
     private String sequenceId;
