@@ -20,7 +20,6 @@ package io.siddhi.extension.io.kafka;
 
 import kafka.admin.AdminUtils;
 import kafka.admin.RackAwareMode;
-import kafka.common.UnknownTopicOrPartitionException;
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaServerStartable;
 import kafka.utils.ZKStringSerializer$;
@@ -32,6 +31,7 @@ import org.apache.curator.test.TestingServer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.errors.TopicExistsException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -192,7 +192,7 @@ public class KafkaTestUtil {
             try {
                 AdminUtils.createTopic(zkUtils, topic, numOfPartitions, 1, new Properties(),
                         RackAwareMode.Enforced$.MODULE$);
-            } catch (UnknownTopicOrPartitionException e) {
+            } catch (TopicExistsException e) {
                 log.warn("topic exists for: " + topic);
             }
         }

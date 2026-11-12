@@ -208,9 +208,12 @@ public class KafkaConsumerThread implements Runnable {
                     String topic = record.topic();
                     long recordTimestamp = record.timestamp();
                     for (Header header : record.headers()) {
-                        kafkaHeaders.put(
-                                header.key(),
-                                new String(header.value(), StandardCharsets.UTF_8));
+                        byte[] headerValue = header.value();
+                        if (headerValue != null) {
+                            kafkaHeaders.put(header.key(), new String(headerValue, StandardCharsets.UTF_8));
+                        } else {
+                            kafkaHeaders.put(header.key(), null);
+                        }
                     }
                     if (!consumerClosed) {
                         if (isRecordAfterStartOffset(record)) {
