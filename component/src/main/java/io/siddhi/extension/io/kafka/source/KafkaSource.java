@@ -314,7 +314,7 @@ public class KafkaSource extends Source<KafkaSource.KafkaSourceState> implements
                     "true"));
             topicOffsetMapConfig = optionHolder.validateAndGetStaticValue(TOPIC_OFFSET_MAP, null);
         }
-        partitions = (partitionList != null) ? partitionList.split(KafkaIOUtils.HEADER_SEPARATOR) : null;
+        partitions = (partitionList != null) ? partitionList.split(KafkaIOUtils.HEADER_SEPARATOR) : new String[]{"0"};
         topics = topicList.split(KafkaIOUtils.HEADER_SEPARATOR);
 
         if (PARTITION_WISE.equals(threadingOption) && null == partitions) {
