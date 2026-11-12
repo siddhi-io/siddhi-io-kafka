@@ -20,7 +20,7 @@ package io.siddhi.extension.io.kafka;
 
 import kafka.admin.AdminUtils;
 import kafka.admin.RackAwareMode;
-import kafka.common.TopicExistsException;
+import kafka.common.UnknownTopicOrPartitionException;
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaServerStartable;
 import kafka.utils.ZKStringSerializer$;
@@ -72,7 +72,7 @@ public class KafkaTestUtil {
         }
     }
 
-    //---- private methods --------
+    // ---- private methods --------
     public static void setupKafkaBroker() {
         try {
             log.info("#############################################################################################");
@@ -89,6 +89,12 @@ public class KafkaTestUtil {
             props.put("zookeeper.connect", zkTestServer.getConnectString());
             props.put("replica.socket.timeout.ms", "30000");
             props.put("delete.topic.enable", "true");
+            props.put("offsets.topic.replication.factor", "1");
+            props.put("default.replication.factor", "1");
+            props.put("transaction.state.log.replication.factor", "1");
+            props.put("transaction.state.log.min.isr", "1");
+            props.put("min.insync.replicas", "1");
+            props.put("group.initial.rebalance.delay.ms", "0");
             props.put("log.cleaner.dedupe.buffer.size", CLEANER_BUFFER_SIZE);
             KafkaConfig config = new KafkaConfig(props);
             kafkaServer = new KafkaServerStartable(config);
@@ -114,6 +120,12 @@ public class KafkaTestUtil {
             props.put("zookeeper.connect", zkTestServer2.getConnectString());
             props.put("replica.socket.timeout.ms", "30000");
             props.put("delete.topic.enable", "true");
+            props.put("offsets.topic.replication.factor", "1");
+            props.put("default.replication.factor", "1");
+            props.put("transaction.state.log.replication.factor", "1");
+            props.put("transaction.state.log.min.isr", "1");
+            props.put("min.insync.replicas", "1");
+            props.put("group.initial.rebalance.delay.ms", "0");
             props.put("log.cleaner.dedupe.buffer.size", CLEANER_BUFFER_SIZE);
             KafkaConfig config = new KafkaConfig(props);
             kafkaServer2 = new KafkaServerStartable(config);
@@ -168,7 +180,6 @@ public class KafkaTestUtil {
         }
     }
 
-
     public static void createTopic(String topics[], int numOfPartitions) {
         createTopic(ZK_SERVER_CON_STRING, topics, numOfPartitions);
     }
@@ -181,7 +192,7 @@ public class KafkaTestUtil {
             try {
                 AdminUtils.createTopic(zkUtils, topic, numOfPartitions, 1, new Properties(),
                         RackAwareMode.Enforced$.MODULE$);
-            } catch (TopicExistsException e) {
+            } catch (UnknownTopicOrPartitionException e) {
                 log.warn("topic exists for: " + topic);
             }
         }
@@ -202,14 +213,14 @@ public class KafkaTestUtil {
         zkClient.close();
     }
 
-    public static void kafkaPublisher(String topics[], int numOfPartitions, int numberOfEventsPerTopic, boolean
-            publishWithPartition, String bootstrapServers, boolean isXML) {
+    public static void kafkaPublisher(String topics[], int numOfPartitions, int numberOfEventsPerTopic,
+            boolean publishWithPartition, String bootstrapServers, boolean isXML) {
         kafkaPublisher(topics, numOfPartitions, numberOfEventsPerTopic, 1000, publishWithPartition,
                 bootstrapServers, isXML);
     }
 
     public static void kafkaPublisher(String topics[], int numOfPartitions, int numberOfEventsPerTopic, long sleep,
-                                      boolean publishWithPartition, String bootstrapServers, boolean isXML) {
+            boolean publishWithPartition, String bootstrapServers, boolean isXML) {
         Properties props = new Properties();
         if (null == bootstrapServers) {
             props.put("bootstrap.servers", "localhost:9092");
